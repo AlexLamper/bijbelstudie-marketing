@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>BijbelStudie stage</title>
+<style>
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-SemiBold.ttf"); font-weight: 600; }
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-Bold.ttf"); font-weight: 700; }
+  @font-face { font-family: "Lora"; src: url("../../assets/fonts/Lora-Variable.ttf"); font-weight: 400 700; }
+
+  /* BijbelStudie Design System tokens */
+  :root {
+    --teal: #0d9488; --teal-dark: #0f766e; --hero-cta: #0d7a66; --teal-soft: #ccfbf1; --teal-faint: #f0fdfa;
+    --ink: #111827; --ink-body: #374151; --ink-muted: #6b7280;
+    --background: #f3f4f6; --surface: #ffffff; --panel-dark: #152229; --line: #e5e7eb;
+    --shadow-cta: 0 10px 24px -8px rgba(13, 122, 102, 0.55);
+    --m: 96px;
+  }
+  html, body { margin: 0; padding: 0; }
+  body { overflow: hidden; background: var(--background); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; overflow: hidden; }
+  .abs { position: absolute; will-change: transform, opacity; }
+  .full { left: 0; top: 0; width: 100%; height: 100%; }
+  .serif { font-family: Lora, Georgia, serif; }
+
+  /* photo backgrounds */
+  .photo { object-fit: cover; }
+  .scrim { background: linear-gradient(rgba(0,0,0,.50), rgba(0,0,0,.38) 45%, rgba(0,0,0,.58)); }
+
+  /* phone mockup */
+  .phone { box-sizing: border-box; padding: 14px; background: var(--ink); border-radius: 72px; }
+  .phone .screen { position: relative; width: 100%; height: 100%; border-radius: 58px; overflow: hidden; background: var(--surface); }
+  .phone .bar { height: 44px; display: flex; align-items: center; padding: 0 44px; font-weight: 600; font-size: 19px; color: var(--ink); background: var(--surface); }
+  .phone img { display: block; width: 100%; }
+
+  /* end card (approved 22 Oct 2026) */
+  .end { background: var(--panel-dark); }
+  .end-inner { position: absolute; left: 160px; width: 760px; color: #fff; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .end-inner > * { will-change: transform, opacity; }
+  .end .icon { width: 208px; height: 208px; display: block; }
+  .end .wordmark { height: 62px; display: block; margin-top: 40px; }
+  .end .headline { margin-top: 84px; font-weight: 700; font-size: 80px; line-height: 1.05; letter-spacing: -1.6px; }
+  .end .sub { margin-top: 26px; font-size: 36px; line-height: 1.4; color: rgba(255,255,255,.8); max-width: 680px; }
+  .end .cta { margin-top: 64px; background: var(--hero-cta); border-radius: 22px; padding: 34px 84px; font-weight: 700; font-size: 50px; letter-spacing: -.4px; box-shadow: var(--shadow-cta); }
+  .end .badges { margin-top: 52px; display: flex; gap: 24px; align-items: center; }
+  .end .badges img { height: 92px; display: block; }
+  .end .web { margin-top: 30px; font-size: 30px; color: rgba(255,255,255,.7); }
+
+  /* captions */
+  .cap { left: 120px; width: 840px; top: 1430px; display: flex; justify-content: center; }
+  .cap span { background: rgba(21,34,41,.88); color: #fff; font-weight: 700; font-size: 50px; line-height: 1.2; padding: 16px 26px; border-radius: 18px; text-align: center; letter-spacing: -.3px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+/* ---------- helpers ---------- */
+const A = '../../assets/';
+const clamp = x => Math.min(1, Math.max(0, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const out = x => 1 - Math.pow(1 - x, 3);
+const inout = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const el = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; (parent || stage).appendChild(e); return e; };
+const img = (src, cls, parent) => { const i = el('img', cls, parent); i.src = src; return i; };
+const css = (e, o) => Object.assign(e.style, o);
+const set = (e, o, y = 0, s = 1, x = 0) => { e.style.opacity = o; e.style.transform = `translate(${x}px,${y}px) scale(${s})`; };
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const photoSrc = n => `${A}photos/${String(n).padStart(3, '0')}.jpg`;
+const shotSrc = s => `${A}screenshots/${s}.png`;
+const stage = document.getElementById('stage');
+
+/** fit a font size to text length: [[maxChars, px], ...] */
+const fit = (text, steps) => { for (const [n, px] of steps) if (text.length <= n) return px; return steps[steps.length - 1][1]; };
+
+/** Split text into caption chunks of ~5 words / 30 chars. */
+function chunks(text) {
+  const words = text.split(/\s+/); const res = []; let cur = [];
+  for (const w of words) { cur.push(w); const s = cur.join(' '); if (s.length > 26 || /[.,;:?!]$/.test(w) && s.length > 14) { res.push(s); cur = []; } }
+  if (cur.length) res.push(cur.join(' '));
+  return res;
+}
+
+function phone(parent, shot, w) {
+  const h = Math.round((w - 28) * 2391 / 1170 + 44 + 28);
+  const p = el('div', 'abs phone', parent); css(p, { width: w + 'px', height: h + 'px' });
+  const s = el('div', 'screen', p); el('div', 'bar', s, '9:41'); img(shotSrc(shot), '', s);
+  return { node: p, h };
+}
+
+function endCard(spec, top = 420) {
+  const e = spec.endCard || {};
+  const card = el('div', 'abs full end');
+  const inner = el('div', 'end-inner', card); inner.style.top = top + 'px';
+  const parts = [
+    img(A + 'logos/logo-icon-dark.svg', 'icon', inner),
+    img(A + 'logos/logo-wordmark-white.svg', 'wordmark', inner),
+    el('div', 'headline', inner, esc(e.headline || 'Begrijp wat je leest.')),
+    el('div', 'sub', inner, esc(e.sub || 'Uitleg, context en grondtekst naast elk hoofdstuk.').replace(/ naast /, '<br>naast ')),
+    el('div', 'cta', inner, esc(e.button || 'Download gratis')),
+  ];
+  const badges = el('div', 'badges', inner);
+  img(A + 'logos/app-store-badge.png', '', badges); img(A + 'logos/play-store-badge.png', '', badges);
+  parts.push(badges, el('div', 'web', inner, 'Ook op bijbelstudie.io'));
+  return (t, start) => {            // start = when the card begins sliding up
+    const k = inout(prog(t, start, start + .38));
+    card.style.transform = `translateY(${(1 - k) * 1920}px)`;
+    parts.forEach((p, i) => {
+      const a = start + .2 + i * .07; const q = out(prog(t, a, a + .32));
+      const pulse = p.classList.contains('cta') ? .04 * Math.sin(Math.PI * prog(t, start + 1.0, start + 1.4)) : 0;
+      set(p, q, (1 - q) * 28, (p.classList.contains('icon') ? .9 + .1 * q : 1) + pulse);
+    });
+  };
+}
+const END = 2.8; // end card length in reels (2-3 s, approved rule)
+
+/* ---------- templates ---------- */
+const T = {};
+
+/* Daily verse still, 1080x1350 */
+T['verse-still'] = spec => {
+  const W = 1080, H = 1350;
+  img(photoSrc(spec.photo), 'abs full photo'); el('div', 'abs full scrim');
+  const box = el('div', 'abs'); css(box, { left: '110px', width: '860px', top: '0', height: H + 'px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#fff' });
+  const text = spec.verse.text;
+  el('div', '', box, 'VERS VAN DE DAG').style.cssText = 'font-weight:700;font-size:26px;letter-spacing:4px;opacity:.82';
+  el('div', 'serif', box, esc(text)).style.cssText = `margin-top:44px;font-size:${fit(text, [[80, 72], [140, 62], [220, 54], [320, 46], [999, 40]])}px;line-height:1.36`;
+  el('div', '', box, esc(spec.verse.ref + ' SV').toUpperCase()).style.cssText = 'margin-top:44px;font-weight:700;font-size:28px;letter-spacing:3px;opacity:.9';
+  const lock = el('div', 'abs'); css(lock, { left: 0, width: '100%', top: '1190px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '18px' });
+  img(A + 'logos/logo-icon-dark.svg', '', lock).style.height = '60px';
+  img(A + 'logos/logo-wordmark-white.svg', '', lock).style.height = '36px';
+  return { width: W, height: H, duration: 0, render() {} };
+};
+
+/* Animated daily verse reel, 1080x1920 */
+T['reel-verse'] = spec => {
+  const W = 1080, H = 1920;
+  const bg = img(photoSrc(spec.photo), 'abs full photo'); el('div', 'abs full scrim');
+  const box = el('div', 'abs'); css(box, { left: '120px', width: '780px', top: '330px', height: '1260px', display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' });
+  const eyebrow = el('div', '', box, 'VERS VAN DE DAG'); eyebrow.style.cssText = 'font-weight:700;font-size:30px;letter-spacing:4px;opacity:.85';
+  const text = spec.verse.text;
+  const size = fit(text, [[80, 84], [140, 72], [220, 62], [320, 54], [999, 46]]);
+  const vbox = el('div', 'serif', box); vbox.style.cssText = `margin-top:48px;font-size:${size}px;line-height:1.34`;
+  const phrases = text.match(/[^,;:.!?]+[,;:.!?]*\s*/g) || [text];
+  const spans = phrases.map(p => el('span', '', vbox, esc(p)));
+  const refEl = el('div', '', box, esc(spec.verse.ref + ' SV').toUpperCase()); refEl.style.cssText = 'margin-top:48px;font-weight:700;font-size:32px;letter-spacing:3px';
+  const per = Math.min(1.1, 4.2 / spans.length);
+  const textEnd = .9 + spans.length * per;
+  const duration = Math.max(8, textEnd + 2.6) + END;
+  const end = endCard(spec);
+  return { width: W, height: H, duration, render(t) {
+    bg.style.transform = `scale(${1 + .07 * (t / duration)})`;
+    let q = out(prog(t, .2, .8)); set(eyebrow, q * .85, (1 - q) * 24);
+    spans.forEach((s, i) => { const a = .9 + i * per; s.style.opacity = .12 + .88 * out(prog(t, a, a + .7)); });
+    q = out(prog(t, textEnd, textEnd + .6)); set(refEl, q, (1 - q) * 20);
+    end(t, duration - END);
+  } };
+};
+
+/* App demo reel: hook, 2-5 phone scenes, end card */
+T['reel-demo'] = spec => {
+  const W = 1080, H = 1920; const HOOK = 2.0, SCENE = 2.7;
+  const hook = el('div', 'abs serif'); css(hook, { left: '96px', width: '800px', top: '700px', fontWeight: 600, fontSize: fit(spec.hook, [[30, 96], [50, 84], [999, 72]]) + 'px', lineHeight: 1.08, letterSpacing: '-1px', color: 'var(--ink)' });
+  el('div', '', hook).style.cssText = 'width:124px;height:8px;border-radius:4px;background:var(--teal);margin-bottom:52px';
+  el('div', '', hook, esc(spec.hook));
+  const scenes = spec.scenes.map((s, i) => {
+    const cap = el('div', 'abs'); css(cap, { left: '96px', width: '820px', top: '290px', fontWeight: 700, fontSize: fit(s.caption, [[28, 66], [48, 58], [999, 50]]) + 'px', lineHeight: 1.1, letterSpacing: '-1.2px', color: 'var(--ink)' });
+    cap.innerHTML = esc(s.caption);
+    const ph = phone(stage, s.screenshot, 600); css(ph.node, { left: '240px', top: '560px' });
+    return { cap, ph: ph.node };
+  });
+  const duration = HOOK + scenes.length * SCENE + END;
+  const end = endCard(spec);
+  return { width: W, height: H, duration, render(t) {
+    const r = out(prog(t, .05, .4)); hook.firstChild.style.width = 124 * r + 'px';
+    const q = out(prog(t, .1, .55)); const x = inout(prog(t, HOOK - .35, HOOK));
+    set(hook, q * (1 - x), (1 - q) * 40 - 80 * x);
+    scenes.forEach((s, i) => {
+      const a = HOOK + i * SCENE, b = a + SCENE;
+      const inP = out(prog(t, a - .3, a + .35)), outP = inout(prog(t, b - .3, b));
+      const last = i === scenes.length - 1;
+      const o = inP * (last ? 1 : 1 - outP);
+      set(s.cap, o, (1 - inP) * 30);
+      set(s.ph, inP > 0 ? (last ? 1 : 1 - outP) : 0, (1 - inP) * (i === 0 ? 1100 : 60), .97 + .03 * inP + .02 * inout(prog(t, a, b)), last ? 0 : -60 * outP);
+    });
+    end(t, duration - END);
+  } };
+};
+
+/* Voiceover explainer: spoken hook + lines with verse/screen/text visuals and burned-in captions */
+T['reel-explainer'] = (spec, timing) => {
+  const W = 1080, H = 1920;
+  const units = [{ say: spec.hook, hook: true }, ...spec.lines];
+  const tm = timing || units.map(u => Math.max(1.6, u.say.length / 14));
+  let acc = .3; const segs = units.map((u, i) => { const s = { ...u, start: acc, dur: tm[i] }; acc += tm[i] + .25; return s; });
+  const talkEnd = acc;
+  const duration = talkEnd + .4 + END;
+  const visuals = segs.map(s => {
+    const v = el('div', 'abs full'); v.style.opacity = 0;
+    if (s.hook) {
+      const h = el('div', 'serif', v, esc(s.say)); h.style.cssText = `position:absolute;left:96px;width:830px;top:560px;font-weight:600;font-size:${fit(s.say, [[30, 96], [55, 84], [999, 70]])}px;line-height:1.08;letter-spacing:-1px;color:var(--ink)`;
+      s.noCap = true;
+    } else if (s.verseData) {
+      const card = el('div', '', v); card.style.cssText = 'position:absolute;left:96px;width:830px;top:430px;background:var(--teal-faint);border-radius:28px;padding:56px 56px 60px';
+      el('div', '', card, esc(s.verseData.ref + ' SV').toUpperCase()).style.cssText = 'font-weight:700;font-size:28px;letter-spacing:3px;color:var(--teal-dark)';
+      el('div', 'serif', card, esc(s.verseData.text)).style.cssText = `margin-top:28px;font-size:${fit(s.verseData.text, [[90, 60], [180, 50], [300, 42], [999, 36]])}px;line-height:1.4;color:var(--ink)`;
+    } else if (s.screenshot) {
+      const ph = phone(v, s.screenshot, 500); css(ph.node, { left: '290px', top: '260px' }); // ends ~1345px, clear of the captions at 1430px
+    } else {
+      const h = el('div', '', v, esc(s.say)); h.style.cssText = `position:absolute;left:96px;width:830px;top:640px;font-weight:700;font-size:${fit(s.say, [[60, 76], [110, 64], [999, 54]])}px;line-height:1.12;letter-spacing:-1.2px;color:var(--ink)`;
+      s.noCap = true;
+    }
+    return v;
+  });
+  const cap = el('div', 'abs cap'); const capSpan = el('span', '', cap); cap.style.opacity = 0;
+  const capTimeline = [];
+  segs.forEach(s => { if (s.noCap) return; const cs = chunks(s.say); const total = cs.reduce((n, c) => n + c.length, 0); let a = s.start; cs.forEach(c => { const d = s.dur * c.length / total; capTimeline.push({ a, b: a + d, c }); a += d; }); });
+  const end = endCard(spec);
+  return { width: W, height: H, duration, units, render(t) {
+    segs.forEach((s, i) => {
+      const next = segs[i + 1]; const until = next ? next.start : talkEnd + .4;
+      const q = out(prog(t, s.start - .25, s.start + .2)) * (1 - inout(prog(t, until - .25, until)));
+      set(visuals[i], i === segs.length - 1 ? out(prog(t, s.start - .25, s.start + .2)) : q, (1 - out(prog(t, s.start - .25, s.start + .2))) * 30, 1 + .02 * prog(t, s.start, until));
+    });
+    const c = capTimeline.find(c => t >= c.a && t < c.b);
+    if (c) { if (capSpan.textContent !== c.c) capSpan.textContent = c.c; cap.style.opacity = 1; } else cap.style.opacity = 0;
+    end(t, duration - END);
+  } };
+};
+
+/* Feature spotlight post, 1080x1350 */
+T['post-spotlight'] = spec => {
+  const W = 1080, H = 1350;
+  const lock = el('div', 'abs'); css(lock, { left: '96px', top: '86px', display: 'flex', alignItems: 'center', gap: '16px' });
+  img(A + 'logos/logo-full.svg', '', lock).style.height = '50px';
+  const h = el('div', 'abs', null, esc(spec.headline)); css(h, { left: '96px', width: '888px', top: '196px', fontWeight: 700, fontSize: fit(spec.headline, [[28, 76], [48, 66], [999, 58]]) + 'px', lineHeight: 1.08, letterSpacing: '-1.5px', color: 'var(--ink)' });
+  const s = el('div', 'abs', null, esc(spec.sub)); css(s, { left: '96px', width: '860px', top: '0', fontSize: '36px', lineHeight: 1.4, color: 'var(--ink-body)' });
+  const ph = phone(stage, spec.screenshot, 560); css(ph.node, { left: '260px', top: '560px' });
+  return { width: W, height: H, duration: 0, render() { s.style.top = (h.offsetTop + h.offsetHeight + 24) + 'px'; } };
+};
+
+/* One-line statement post, 1080x1350 */
+T['post-statement'] = spec => {
+  const W = 1080, H = 1350;
+  stage.style.background = 'var(--surface)';
+  const box = el('div', 'abs'); css(box, { left: '96px', width: '860px', top: '0', height: '1150px', display: 'flex', flexDirection: 'column', justifyContent: 'center' });
+  el('div', '', box).style.cssText = 'width:124px;height:8px;border-radius:4px;background:var(--teal);margin-bottom:56px';
+  el('div', 'serif', box, esc(spec.line)).style.cssText = `font-weight:600;font-size:${fit(spec.line, [[40, 96], [70, 82], [999, 68]])}px;line-height:1.1;letter-spacing:-1px;color:var(--ink)`;
+  if (spec.sub) el('div', '', box, esc(spec.sub)).style.cssText = 'margin-top:44px;font-size:38px;line-height:1.4;color:var(--teal-dark);font-weight:600';
+  const lock = el('div', 'abs'); css(lock, { left: '96px', top: '1176px' });
+  img(A + 'logos/logo-full.svg', '', lock).style.height = '56px';
+  return { width: W, height: H, duration: 0, render() {} };
+};
+
+/* ---------- entry ---------- */
+let current;
+window.setup = async (spec, timing) => {
+  const t = T[spec.kind]; if (!t) throw new Error('No template for ' + spec.kind);
+  current = t(spec, timing);
+  css(stage, { width: current.width + 'px', height: current.height + 'px' });
+  await document.fonts.ready;
+  await Promise.all([...document.images].map(i => i.decode().catch(() => { throw new Error('Image failed: ' + i.src); })));
+  current.render(current.duration ? current.duration - .05 : 0);
+  return { width: current.width, height: current.height, duration: current.duration };
+};
+window.render = t => current.render(t);
+</script>
+</body>
+</html>

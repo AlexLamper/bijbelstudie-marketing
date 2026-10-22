@@ -1,0 +1,32 @@
+# Every 30 minutes during the day: publish APPROVED items whose time has come.
+name: Publish
+on:
+  schedule: [{ cron: '0,30 5-20 * * *' }]   # 06:00-22:30 Amsterdam (winter); GitHub may start a few minutes late
+  workflow_dispatch: {}
+concurrency: { group: publish, cancel-in-progress: false }
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+      TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+      TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+      UPLOADPOST_API_KEY: ${{ secrets.UPLOADPOST_API_KEY }}
+      UPLOADPOST_USER: ${{ secrets.UPLOADPOST_USER }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+      DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund --omit=dev
+      - run: node engine/cli/publish-due.mjs

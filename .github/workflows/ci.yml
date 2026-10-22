@@ -1,0 +1,18 @@
+# On every push: engine syntax, sample specs valid, one sample renders, studio builds.
+name: CI
+on: { push: { branches: [main] }, pull_request: {} }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - run: for f in $(find engine -name '*.mjs'); do node --check "$f"; done
+      - run: node engine/cli/validate.mjs content/samples
+      - run: npx playwright install --with-deps chromium
+      - run: node engine/render/render.mjs content/samples/w45-verse-mon.json content/samples/w45-reel-demo-wed.json
+      - run: npm run build
+        env: { MONGODB_URI: 'mongodb://localhost:27017', STUDIO_PASSWORD: ci }

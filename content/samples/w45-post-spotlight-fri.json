@@ -1,0 +1,24 @@
+{
+  "id": "w45-post-spotlight-fri",
+  "kind": "post-spotlight",
+  "week": "2026-W45",
+  "slot": "2026-11-06T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Niet weten waar je moet beginnen is het meest gehoorde probleem bij Bijbellezen. In BijbelStudie kies je een studie per bijbelboek, persoon of thema - elke les duurt zo'n 15 minuten. Gratis.",
+  "hashtags": [
+    "#bijbelstudie",
+    "#bijbellezen",
+    "#stilletijd"
+  ],
+  "screenshot": "07-studies",
+  "headline": "Weet je niet waar je moet beginnen?",
+  "sub": "76 studies per bijbelboek, persoon en thema. Elke les duurt zo'n 15 minuten.",
+  "basedOn": "Pain 'waar begin ik'; 76 studies on 21 Oct 2026 (07-studies)",
+  "experiment": {
+    "feedType": "spotlight",
+    "hook": "waar-begin-je"
+  }
+}

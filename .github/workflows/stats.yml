@@ -1,0 +1,24 @@
+# Daily: metrics per item, followers, new BijbelStudie users, comments; competitors on Mondays.
+name: Stats
+on:
+  schedule: [{ cron: '15 4 * * *' }]
+  workflow_dispatch: {}
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      PLATFORM_MONGODB_URI: ${{ secrets.PLATFORM_MONGODB_URI }}
+      PLATFORM_MONGODB_DB: ${{ secrets.PLATFORM_MONGODB_DB }}
+      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund --omit=dev
+      - run: node engine/cli/collect-stats.mjs

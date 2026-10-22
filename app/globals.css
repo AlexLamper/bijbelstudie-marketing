@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* BijbelStudie Design System tokens */
+@theme {
+  --color-teal: #0d9488;
+  --color-teal-dark: #0f766e;
+  --color-teal-soft: #ccfbf1;
+  --color-teal-faint: #f0fdfa;
+  --color-cta: #0d7a66;
+  --color-ink: #111827;
+  --color-ink-body: #374151;
+  --color-ink-muted: #6b7280;
+  --color-line: #e5e7eb;
+  --color-line-strong: #d1d5db;
+  --color-bg: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-panel: #152229;
+  --color-gold-badge: #7a5e08;
+  --color-danger: #dc2626;
+  --color-warn: #ea580c;
+  --color-success: #047857;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Lora", Georgia, serif;
+}
+
+body { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }

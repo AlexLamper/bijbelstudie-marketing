@@ -1,0 +1,47 @@
+{
+  "id": "w45-reel-demo-wed",
+  "kind": "reel-demo",
+  "week": "2026-W45",
+  "slot": "2026-11-04T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een hoofdstuk lezen lukt wel. Maar begrijpen wat er staat? Daarvoor zet BijbelStudie uitleg, context en de grondtekst naast elk hoofdstuk.",
+  "hashtags": [
+    "#bijbelstudie",
+    "#bijbel",
+    "#bijbellezen",
+    "#christelijk"
+  ],
+  "hook": "Een hoofdstuk lezen is makkelijk. Begrijpen niet.",
+  "scenes": [
+    {
+      "screenshot": "02-bijbel",
+      "caption": "Je leest het hoofdstuk."
+    },
+    {
+      "screenshot": "03-commentaar",
+      "caption": "Tik op Studie: uitleg naast de tekst."
+    },
+    {
+      "screenshot": "04-grondtekst",
+      "caption": "Zie wat er in het Hebreeuws staat."
+    },
+    {
+      "screenshot": "06-assistent",
+      "caption": "Stel je vraag over dit hoofdstuk."
+    }
+  ],
+  "basedOn": "Core pain 'ik lees, maar begrijp het niet'; features: commentaar, grondtekst, assistent",
+  "experiment": {
+    "feedType": "video-first",
+    "hook": "pijnpunt"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}

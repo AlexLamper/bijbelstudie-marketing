@@ -1,0 +1,31 @@
+# Render whatever is queued (also started by hand after fixing a failed render).
+name: Render
+on:
+  repository_dispatch: { types: [render] }
+  workflow_dispatch: {}
+concurrency: { group: render, cancel-in-progress: false }
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+      GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      ELEVENLABS_VOICE_MALE: ${{ secrets.ELEVENLABS_VOICE_MALE }}
+      ELEVENLABS_VOICE_FEMALE: ${{ secrets.ELEVENLABS_VOICE_FEMALE }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+      DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund --omit=dev
+      - run: npx playwright install --with-deps chromium
+      - run: node engine/cli/render-pending.mjs

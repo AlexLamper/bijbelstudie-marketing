@@ -1,0 +1,23 @@
+{
+  "id": "w45-post-statement-sat",
+  "kind": "post-statement",
+  "week": "2026-W45",
+  "slot": "2026-11-07T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Geen hoofdstuk meer afraffelen omdat het moet. Liever een kwartier waarin je echt snapt wat er staat. Daarvoor bouwden we BijbelStudie.",
+  "hashtags": [
+    "#bijbellezen",
+    "#bijbelstudie",
+    "#stilletijd"
+  ],
+  "line": "Liever 15 minuten echt begrijpen dan een hoofdstuk afraffelen.",
+  "sub": "Uitleg naast elk hoofdstuk - BijbelStudie",
+  "basedOn": "Customer quote 'plichtmatig ... raffel ik het even af'; hook type opluchting",
+  "experiment": {
+    "feedType": "statement",
+    "hook": "opluchting"
+  }
+}

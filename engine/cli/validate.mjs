@@ -1,0 +1,31 @@
+// The planner's self-check (no database needed): validates every spec in content/queue/,
+// pulls the exact verse text, and flags reused or duplicate verses and slot clashes.
+// Exit code 1 while anything is wrong, so the planner keeps fixing until it is clean.
+import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from '../paths.mjs';
+import { prepare } from '../spec.mjs';
+import { isUsed } from '../verses.mjs';
+
+const dir = process.argv[2] || join(ROOT, 'content', 'queue');
+const files = existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') : [];
+const seenRefs = []; const slots = new Map(); let bad = 0;
+for (const f of files) {
+  try {
+    const s = await prepare(JSON.parse(readFileSync(join(dir, f), 'utf8')));
+    if (`${s.id}.json` !== f) throw new Error(`file name must be ${s.id}.json`);
+    if (s.ref) {
+      if (isUsed(s.ref)) throw new Error(`${s.ref} was already posted (content/used-verses.json)`);
+      if (seenRefs.includes(s.verse.ref)) throw new Error(`${s.ref} is used twice in this batch`);
+      seenRefs.push(s.verse.ref);
+      if (s.verse.text.length > 260) throw new Error(`${s.ref} is ${s.verse.text.length} chars - pick a verse under 260`);
+      if (/^(Een psalm|Een lied|Voor den opperzangmeester|Aleph|Beth|Gimel|Daleth|He\.|Vau|Zain|Cheth|Teth|Jod|Caph|Lamed|Mem|Nun|Samech|Ain|Pe\.|Tsade|Koph|Resch|Schin|Thau)/.test(s.verse.text)) throw new Error(`${s.ref} starts with a heading or acrostic letter - pick another verse`);
+    }
+    const key = `${s.slot}|${s.kind.startsWith('reel-') ? 'reel' : 'post'}`;
+    if (slots.has(key)) throw new Error(`slot ${s.slot} already used by ${slots.get(key)}`);
+    slots.set(key, s.id);
+    console.log(`ok   ${f}${s.verse ? `  [${s.verse.ref}: ${s.verse.text.slice(0, 60)}...]` : ''}`);
+  } catch (e) { bad++; console.log(`FAIL ${f}: ${e.message.replace(/\s+/g, ' ').slice(0, 600)}`); }
+}
+console.log(`\n${files.length - bad}/${files.length} valid`);
+process.exit(bad ? 1 : 0);

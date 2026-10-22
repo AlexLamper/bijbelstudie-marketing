@@ -1,0 +1,50 @@
+{
+  "id": "w45-reel-explainer-thu",
+  "kind": "reel-explainer",
+  "week": "2026-W45",
+  "slot": "2026-11-05T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Paulus schrijft over blijdschap, terwijl hij gevangen zit. Waarom? De context van Filippenzen in 30 seconden.",
+  "hashtags": [
+    "#filippenzen",
+    "#paulus",
+    "#bijbelstudie",
+    "#bijbel"
+  ],
+  "voice": "female",
+  "hook": "Paulus schrijft over blijdschap. Vanuit de gevangenis.",
+  "lines": [
+    {
+      "say": "Filippenzen begon als een bedankbriefje. De gemeente in Filippi had Paulus geld gestuurd.",
+      "screenshot": "08-les-context"
+    },
+    {
+      "say": "Paulus zit op dat moment gevangen. Toch komt het woord blijdschap steeds weer terug."
+    },
+    {
+      "say": "Hij schrijft het zelfs twee keer in een zin.",
+      "verse": "Filippenzen 4:4"
+    },
+    {
+      "say": "Zijn blijdschap hangt niet aan zijn situatie, maar aan Christus."
+    },
+    {
+      "say": "Dit soort context lees je in BijbelStudie naast elk hoofdstuk.",
+      "screenshot": "09-les-lezen"
+    }
+  ],
+  "basedOn": "App's own Bijbelse context text for Filippenzen (08-les-context); Fil 1:13, Fil 4:4",
+  "experiment": {
+    "voice": "female",
+    "hook": "verrassing"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}

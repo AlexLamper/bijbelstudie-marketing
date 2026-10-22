@@ -1,0 +1,29 @@
+{
+  "id": "w45-reel-verse-tue",
+  "kind": "reel-verse",
+  "week": "2026-W45",
+  "slot": "2026-11-03T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Komt herwaarts tot Mij. Een vers om bij stil te staan.\n\nLees Mattheus 11 met uitleg en context in BijbelStudie.",
+  "hashtags": [
+    "#versvandedag",
+    "#bijbel",
+    "#rust",
+    "#bijbelstudie"
+  ],
+  "ref": "Mattheüs 11:28",
+  "photo": 61,
+  "basedOn": "Animated verse format",
+  "experiment": {
+    "feedType": "video-first"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}

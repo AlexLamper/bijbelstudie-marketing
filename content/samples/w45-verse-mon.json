@@ -1,0 +1,21 @@
+{
+  "id": "w45-verse-mon",
+  "kind": "verse-still",
+  "week": "2026-W45",
+  "slot": "2026-11-02T07:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Vers van de dag.\n\nWil je weten wat hier echt staat? Lees Jesaja 40 met uitleg naast de tekst in BijbelStudie - gratis.",
+  "hashtags": [
+    "#versvandedag",
+    "#bijbel",
+    "#statenvertaling",
+    "#bijbelstudie"
+  ],
+  "ref": "Jesaja 40:31",
+  "photo": 181,
+  "basedOn": "Daily verse format; exact SV text from the website data",
+  "experiment": {}
+}

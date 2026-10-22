@@ -1,0 +1,57 @@
+# Every Friday: Claude plans next week (report + specs + comment replies), the engine
+# validates, imports and renders everything, and Alex gets one email to review it.
+name: Plan week
+on:
+  schedule: [{ cron: '0 15 * * 5' }]   # Friday 16:00 (winter) / 17:00 (summer) Amsterdam
+  workflow_dispatch: {}
+concurrency: { group: planner, cancel-in-progress: false }
+permissions: { contents: write }
+env:
+  MONGODB_URI: ${{ secrets.MONGODB_URI }}
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+  GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+  ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+  ELEVENLABS_VOICE_MALE: ${{ secrets.ELEVENLABS_VOICE_MALE }}
+  ELEVENLABS_VOICE_FEMALE: ${{ secrets.ELEVENLABS_VOICE_FEMALE }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+  NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+  DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+      - name: Export context for the planner
+        run: node engine/cli/export-context.mjs
+      - name: Today
+        run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
+      - name: Claude plans the week
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Today is ${{ env.TODAY }}. Read planner/PLAN.md and follow it exactly: report on last week,
+            plan next ISO week, draft comment replies, and run the validator until it passes.
+          claude_args: >-
+            --model claude-sonnet-5-5 --max-turns 120
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
+      - name: Validate (gate)
+        run: node engine/cli/validate.mjs
+      - name: Import into the studio
+        run: node engine/cli/import-queue.mjs
+      - name: Keep a record in git
+        run: |
+          git config user.name "BijbelStudie engine"; git config user.email "studio@bijbelstudie.io"
+          git add content/imported content/used-verses.json content/queue/_errors.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "plan: $(TZ=Europe/Amsterdam date +%G-W%V)" && git push)
+      - run: npx playwright install --with-deps chromium
+      - name: Render and notify
+        run: node engine/cli/render-pending.mjs

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>BijbelStudie test reel</title>
+<style>
+  /* Brand fonts, local copies of the app's own files */
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-Regular.ttf"); font-weight: 400; }
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-SemiBold.ttf"); font-weight: 600; }
+  @font-face { font-family: "Inter"; src: url("../../assets/fonts/Inter-Bold.ttf"); font-weight: 700; }
+  @font-face { font-family: "Lora"; src: url("../../assets/fonts/Lora-Variable.ttf"); font-weight: 400 700; }
+
+  /* Design system tokens (BijbelStudie Design System) */
+  :root {
+    --teal: #0d9488; --teal-dark: #0f766e; --hero-cta: #0d7a66;
+    --ink: #111827; --ink-body: #374151; --ink-muted: #6b7280;
+    --background: #f3f4f6; --surface: #ffffff; --panel-dark: #152229;
+    --line: #e5e7eb;
+    --social-margin: 96px; --reel-safe-y: 250px;
+    --radius-btn: 10px;
+    --shadow-cta: 0 10px 24px -8px rgba(13, 122, 102, 0.55);
+  }
+
+  html, body { margin: 0; padding: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; background: var(--background);
+         font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+  .abs { position: absolute; will-change: transform, opacity; }
+
+  /* Scene 1 - hook */
+  .hook { left: var(--social-margin); top: 690px; width: 824px; }
+  .rule { width: 0; height: 8px; border-radius: 4px; background: var(--teal); margin-bottom: 52px; }
+  .hook-line { font-family: Lora, Georgia, serif; font-weight: 600; font-size: 92px; line-height: 1.08;
+               letter-spacing: -1px; color: var(--ink); }
+  .hook-line.accent { color: var(--teal-dark); margin-top: 28px; }
+
+  /* Scene 2 - phone with a real screen */
+  .caption { left: var(--social-margin); top: 290px; width: 824px; font-weight: 700; font-size: 66px;
+             line-height: 1.1; letter-spacing: -1.2px; color: var(--ink); }
+  .caption span { color: var(--teal-dark); }
+  .phone { left: 240px; top: 560px; width: 600px; height: 1241px; box-sizing: border-box; padding: 14px;
+           background: var(--ink); border-radius: 72px; }
+  .screen { position: relative; width: 572px; height: 1213px; border-radius: 58px; overflow: hidden; background: var(--surface); }
+  .statusbar { height: 44px; display: flex; align-items: center; padding: 0 44px; font-weight: 600; font-size: 19px; color: var(--ink);
+               background: var(--surface); position: relative; z-index: 1; }
+  .shot { display: block; width: 572px; }
+
+  /* Scene 3 - app end card: icon, name, one benefit, one action, store badges */
+  .end { left: 0; top: 0; width: 1080px; height: 1920px; background: var(--panel-dark); }
+  .end-inner { position: absolute; left: 160px; top: 420px; width: 760px; color: #fff;
+               display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .end-inner > * { will-change: transform, opacity; }
+  .icon { width: 208px; height: 208px; display: block; }               /* logo-icon-dark: tile with thin white outline */
+  .wordmark { height: 62px; display: block; margin-top: 40px; }        /* logo-wordmark-white: white + teal */
+  .headline { margin-top: 84px; font-weight: 700; font-size: 80px; line-height: 1.05; letter-spacing: -1.6px; }
+  .sub { margin-top: 26px; font-size: 36px; line-height: 1.4; color: rgba(255,255,255,.8); max-width: 680px; }
+  .cta { margin-top: 64px; background: var(--hero-cta); border-radius: 22px; padding: 34px 84px;
+         font-weight: 700; font-size: 50px; letter-spacing: -0.4px; box-shadow: var(--shadow-cta); }
+  .badges { margin-top: 52px; display: flex; gap: 24px; align-items: center; }
+  .badges img { height: 92px; display: block; }
+  .web { margin-top: 30px; font-size: 30px; color: rgba(255,255,255,.7); }
+</style>
+</head>
+<body>
+<div class="stage">
+  <!-- Scene 1 -->
+  <div class="abs hook" id="hook">
+    <div class="rule" id="rule"></div>
+    <div class="hook-line" id="l1">De Bijbel lezen</div>
+    <div class="hook-line" id="l2">is makkelijk.</div>
+    <div class="hook-line accent" id="l3">Begrijpen niet.</div>
+  </div>
+
+  <!-- Scene 2 -->
+  <div class="abs caption" id="caption">Uitleg naast<br><span>elk hoofdstuk.</span></div>
+  <div class="abs phone" id="phone">
+    <div class="screen">
+      <div class="statusbar">9:41</div>
+      <img class="shot" id="shot" src="../../assets/screenshots/03-commentaar.png" alt="">
+    </div>
+  </div>
+
+  <!-- Scene 3 -->
+  <div class="abs end" id="end">
+    <div class="end-inner">
+      <img class="icon" id="icon" src="../../assets/logos/logo-icon-dark.svg" alt="">
+      <img class="wordmark" id="wordmark" src="../../assets/logos/logo-wordmark-white.svg" alt="BijbelStudie">
+      <div class="headline" id="headline">Begrijp wat je leest.</div>
+      <div class="sub" id="sub">Uitleg, context en grondtekst<br>naast elk hoofdstuk.</div>
+      <div class="cta" id="cta">Download gratis</div>
+      <div class="badges" id="badges">
+        <img src="../../assets/logos/app-store-badge.png" alt="Download in de App Store">
+        <img src="../../assets/logos/play-store-badge.png" alt="Ontdek het op Google Play">
+      </div>
+      <div class="web" id="web">Ook op bijbelstudie.io</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const clamp = x => Math.min(1, Math.max(0, x));
+  const prog = (t, a, b) => clamp((t - a) / (b - a));
+  const out = x => 1 - Math.pow(1 - x, 3);                                   // ease-out cubic
+  const inout = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; // ease-in-out cubic
+  const $ = id => document.getElementById(id);
+  const set = (el, o, y = 0, s = 1) => { el.style.opacity = o; el.style.transform = `translateY(${y}px) scale(${s})`; };
+
+  // Calm motion only: fades, short rises, one slow push. Timeline in seconds (4.0 total).
+  window.render = function (t) {
+    // Scene 1 - hook builds line by line
+    $('rule').style.width = (124 * out(prog(t, 0.05, 0.45))) + 'px';
+    let p;
+    p = out(prog(t, 0.10, 0.55)); set($('l1'), p, (1 - p) * 44);
+    p = out(prog(t, 0.24, 0.69)); set($('l2'), p, (1 - p) * 44);
+    p = out(prog(t, 0.78, 1.20)); set($('l3'), p, (1 - p) * 44);
+    // hook leaves upward
+    const x1 = inout(prog(t, 1.45, 1.80));
+    set($('hook'), 1 - x1, -90 * x1);
+
+    // Scene 2 - caption + phone rise, screen scrolls slowly
+    p = out(prog(t, 1.70, 2.10)); set($('caption'), p, (1 - p) * 36);
+    // the screenshot itself never moves (its tab bar is part of the image); the whole phone gets a slow push
+    p = out(prog(t, 1.50, 2.25));
+    set($('phone'), p > 0 ? 1 : 0, (1 - p) * 1150, 0.96 + 0.04 * p + 0.03 * inout(prog(t, 2.15, 2.85)));
+
+    // Scene 3 - dark end card slides up, content staggers in, the button pulses once
+    const e = inout(prog(t, 2.50, 2.88));
+    $('end').style.transform = `translateY(${(1 - e) * 1920}px)`;
+    p = out(prog(t, 2.70, 3.05)); set($('icon'), p, (1 - p) * 30, 0.9 + 0.1 * p);
+    p = out(prog(t, 2.78, 3.10)); set($('wordmark'), p, (1 - p) * 24);
+    p = out(prog(t, 2.86, 3.18)); set($('headline'), p, (1 - p) * 30);
+    p = out(prog(t, 2.94, 3.26)); set($('sub'), p, (1 - p) * 30);
+    p = out(prog(t, 3.00, 3.32));
+    const pulse = 0.04 * Math.sin(Math.PI * prog(t, 3.45, 3.85));
+    set($('cta'), p, (1 - p) * 30, 1 + pulse);
+    p = out(prog(t, 3.08, 3.40)); set($('badges'), p, (1 - p) * 24);
+    p = out(prog(t, 3.14, 3.46)); set($('web'), p, (1 - p) * 20);
+  };
+
+  // Preview in a normal browser: play the loop
+  if (!navigator.webdriver) {
+    const start = performance.now();
+    const loop = now => { window.render(((now - start) / 1000) % 4); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  } else {
+    window.render(0);
+  }
+</script>
+</body>
+</html>
