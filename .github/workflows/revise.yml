@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       project: { description: 'Project id (empty = default project)', required: false, default: '' }
-permissions: { contents: write, issues: write }
+permissions: { contents: write, issues: write, id-token: write }
 concurrency: { group: 'planner-${{ github.event.client_payload.project || inputs.project || ''default'' }}', cancel-in-progress: false }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
@@ -33,6 +33,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ steps.token.outputs.value }}
+          github_token: ${{ github.token }}   # the planner only writes files; no Claude GitHub App needed
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ env.PROJECT }} (folder projects/${{ env.PROJECT }}/).
             Read planner/REVISE.md and follow it exactly.
