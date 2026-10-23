@@ -150,7 +150,10 @@ T['reel-3d'] = (spec, timing) => {
       for (const o of others) { const h = headOf(o); const seg = focus.clone().sub(cam); const tt = clamp(h.clone().sub(cam).dot(seg) / seg.lengthSq()); const near = cam.clone().add(seg.multiplyScalar(tt)); if (h.distanceTo(near) < .3 && tt > .05 && tt < .95) score += 3; if (h.distanceTo(cam) < .85 || o.x != null && Math.hypot(o.x - cam.x, o.z - cam.z) < .7) score += 6; }
       if (!best || score < best.score) best = { score, dir, d, cam };
     }
-    if (!best) { const dir = prefer || V(0, 0, 1); best = { dir, d: fixedD || 3, cam: focus.clone().add(dir.clone().multiplyScalar(fixedD || 3)).add(V(0, up, 0)) }; }
+    if (!best) {   // nothing fits inside the set: go as far back as the set allows, toward the preferred side
+      const dir = prefer || V(0, 0, 1); let d = 1; while (d < 12 && inBounds(w, focus.clone().add(dir.clone().multiplyScalar(d + .1)))) d += .1;
+      best = { dir, d, cam: focus.clone().add(dir.clone().multiplyScalar(d)).add(V(0, up, 0)) };
+    }
     return best;
   }
   const plans = new Map();   // per shot: the solved framing (deterministic, from the shot's own data)
@@ -160,7 +163,8 @@ T['reel-3d'] = (spec, timing) => {
     // positions at the start and end of the shot (walkers move): frame both
     const sA = actorsAt(s, s.start + .01), sB = actorsAt(s, s.end - .01); facing(s, sA); facing(s, sB);
     const pick = (list, id) => list.find(x => x.a.id === id);
-    const pts = (ids, from = .25, to = .9, wd = 0) => ids.flatMap(id => [sA, sB].map(l => pick(l, id)).filter(Boolean).flatMap(st => { const h = headOf(st); const o = [h.clone().add(V(0, from, 0)), h.clone().add(V(0, -to, 0))]; if (wd) o.push(h.clone().add(V(wd, -.4, 0)), h.clone().add(V(-wd, -.4, 0)), h.clone().add(V(0, -.4, wd)), h.clone().add(V(0, -.4, -wd))); return o; }));
+    // frame where people end up (a walker may enter the frame; that reads naturally)
+    const pts = (ids, from = .25, to = .9, wd = 0) => ids.flatMap(id => [sB].map(l => pick(l, id)).filter(Boolean).flatMap(st => { const h = headOf(st); const o = [h.clone().add(V(0, from, 0)), h.clone().add(V(0, -to, 0))]; if (wd) o.push(h.clone().add(V(wd, -.4, 0)), h.clone().add(V(-wd, -.4, 0)), h.clone().add(V(0, -.4, wd)), h.clone().add(V(0, -.4, -wd))); return o; }));
     let P = null;
     const ids = states.map(x => x.a.id);
     if (type === 'wide' || !on) {
@@ -214,8 +218,6 @@ T['reel-3d'] = (spec, timing) => {
       else if (type === 'orbit') { const rel = pos.clone().sub(target); rel.applyAxisAngle(V(0, 1, 0), (.5 - inout(k)) * .9); pos = target.clone().add(rel); }
       else if (type === 'wide') pos.add(toward.clone().multiplyScalar(.08 * inout(k)));
       else pos.add(toward.clone().multiplyScalar(.05 * k));
-      // follow walkers: keep the focus on the moving people
-      if (states.some(x => x.walk)) { const live = states.map(headOf); const c = live.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / live.length); target.lerp(c.add(V(0, -.3, 0)), .5); }
     }
     if (w.bounds) { pos.x = clamp(pos.x, ...w.bounds.x); pos.z = clamp(pos.z, ...w.bounds.z); pos.y = clamp(pos.y, ...(w.bounds.y || [.3, 50])); }
     const hs = type === 'phone' ? .0015 : .01;

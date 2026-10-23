@@ -40,8 +40,8 @@ defineSet('slaapkamer', {
     bed: { p: [-1.05, -.55], yaw: Math.PI / 2 - .35, seat: .5, base: 'sit' },
     'bed-liggen': { p: [-1.75, -.9], yaw: 0, base: 'lie' },
     bureau: { p: [.75, -1.35], yaw: Math.PI - .5, seat: .48, base: 'sit' },
-    midden: { p: [.3, .2], yaw: -.25 },
-    deur: { p: [1.9, .9], yaw: -1.2 },
+    midden: { p: [.05, .2], yaw: -2.0 },
+    deur: { p: [2.2, -1.1], yaw: -1.9 },
     raam: { p: [-.55, -1.75], yaw: -.3 },
   },
   build({ time = 'nacht' } = {}) {
@@ -77,7 +77,7 @@ defineSet('woonkamer', {
     'bank-rechts': { p: [.42, -1.42], yaw: -.2, seat: .45, base: 'sit' },
     stoel: { p: [1.75, -.35], yaw: -1.35, seat: .46, base: 'sit' },
     midden: { p: [.1, .25], yaw: 0 },
-    deur: { p: [2.2, 1.2], yaw: -1.4 },
+    deur: { p: [2.4, -1.3], yaw: -1.9 },
     raam: { p: [-2.1, .2], yaw: Math.PI / 2 },
   },
   build({ time = 'dag' } = {}) {
