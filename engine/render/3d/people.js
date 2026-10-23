@@ -96,7 +96,10 @@ export function person(lookKey, { seed = lookKey } = {}) {
   // hair
   const [hs] = L.hair || ['kaal'];
   const capG = (k = 1.07, len = .52) => rot(scl(mesh(G.cap(headR, Math.PI * len, 0, 36, 18), hair), k, k * 1.04, k), -.38, 0, 0);
-  if (hs === 'kort') head.add(at(capG(1.07, .5), 0, .006, -.012));
+  if (hs === 'kort') {   // cap + a few tufts at the front, so it reads as hair, not a helmet
+    head.add(at(capG(1.07, .5), 0, .006, -.012));
+    const rr = rng(seed + 'kuif'); for (let i = 0; i < 4; i++) head.add(rot(scl(at(mesh(G.sphere(.075, 12, 8), hair), (i - 1.5) * .06 + rr() * .02, .17 + rr() * .02, .1 - Math.abs(i - 1.5) * .025), 1.1, .7, 1), -.5 + rr() * .2, 0, (i - 1.5) * .25));
+  }
   if (hs === 'lang') { head.add(at(capG(1.08, .52), 0, .006, -.01)); head.add(scl(at(mesh(G.capsule(.17, .24, 8, 20), hair), 0, -.17, -.06), 1.2, 1, .62)); }
   if (hs === 'knot') { head.add(at(capG(1.06, .5), 0, .006, -.012)); head.add(at(mesh(G.sphere(.085, 20, 14), hair), 0, .17, -.12)); }
   if (hs === 'krul') { head.add(at(capG(1.08, .5), 0, .006, -.012)); const rr = rng(seed + 'krul'); for (let i = 0; i < 22; i++) { const a = rr() * Math.PI * 2, b = rr() * Math.PI * .42; const d = headR * 1.08; head.add(at(mesh(G.sphere(.045 + rr() * .02, 12, 8), hair), Math.sin(b) * Math.cos(a) * d, Math.cos(b) * d * .98 + .01, Math.sin(b) * Math.sin(a) * d - .04 - (Math.sin(a) > 0 ? .0 : .02))); } }
@@ -270,7 +273,7 @@ function pose(A, t, s) {
   switch (act) {
     case 'read': armL = [-.62, 0, -.22]; armR = [-.62, 0, .22]; elL = elR = -1.2; headX = .38; break;
     case 'scroll': armL = [-.6, 0, -.1]; armR = [-.6, 0, .1]; elL = elR = -1.15; headX = .32; break;
-    case 'phone': armR = [-.35, -.2, -.05]; elR = -1.9; headX = .3; A.props.phone.rotation.set(-1.35, .0, 0); A.props.phone.position.set(0, -.08, .03); break;
+    case 'phone': armR = [-.35, -.2, -.05]; elR = -1.9; headX = .3; A.props.phone.rotation.set(-1.35, .0, Math.PI); A.props.phone.position.set(0, -.08, .03); break;
     case 'show-phone': armR = [-1.25, .15, -.1]; elR = -.35; A.props.phone.rotation.set(-1.6, Math.PI, 0); A.props.phone.position.set(0, -.08, .04); break;
     case 'point': armR = [-1.45, -.15, -.05]; elR = -.08; break;
     case 'wave': armR = [0, 0, -2.5]; elR = -.5 - .45 * (.5 + .5 * Math.sin(t * 9)); break;

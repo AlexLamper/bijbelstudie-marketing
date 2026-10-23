@@ -44,6 +44,8 @@ T['reel-3d'] = (spec, timing) => {
       const layer = el('div', 'abs full'); css(layer, { zIndex: 3, pointerEvents: 'none', display: 'none' });   // a world's own HTML labels
       const w = def.build({ time: s.time, weather: s.weather, seed: spec.id + key, places: s.places, ctx, layer, shot: s });
       w.def = def; w.actors = {}; w.layer = layer; worlds.set(key, w);
+      // a soft light from the camera, so faces always read (no shadow, cheap)
+      w.camFill = new THREE.DirectionalLight('#fff4e6', def.camFill ?? .55); w.scene.add(w.camFill, w.camFill.target);
     }
     const w = worlds.get(key);
     for (const a of s.actors || []) if (!w.actors[a.id]) {
@@ -107,6 +109,9 @@ T['reel-3d'] = (spec, timing) => {
     return out;
   }
   const headOf = st => V(st.x, st.y + (HEAD[st.base] ?? 1.6), st.z);
+  /** Where the face points: toward what the person looks at (the head turns), else the body's facing. */
+  const faceDir = st => { if (st.look) { const d = st.look.clone().sub(headOf(st)); d.y = 0; if (d.lengthSq() > .01) { const f = fwd(st.yaw); return f.multiplyScalar(.35).add(d.normalize().multiplyScalar(.65)).normalize(); } } return fwd(st.yaw); };
+  const GAZE_DOWN = ['read', 'scroll', 'phone', 'pray', 'sleep'];
   const fwd = yaw => V(Math.sin(yaw), 0, Math.cos(yaw));
 
   function mouth(sg, t) {
@@ -140,9 +145,9 @@ T['reel-3d'] = (spec, timing) => {
       const cam = focus.clone().add(dir.clone().multiplyScalar(d)).add(V(0, up, 0));
       if (!inBounds(w, cam)) continue;
       let score = d * .35;
-      for (const [st, wt] of faces) { const f = fwd(st.yaw), to = cam.clone().sub(headOf(st)); to.y = 0; to.normalize(); const dot = f.dot(to); score += wt * (dot < .25 ? (.25 - dot) * 6 : 0) + wt * (1 - dot) * .8; }
+      for (const [st, wt] of faces) { const f = faceDir(st), to = cam.clone().sub(headOf(st)); to.y = 0; to.normalize(); const dot = f.dot(to); score += wt * (dot < .25 ? (.25 - dot) * 6 : 0) + wt * (1 - dot) * .8; }
       if (prefer) score += (1 - dir.dot(prefer)) * preferW;
-      for (const o of others) { const h = headOf(o); const seg = focus.clone().sub(cam); const tt = clamp(h.clone().sub(cam).dot(seg) / seg.lengthSq()); const near = cam.clone().add(seg.multiplyScalar(tt)); if (h.distanceTo(near) < .3 && tt > .05 && tt < .95) score += 3; if (h.distanceTo(cam) < 1.1 || o.x != null && Math.hypot(o.x - cam.x, o.z - cam.z) < .7) score += 6; }
+      for (const o of others) { const h = headOf(o); const seg = focus.clone().sub(cam); const tt = clamp(h.clone().sub(cam).dot(seg) / seg.lengthSq()); const near = cam.clone().add(seg.multiplyScalar(tt)); if (h.distanceTo(near) < .3 && tt > .05 && tt < .95) score += 3; if (h.distanceTo(cam) < .85 || o.x != null && Math.hypot(o.x - cam.x, o.z - cam.z) < .7) score += 6; }
       if (!best || score < best.score) best = { score, dir, d, cam };
     }
     if (!best) { const dir = prefer || V(0, 0, 1); best = { dir, d: fixedD || 3, cam: focus.clone().add(dir.clone().multiplyScalar(fixedD || 3)).add(V(0, up, 0)) }; }
@@ -177,7 +182,7 @@ T['reel-3d'] = (spec, timing) => {
       const points = pts([on.a.id], close ? .24 : .28, close ? .3 : .8);
       const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
       const fov = close ? 30 : type === 'low' ? 42 : 36;
-      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: type === 'low' ? -.6 : type === 'top' ? 2.6 : close ? .02 : .15, fov, minD: close ? 1.55 : 1.9, others: states.filter(x => x.a.id !== on.a.id) });
+      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: type === 'low' ? -.6 : type === 'top' ? 2.6 : close ? .02 : .15, fov, minD: close ? 1.75 : 1.9, others: states.filter(x => x.a.id !== on.a.id) });
       P = { focus, cam: sol.cam, fov, dir: sol.dir, d: sol.d };
     }
     if (window.__debug3d) console.log('plan', s.i, type, on?.a.id, JSON.stringify({ cam: P.cam.toArray().map(x => +x.toFixed(2)), focus: P.focus.toArray().map(x => +x.toFixed(2)), yaws: sA.map(x => [x.a.id, +x.yaw.toFixed(2), +x.x.toFixed(2), +x.z.toFixed(2)]) }));
@@ -225,6 +230,7 @@ T['reel-3d'] = (spec, timing) => {
       const a = st.a; const speaking = !!(talkingNow && sg && sg.by === a.id);
       let look = null; const find = id => states.find(o => o.a.id === id);
       if (a.face === 'camera') look = t == null ? null : camera.position.clone();
+      else if (!a.face && GAZE_DOWN.includes(a.do)) look = null;   // eyes on the book or phone
       else if (a.face && find(a.face)) look = headOf(find(a.face));
       else if (a.face && s.world.def.spots[a.face]) { const sp = s.world.def.spots[a.face]; look = V(sp.p[0], 1.4, sp.p[1]); }
       else if (sg?.by && sg.by !== a.id && find(sg.by)) look = headOf(find(sg.by));
@@ -256,6 +262,7 @@ T['reel-3d'] = (spec, timing) => {
     // people who look into the camera: now that it is placed
     const atCam = states.filter(st => st.a.face === 'camera');
     if (atCam.length) { for (const st of atCam) { st.look = camera.position.clone(); if (st.base === 'stand' && !st.walk) { const d = st.look.clone().sub(V(st.x, 0, st.z)); st.yaw = Math.atan2(d.x, d.z); } } poseAll(); }
+    w.camFill.position.copy(camera.position); w.camFill.target.position.copy(camera.position).add(camera.getWorldDirection(V()));
     if (w.overlay) w.overlay(t, s, camera);
     r.render(w.scene, camera);
     // overlays
