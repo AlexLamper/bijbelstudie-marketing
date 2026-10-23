@@ -5,7 +5,7 @@ import { Card, Empty, PageHeader } from '@/components/ui';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Experimenten' };
 
-type Row = { value: string; n: number; mean: number; avgViews: number | null; pBest: number };
+type Row = { value: string; n: number; mean: number; avgViews: number | null; pBest: number; prior?: [number, number] };
 const ORDER = ['format', 'postFormat', 'voice', 'voiceStyle', 'music', 'style', 'captions', 'hook', 'topic', 'length', 'time'];
 const ago = (d: Date) => { const h = Math.round((Date.now() - new Date(d).getTime()) / 3600e3); return h < 1 ? 'zojuist' : h < 48 ? `${h} uur geleden` : `${Math.round(h / 24)} dagen geleden`; };
 
@@ -55,7 +55,7 @@ export default async function Experiments({ params }: { params: Promise<{ projec
                       const score = Math.round(r.mean * 100);
                       return (
                         <tr key={r.value} className="border-t border-line transition hover:bg-bg/60">
-                          <td className="px-4 py-2 font-medium">{traitValue(t, r.value)}</td>
+                          <td className="px-4 py-2 font-medium">{traitValue(t, r.value)}{r.prior && <span className="ml-2 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent" title="Krijgt een voorsprong omdat jij dit verwacht te werken (project.json experimentPriors). Echte resultaten wegen snel zwaarder.">voorkeur</span>}</td>
                           <td className="px-2 py-2 text-right tabular-nums text-ink-muted">{r.n}</td>
                           <td className="px-2 py-2">
                             <div className="flex items-center gap-2"><div className="relative h-2 w-20 overflow-hidden rounded-full bg-bg ring-1 ring-line">

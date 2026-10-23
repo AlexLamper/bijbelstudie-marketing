@@ -2,6 +2,7 @@
 // music moods in assets/music. Shared by the render job, the stats job and the planner context.
 import { musicLibrary } from './render/music.mjs';
 import { scoreboard, trials, catalogue } from './experiments.mjs';
+import { project } from './project.mjs';
 
 /** Voice test set from Mongo settings.voices: [{ key, provider, id, name, gender }]. Also made available to tts. */
 export async function loadVoices(d) {
@@ -27,7 +28,7 @@ export async function updateBoard(d, { seed } = {}) {
   const items = await d.collection('items').find({ publishedAt: { $gte: since } }).toArray();
   const voices = voiceKeys(await loadVoices(d));
   const rows = trials(items);
-  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods() }), { seed: seed ?? Math.floor(Date.now() / 864e5) });
+  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods() }), { seed: seed ?? Math.floor(Date.now() / 864e5), priors: project().experimentPriors });
   const doc = { board, trials: rows.length, items: new Set(rows.map(r => r.id)).size, voices, moods: musicMoods(), at: new Date() };
   await d.collection('experiments').updateOne({ _id: 'board' }, { $set: doc }, { upsert: true });
   return { ...doc, rows };

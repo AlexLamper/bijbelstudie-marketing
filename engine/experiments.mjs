@@ -88,15 +88,18 @@ function gamma(r, k) { if (k < 1) return gamma(r, k + 1) * Math.pow(r(), 1 / k);
 const beta = (r, a, b) => { const x = gamma(r, a); return x / (x + gamma(r, b)); };
 
 /** Per trait and value: n, mean score, average views, P(best). values = the catalogue to compare (untested ones included). */
-export function scoreboard(rows, catalogue, { seed = 1, draws = 4000 } = {}) {
+// priors: { trait: { value: [a, b] } } from project.json "experimentPriors" - a head start for what Alex
+// expects to work (e.g. [3, 1] = counts as 2 good results before any data). Real results outweigh it soon.
+export function scoreboard(rows, catalogue, { seed = 1, draws = 4000, priors = {} } = {}) {
   const r = rng(seed); const out = {};
   for (const [trait, values] of Object.entries(catalogue)) {
-    const stats = Object.fromEntries(values.map(v => [v, { n: 0, a: 1, b: 1, views: 0 }]));
+    const prior = v => { const p = priors?.[trait]?.[v]; return Array.isArray(p) && p.length === 2 && p.every(x => x > 0) ? p : null; };
+    const stats = Object.fromEntries(values.map(v => [v, { n: 0, a: prior(v)?.[0] ?? 1, b: prior(v)?.[1] ?? 1, views: 0 }]));
     const key = trait === 'postFormat' ? 'format' : trait;
     for (const row of rows) { const v = row.traits[key]; if (v == null || !stats[v]) continue; const s = stats[v]; s.n++; s.a += row.score; s.b += 1 - row.score; s.views += row.views; }
     const wins = Object.fromEntries(values.map(v => [v, 0]));
     for (let i = 0; i < draws; i++) { let best = null, bv = -1; for (const v of values) { const x = beta(r, stats[v].a, stats[v].b); if (x > bv) { bv = x; best = v; } } wins[best]++; }
-    out[trait] = values.map(v => ({ value: v, n: stats[v].n, mean: +(stats[v].a / (stats[v].a + stats[v].b)).toFixed(3), avgViews: stats[v].n ? Math.round(stats[v].views / stats[v].n) : null, pBest: +(wins[v] / draws).toFixed(3), p: wins[v] / draws }))
+    out[trait] = values.map(v => ({ value: v, n: stats[v].n, mean: +(stats[v].a / (stats[v].a + stats[v].b)).toFixed(3), avgViews: stats[v].n ? Math.round(stats[v].views / stats[v].n) : null, pBest: +(wins[v] / draws).toFixed(3), p: wins[v] / draws, ...(prior(v) ? { prior: prior(v) } : {}) }))
       .sort((x, y) => y.pBest - x.pBest);
   }
   return out;
@@ -105,9 +108,9 @@ export function scoreboard(rows, catalogue, { seed = 1, draws = 4000 } = {}) {
 /** Divide `slots` over the values of one trait: explore share evenly, the rest by P(best). Largest remainder. */
 export function allocate(rows, slots, explore, { minN = 0 } = {}) {
   if (!rows?.length || slots <= 0) return {};
-  // exploit only what has a track record (minN results), when anything has one
+  // exploit only what has a track record (minN results) or a prior from Alex, when anything has one
   const P = r => r.p ?? r.pBest;
-  const known = rows.filter(r => r.n >= minN);
+  const known = rows.filter(r => r.n >= minN || r.prior);
   let base = minN && known.length ? known : rows;
   if (!base.reduce((n, r) => n + P(r), 0)) base = rows;                 // nothing known has a chance: use everything
   const sum = base.reduce((n, r) => n + P(r), 0) || 1;
@@ -145,7 +148,7 @@ export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPos
   const fmt = board.format; const voiced = reels;
   return {
     recipe: { mainPerDay, extraPerDay, feedPosts, days },
-    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(allocate(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => (b.n >= 4) - (a.n >= 4) || b.pBest - a.pBest), Math.ceil(main * .55)) },
+    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(allocate(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => b.pBest - a.pBest), Math.ceil(main * .55)) },
     extraReels: { slots: extra, platforms: 'tiktok, youtube', format: allocate(fmt, extra, .5) },
     feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: allocate(board.postFormat, feedPosts, .35) },
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)

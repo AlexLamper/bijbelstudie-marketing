@@ -75,6 +75,14 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
 - Under 260 characters. No verse starting with a heading ("Een psalm van David"), no acrostic letters (Klaagliederen, Psalm 119 headings), no verse that misleads without its context.
 - Never a verse from `content/used-verses.json`, never twice in one batch (also not as both still and reel).
 
+## Alex's favourites
+
+Alex likes the animated formats most - `reel-story` (maps, timelines, moving scenes) and `reel-kinetic`
+(big moving words) - and expects them to work best. `project.json` `experimentPriors` gives them a head
+start in the allocation (Beta(3,1): two good results before any data), so they get most main slots until
+the numbers say otherwise; the other formats keep being tested in the extras. Put your best work into
+these two: real motion in every scene, a strong first second, no static slides.
+
 ## No repeats
 
 Alex does not want repetitive videos. The validator (and the import after it) enforces this with
