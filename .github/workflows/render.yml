@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
+      requeue: { description: 'Render again first: stuck and/or voiced-before=<ISO time> (engine/cli/requeue.mjs)', required: false, default: '' }
 concurrency: { group: render, cancel-in-progress: false }
 permissions: { contents: write, issues: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
@@ -29,6 +30,10 @@ jobs:
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           git add -A projects/*/content/queue projects/*/content/imported
           git diff --cached --quiet || (git commit -m "import: $(date -u +%F)" && git pull --rebase --autostash -q && git push)
+      - name: Put items back in the queue
+        if: ${{ inputs.requeue }}
+        env: { SECRETS: '${{ toJSON(secrets) }}', REQUEUE: '${{ inputs.requeue }}' }
+        run: node engine/cli/each.mjs engine/cli/requeue.mjs "$REQUEUE" 2>&1 | tee -a run.log
       - name: Render and notify
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/each.mjs engine/cli/render-pending.mjs 2>&1 | tee -a run.log
