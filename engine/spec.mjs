@@ -178,11 +178,16 @@ export const KINDS = Object.keys(SCHEMAS);
 export const REEL_KINDS = KINDS.filter(k => k.startsWith('reel-'));
 export const isVideo = kind => kind.startsWith('reel-');
 export const VOICE_REQUIRED = ['reel-explainer', 'reel-story'];
+/** Kinds that have a template (engine/render/templates/*.js register T['kind']). */
+const TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'render', 'templates');
+export const RENDERABLE = existsSync(TEMPLATES_DIR) ? [...new Set(readdirSync(TEMPLATES_DIR).filter(f => f.endsWith('.js'))
+  .flatMap(f => [...readFileSync(join(TEMPLATES_DIR, f), 'utf8').matchAll(/T\['([a-z-]+)'\]\s*=[^=]/g)].map(m => m[1])))] : KINDS;
 
 /** Validate + enrich: fills exact verse text so templates and reviewers see the real words. */
 export async function prepare(raw) {
   const schema = SCHEMAS[raw?.kind];
   if (!schema) throw new Error(`Unknown kind "${raw?.kind}". Use one of: ${KINDS.join(', ')}`);
+  if (!RENDERABLE.includes(raw.kind)) throw new Error(`"${raw.kind}" has no template yet - use one of: ${RENDERABLE.join(', ')}`);
   const spec = schema.parse(raw);
   const { getVerse } = await import('./verses.mjs');
   if (spec.ref) spec.verse = getVerse(spec.ref);

@@ -10,7 +10,7 @@
 // 3. Per trait value a Beta(1 + sum of scores, 1 + sum of (1 - score)) belief; Thompson sampling gives
 //    the chance that each value is the best. Next week's slots: a fixed share for exploring (spread
 //    evenly, so new things keep getting tried) + the rest in proportion to that chance.
-import { HOOKS, TOPICS, STYLES, MOODS, CAPTIONS, VOICE_STYLES, REEL_KINDS, VOICE_REQUIRED, isVideo } from './spec.mjs';
+import { HOOKS, TOPICS, STYLES, MOODS, CAPTIONS, VOICE_STYLES, REEL_KINDS, VOICE_REQUIRED, RENDERABLE, isVideo } from './spec.mjs';
 
 export const POST_KINDS = ['post-spotlight', 'post-statement', 'carousel'];
 export const DEFAULT_STYLE = { 'reel-explainer': 'light', 'reel-demo': 'light', 'reel-verse': 'photo', 'reel-kinetic': 'dark', 'reel-quiz': 'light', 'reel-list': 'light', 'reel-story': 'dark', carousel: 'light' };
@@ -128,7 +128,7 @@ export function capAllocation(alloc, rows, cap) {
 /** Everything that can be tested (the catalogue), given the voices and music that exist. */
 export function catalogue({ voices = ['male', 'female'], moods = [] } = {}) {
   return {
-    format: REEL_KINDS, postFormat: POST_KINDS,
+    format: REEL_KINDS.filter(k => RENDERABLE.includes(k)), postFormat: POST_KINDS.filter(k => RENDERABLE.includes(k)),
     style: STYLES, voice: [...voices, 'geen'], voiceStyle: VOICE_STYLES,
     music: ['none', ...MOODS.filter(m => m !== 'none' && moods.includes(m))], captions: CAPTIONS,
     hook: HOOKS, topic: TOPICS,
