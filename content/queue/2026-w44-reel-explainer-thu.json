@@ -1,0 +1,51 @@
+{
+  "id": "2026-w44-reel-explainer-thu",
+  "kind": "reel-explainer",
+  "week": "2026-W44",
+  "slot": "2026-10-29T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "voice": "male",
+  "caption": "In de Statenvertaling staat soms HEERE in hoofdletters, en soms Heere. Dat is geen toeval. Het verschil zit in het Hebreeuws.\n\nMet BijbelStudie zie je per woord wat er in de grondtekst staat.",
+  "hashtags": [
+    "#statenvertaling",
+    "#hebreeuws",
+    "#bijbelstudie",
+    "#bijbel"
+  ],
+  "hook": "Waarom staat HEERE soms in hoofdletters?",
+  "lines": [
+    {
+      "say": "In de Statenvertaling is dat geen toeval."
+    },
+    {
+      "say": "HEERE in hoofdletters staat waar in het Hebreeuws de naam van God staat. Vier letters: J, H, W, H."
+    },
+    {
+      "say": "Heere met kleine letters vertaalt een ander woord: Adonai. Dat betekent Heer."
+    },
+    {
+      "say": "In Psalm acht staan ze zelfs naast elkaar.",
+      "verse": "Psalmen 8:2"
+    },
+    {
+      "say": "Met de grondtekst in BijbelStudie zie je per woord wat er in het Hebreeuws staat.",
+      "screenshot": "04-grondtekst"
+    }
+  ],
+  "basedOn": "SV-conventie HEERE (JHWH) vs Heere (Adonai); Psalmen 8:2; functie grondtekst (Pro)",
+  "experiment": {
+    "feedType": "video-first",
+    "voice": "male",
+    "hook": "grondtekst"
+  },
+  "endCard": {
+    "headline": "Zie wat er echt staat.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

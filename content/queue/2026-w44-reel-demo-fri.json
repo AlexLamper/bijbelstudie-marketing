@@ -1,0 +1,45 @@
+{
+  "id": "2026-w44-reel-demo-fri",
+  "kind": "reel-demo",
+  "week": "2026-W44",
+  "slot": "2026-10-30T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Wat blijft er hangen van wat je leest? Markeer wat je raakt, stel je vraag over het hoofdstuk en zie je boom groeien bij elk hoofdstuk dat je bestudeert.\n\nDownload BijbelStudie gratis. Tip: via je profiel geef je een vriend een week Pro cadeau.",
+  "hashtags": [
+    "#bijbellezen",
+    "#bijbelstudie",
+    "#bijbel",
+    "#stilletijd"
+  ],
+  "hook": "Wat blijft er hangen van wat je leest?",
+  "scenes": [
+    {
+      "screenshot": "14-markeringen",
+      "caption": "Markeer wat je raakt."
+    },
+    {
+      "screenshot": "06-assistent",
+      "caption": "Stel je vraag over het hoofdstuk."
+    },
+    {
+      "screenshot": "13-boom-groeide",
+      "caption": "Zie je boom groeien bij elk hoofdstuk."
+    }
+  ],
+  "basedOn": "Functies markeringen, assistent, Levensboom; referral een week Pro cadeau",
+  "experiment": {
+    "feedType": "video-first",
+    "hook": "vraag",
+    "note": "referral in caption"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

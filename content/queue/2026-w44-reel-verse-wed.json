@@ -1,0 +1,30 @@
+{
+  "id": "2026-w44-reel-verse-wed",
+  "kind": "reel-verse",
+  "week": "2026-W44",
+  "slot": "2026-10-28T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Vrees niet, want Ik ben met u. Een vers om mee te nemen de avond in.\n\nLees Jesaja 41 met uitleg en context in BijbelStudie. Gratis te downloaden.",
+  "hashtags": [
+    "#versvandedag",
+    "#jesaja",
+    "#bijbel",
+    "#bijbelstudie"
+  ],
+  "ref": "Jesaja 41:10",
+  "photo": 166,
+  "basedOn": "Geanimeerd vers",
+  "experiment": {
+    "feedType": "video-first"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

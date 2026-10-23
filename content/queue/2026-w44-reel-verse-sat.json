@@ -1,0 +1,30 @@
+{
+  "id": "2026-w44-reel-verse-sat",
+  "kind": "reel-verse",
+  "week": "2026-W44",
+  "slot": "2026-10-31T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Ik ben het licht der wereld. Een vers voor de zaterdagavond.\n\nLees Johannes 8 met uitleg en context in BijbelStudie. Gratis te downloaden.",
+  "hashtags": [
+    "#versvandedag",
+    "#johannes",
+    "#bijbel",
+    "#bijbelstudie"
+  ],
+  "ref": "Johannes 8:12",
+  "photo": 52,
+  "basedOn": "Geanimeerd vers",
+  "experiment": {
+    "feedType": "video-first"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

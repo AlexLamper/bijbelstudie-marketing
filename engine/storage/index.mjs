@@ -19,12 +19,13 @@ async function studio(path, body) {
 export async function upload(file, key) {
   const p = storageProvider();
   if (p === 'vercel-blob' || p === 'vercel-blob-via-studio') {
-    const { put } = await import('@vercel/blob');
     const { readFileSync } = await import('node:fs');
     const pathname = `media/${key}`;
     const contentType = file.endsWith('.mp4') ? 'video/mp4' : file.endsWith('.png') ? 'image/png' : 'image/jpeg';
+    // server put with the read-write token, or the client put with a one-file token minted by the studio
+    const { put } = p === 'vercel-blob' ? await import('@vercel/blob') : await import('@vercel/blob/client');
     const token = p === 'vercel-blob' ? env.BLOB_READ_WRITE_TOKEN : (await studio('blob-token', { pathname })).token;
-    const blob = await put(pathname, readFileSync(file), { access: 'public', contentType, addRandomSuffix: false, token });
+    const blob = await put(pathname, readFileSync(file), { access: 'public', contentType, token, ...(p === 'vercel-blob' ? { addRandomSuffix: false } : {}) });
     return blob.url;
   }
   if (p === 'r2') return (await import('./r2.mjs')).upload(file, key);

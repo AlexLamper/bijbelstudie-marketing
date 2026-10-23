@@ -1,0 +1,23 @@
+{
+  "id": "2026-w44-post-statement-sun",
+  "kind": "post-statement",
+  "week": "2026-W44",
+  "slot": "2026-11-01T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Een moeilijk hoofdstuk, een vraag waar je niet uitkomt. Je hoeft het niet alleen uit te zoeken: in BijbelStudie staan uitleg, context en grondtekst naast de tekst.\n\nGratis te downloaden.",
+  "hashtags": [
+    "#bijbelstudie",
+    "#bijbellezen",
+    "#bijbel"
+  ],
+  "line": "Je hoeft het niet alleen uit te zoeken.",
+  "sub": "Uitleg, context en grondtekst - BijbelStudie",
+  "basedOn": "Eigen onboardingtekst 'Je hoeft het niet alleen uit te zoeken'",
+  "experiment": {
+    "feedType": "statement",
+    "hook": "herkenning"
+  }
+}

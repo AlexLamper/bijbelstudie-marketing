@@ -1,0 +1,25 @@
+{
+  "id": "2026-w44-post-spotlight-sat",
+  "kind": "post-spotlight",
+  "week": "2026-W44",
+  "slot": "2026-10-31T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Lees je hoofdstuk met uitleg ernaast. KingComments staat gratis naast elk hoofdstuk; met Pro ook Matthew Henry en Dachsel.\n\nTip: via je profiel geef je een vriend een week Pro cadeau. Download BijbelStudie gratis.",
+  "hashtags": [
+    "#bijbelstudie",
+    "#bijbellezen",
+    "#bijbel"
+  ],
+  "screenshot": "03-commentaar",
+  "headline": "Lees je hoofdstuk met uitleg ernaast.",
+  "sub": "KingComments gratis naast elk hoofdstuk. Met Pro ook Matthew Henry en Dachsel.",
+  "basedOn": "Functie commentaar; referral een week Pro",
+  "experiment": {
+    "feedType": "spotlight",
+    "hook": "waardebelofte",
+    "note": "referral in caption"
+  }
+}

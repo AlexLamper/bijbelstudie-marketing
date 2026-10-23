@@ -1,0 +1,51 @@
+{
+  "id": "2026-w44-reel-explainer-mon",
+  "kind": "reel-explainer",
+  "week": "2026-W44",
+  "slot": "2026-10-26T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "voice": "female",
+  "caption": "De Psalmen zijn eigenlijk een liedboek. En de opschriften vertellen vaak wanneer een psalm ontstond. Psalm 3 lees je daarna nooit meer hetzelfde.\n\nDownload BijbelStudie gratis en lees elk hoofdstuk met achtergrond ernaast.",
+  "hashtags": [
+    "#psalmen",
+    "#bijbel",
+    "#bijbelstudie",
+    "#david"
+  ],
+  "hook": "De Psalmen zijn eigenlijk een liedboek.",
+  "lines": [
+    {
+      "say": "Het woord psalm komt van een Grieks woord voor een lied, gezongen bij snarenspel."
+    },
+    {
+      "say": "Veel psalmen beginnen met een opschrift. Daarin staat wie hem schreef, en soms ook wanneer.",
+      "verse": "Psalmen 3:1"
+    },
+    {
+      "say": "Psalm drie schreef David toen hij moest vluchten voor zijn eigen zoon Absalom."
+    },
+    {
+      "say": "Lees de psalm met dat in je achterhoofd, en elk vers komt anders binnen."
+    },
+    {
+      "say": "In BijbelStudie zie je die achtergrond naast elk hoofdstuk.",
+      "screenshot": "05-info"
+    }
+  ],
+  "basedOn": "Psalmen 3:1 (SV-opschrift); betekenis van psalmos; functie Info per bijbelboek",
+  "experiment": {
+    "feedType": "video-first",
+    "voice": "female",
+    "hook": "inzicht"
+  },
+  "endCard": {
+    "headline": "Lees met achtergrond.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

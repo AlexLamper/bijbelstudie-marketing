@@ -1,0 +1,24 @@
+{
+  "id": "2026-w44-post-spotlight-tue",
+  "kind": "post-spotlight",
+  "week": "2026-W44",
+  "slot": "2026-10-27T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Wat staat er eigenlijk in het Hebreeuws? Met BijbelStudie Pro tik je op een vers en zie je elk woord in de grondtekst, met transliteratie, betekenis en Strong-nummer.\n\nLezen, studies en uitleg blijven gratis. Download BijbelStudie.",
+  "hashtags": [
+    "#grondtekst",
+    "#hebreeuws",
+    "#bijbelstudie"
+  ],
+  "screenshot": "04-grondtekst",
+  "headline": "Wat staat er eigenlijk in het Hebreeuws?",
+  "sub": "Zie elk woord in de grondtekst, met betekenis en Strong-nummer.",
+  "basedOn": "Functie grondtekst (Pro); doelgroep verdieper",
+  "experiment": {
+    "feedType": "spotlight",
+    "hook": "grondtekst"
+  }
+}

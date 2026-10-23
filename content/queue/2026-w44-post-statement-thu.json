@@ -1,0 +1,23 @@
+{
+  "id": "2026-w44-post-statement-thu",
+  "kind": "post-statement",
+  "week": "2026-W44",
+  "slot": "2026-10-29T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Bijbellezen hoeft geen plicht te zijn om af te vinken. Als je begrijpt wat er staat, wordt het iets waar je naar uitkijkt. Daarvoor bouwden we BijbelStudie.\n\nGratis te downloaden.",
+  "hashtags": [
+    "#bijbellezen",
+    "#stilletijd",
+    "#bijbelstudie"
+  ],
+  "line": "Bijbellezen hoeft geen plicht te zijn om af te vinken.",
+  "sub": "Begrijpen maakt het verschil - BijbelStudie",
+  "basedOn": "Klantcitaat 'plichtmatig ... omdat het moet'",
+  "experiment": {
+    "feedType": "statement",
+    "hook": "opluchting"
+  }
+}

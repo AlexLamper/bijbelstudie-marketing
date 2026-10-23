@@ -1,0 +1,48 @@
+{
+  "id": "2026-w44-reel-demo-tue",
+  "kind": "reel-demo",
+  "week": "2026-W44",
+  "slot": "2026-10-27T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Waar begin je als je de Bijbel wilt lezen? Kies een studie per bijbelboek, persoon of thema. Elke les duurt zo'n 15 minuten en loopt van context tot toepassing.\n\nDownload BijbelStudie gratis en begin met les 1.",
+  "hashtags": [
+    "#bijbellezen",
+    "#bijbelstudie",
+    "#stilletijd",
+    "#bijbel"
+  ],
+  "hook": "Waar begin je als je de Bijbel wilt lezen?",
+  "scenes": [
+    {
+      "screenshot": "07-studies",
+      "caption": "Kies een studie per boek, persoon of thema."
+    },
+    {
+      "screenshot": "08-les-context",
+      "caption": "Elke les begint met de context."
+    },
+    {
+      "screenshot": "11-les-toetsing",
+      "caption": "Test jezelf met een paar vragen."
+    },
+    {
+      "screenshot": "12-les-toepassing",
+      "caption": "En sluit af met wat je ermee doet."
+    }
+  ],
+  "basedOn": "Pijnpunt 'waar begin ik'; 76 studies, lessen van ±15 min in stappen",
+  "experiment": {
+    "feedType": "video-first",
+    "hook": "waar-begin-je"
+  },
+  "endCard": {
+    "headline": "Begin met les 1.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}

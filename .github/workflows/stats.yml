@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npm install --no-audit --no-fund --omit=dev
+      - run: npm ci --no-audit --no-fund --omit=dev
       - shell: bash
         run: node engine/cli/collect-stats.mjs 2>&1 | tee -a run.log
       - name: Report failure

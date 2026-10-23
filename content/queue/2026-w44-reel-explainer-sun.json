@@ -1,0 +1,51 @@
+{
+  "id": "2026-w44-reel-explainer-sun",
+  "kind": "reel-explainer",
+  "week": "2026-W44",
+  "slot": "2026-11-01T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "voice": "female",
+  "caption": "Een buitenlandse weduwe werd de overgrootmoeder van koning David. Het verhaal van Ruth in een halve minuut.\n\nLees Ruth met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": [
+    "#ruth",
+    "#bijbel",
+    "#bijbelstudie",
+    "#oudetestament"
+  ],
+  "hook": "Een buitenlandse weduwe werd de overgrootmoeder van koning David.",
+  "lines": [
+    {
+      "say": "Ruth kwam uit Moab, een volk waar Israel weinig mee op had."
+    },
+    {
+      "say": "Na de dood van haar man koos ze er toch voor om met haar schoonmoeder Naomi mee te gaan.",
+      "verse": "Ruth 1:16"
+    },
+    {
+      "say": "In Bethlehem trouwde ze met Boaz."
+    },
+    {
+      "say": "Hun zoon Obed werd de grootvader van David. En Mattheus noemt Ruth in het geslachtsregister van Jezus."
+    },
+    {
+      "say": "Zulke achtergrond lees je in BijbelStudie naast elk hoofdstuk.",
+      "screenshot": "05-info"
+    }
+  ],
+  "basedOn": "Ruth 1:16, Ruth 4:13-17, Mattheus 1:5",
+  "experiment": {
+    "feedType": "video-first",
+    "voice": "female",
+    "hook": "verrassing"
+  },
+  "endCard": {
+    "headline": "Lees met achtergrond.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "button": "Download gratis"
+  }
+}
