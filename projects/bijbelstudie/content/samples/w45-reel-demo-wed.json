@@ -36,6 +36,7 @@
     }
   ],
   "basedOn": "Core pain 'ik lees, maar begrijp het niet'; features: commentaar, grondtekst, assistent",
+  "subject": "Uitleg bij elk vers",
   "experiment": {
     "feedType": "video-first",
     "hook": "pijnpunt"

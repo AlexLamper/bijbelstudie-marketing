@@ -39,6 +39,7 @@
     }
   ],
   "basedOn": "App's own Bijbelse context text for Filippenzen (08-les-context); Fil 1:13, Fil 4:4",
+  "subject": "Blijdschap in Filippenzen",
   "experiment": {
     "voice": "female",
     "hook": "verrassing"

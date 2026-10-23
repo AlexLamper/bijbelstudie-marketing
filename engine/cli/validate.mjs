@@ -1,20 +1,20 @@
 // The planner's self-check (no database needed): validates every spec in the project's content/queue/
 // (or `samples`, or any folder given),
-// pulls the exact verse text, and flags reused or duplicate verses and slot clashes.
+// pulls the exact verse text, and flags repeats (verses, subjects, hooks: engine/repeats.mjs) and slot clashes.
 // Exit code 1 while anything is wrong, so the planner keeps fixing until it is clean.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import '../env.mjs';
 import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
-import { isUsed } from '../verses.mjs';
+import { repeatProblems, rowOf } from '../repeats.mjs';
 import { spokenText, traitsOf } from '../experiments.mjs';
 
 const P = project();
 const arg = process.argv[2];
 const dir = !arg ? P.paths.queue : arg === 'samples' ? P.paths.samples : arg;
 const files = existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') : [];
-const seenRefs = []; const slots = new Map(); let bad = 0; let weekFails = 0; const planned = [];
+const slots = new Map(); let bad = 0; let weekFails = 0; const planned = [];
 const HEADING = /^(Een psalm|Een lied|Een gebed|Een onderwijzing|Voor den opperzangmeester|Aleph|Beth|Gimel|Daleth|He\.|Vau|Zain|Cheth|Teth|Jod|Caph|Lamed|Mem|Nun|Samech|Ain|Pe\.|Tsade|Koph|Resch|Schin|Thau)\b/;
 // When planning (not for samples): every new item belongs to the target week, revisions keep their own.
 const ctx = name => { try { return JSON.parse(readFileSync(join(P.paths.context, name), 'utf8')); } catch { return null; } };
@@ -23,16 +23,23 @@ const revising = new Set((ctx('changes-requested.json') || []).map(c => c.id));
 const voices = !arg ? ctx('voices.json')?.voices?.map(v => v.key) : null;
 const moods = !arg ? ctx('voices.json')?.musicMoods : null;
 const allocation = target ? ctx('allocation.json') : null;
+// Repeats: against history.json (everything planned or posted, from export-context), the posted verses,
+// and the items of this batch that come earlier (so only the later one of a pair has to change).
+const samples = arg === 'samples';
+const history = samples ? [] : ctx('history.json')?.items;
+if (!samples && !history) console.log('WARN no content/context/history.json (run export-context) - repeats only checked within this batch and against used-verses.json');
+const posted = !samples && existsSync(P.paths.usedVerses) ? JSON.parse(readFileSync(P.paths.usedVerses, 'utf8')).verses : [];
+const raws = new Map(files.map(f => { try { return [f, JSON.parse(readFileSync(join(dir, f), 'utf8'))]; } catch { return [f, null]; } }));
+const batchRows = [...raws.values()].filter(r => r?.id).map(r => rowOf(r));
+const earlier = (a, b) => (a.slot || '') < (b.slot || '') || ((a.slot || '') === (b.slot || '') && a.id < b.id);
 for (const f of files) {
   try {
-    const s = await prepare(JSON.parse(readFileSync(join(dir, f), 'utf8')));
+    const raw = raws.get(f); if (!raw) throw new Error('not valid JSON');
+    const s = await prepare(raw);
     if (`${s.id}.json` !== f) throw new Error(`file name must be ${s.id}.json`);
-    if (s.ref) {
-      if (isUsed(s.ref)) throw new Error(`${s.ref} was already posted (projects/${P.id}/content/used-verses.json)`);
-      if (seenRefs.includes(s.verse.ref)) throw new Error(`${s.ref} is used twice in this batch`);
-      seenRefs.push(s.verse.ref);
-      if (s.verse.text.length > 260) throw new Error(`${s.ref} is ${s.verse.text.length} chars - pick a verse under 260`);
-    }
+    if (s.ref && s.verse.text.length > 260) throw new Error(`${s.ref} is ${s.verse.text.length} chars - pick a verse under 260`);
+    const repeats = repeatProblems(raw, [...(history || []), ...batchRows.filter(r => earlier(r, raw))], posted, { requireSubject: samples || (!!target && !revising.has(s.id)) });
+    if (repeats.length) throw new Error(repeats.join(' | '));
     // every verse shown anywhere in the item (lines, items, scenes, slides, quiz)
     const shown = [s.verse, s.verseData, ...['lines', 'items', 'scenes', 'slides'].flatMap(k => (s[k] || []).map(x => x.verseData))].filter(Boolean);
     for (const v of shown) {

@@ -9,7 +9,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync, renameSync, exists
 import { join } from 'node:path';
 import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
-import { isUsed } from '../verses.mjs';
+import { repeatProblems, historyFrom, rowOf } from '../repeats.mjs';
 import { db, close, STATUS, heartbeat } from '../db.mjs';
 
 const P = project();
@@ -17,7 +17,10 @@ const Q = P.paths.queue;
 const DONE = P.paths.imported;
 mkdirSync(DONE, { recursive: true });
 const d = await db();
-const used = (await d.collection('verses').find().toArray()).map(v => v.ref);
+const posted = (await d.collection('verses').find().toArray()).map(v => ({ ref: v.ref, date: v.at }));
+// the last gate against repeats (the planner's validator checks the same rules first)
+const history = historyFrom(await d.collection('items').find({ slot: { $gte: new Date(Date.now() - 400 * 864e5) } }).toArray());
+const batch = [];
 const errors = []; let n = 0;
 
 for (const f of existsSync(Q) ? readdirSync(Q) : []) {
@@ -26,7 +29,8 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
     if (f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') {
       const raw = JSON.parse(readFileSync(p, 'utf8'));
       const spec = await prepare(raw);
-      if (spec.ref && isUsed(spec.ref, used)) throw new Error(`Verse ${spec.ref} was already posted - pick another`);
+      const repeats = repeatProblems(raw, [...history, ...batch], posted, { requireSubject: false });
+      if (repeats.length) throw new Error(repeats.join('; '));
       const existing = await d.collection('items').findOne({ _id: spec.id });
       // Only items Alex sent back (changes), or that never rendered, may be replaced. Anything he is
       // reviewing, approved or that went out stays as it is - a new plan must use new ids.
@@ -36,7 +40,7 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
         $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, renderAttempts: 0, updatedAt: new Date() },
         $setOnInsert: { createdAt: new Date(), history: [] },
       }, { upsert: true });
-      n++;
+      n++; batch.push(rowOf(raw));
     } else if (/^report-.*\.md$/.test(f)) {
       const week = f.slice(7, -3);
       await d.collection('reports').updateOne({ _id: week }, { $set: { week, markdown: readFileSync(p, 'utf8'), createdAt: new Date() } }, { upsert: true });

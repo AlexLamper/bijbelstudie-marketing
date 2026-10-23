@@ -35,11 +35,8 @@ const target = { week: isoWeekOf(monday), idPrefix: isoWeekOf(monday).toLowerCas
 writeFileSync(join(OUTD, 'target-week.json'), JSON.stringify(target, null, 2));
 // Never plan more than two weeks ahead (a second run on the same Friday would otherwise plan the week after).
 const weeksAhead = Math.round((monday - new Date(Date.now() - ((new Date().getUTCDay() || 7) - 1) * 864e5)) / (7 * 864e5));
-if (weeksAhead > 2 && !process.env.PLAN_FORCE) {
-  console.log(`[${P.id}] ${target.week} is ${weeksAhead} weeks ahead - the coming weeks are planned already, nothing to do`);
-  if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
-  await close(); process.exit(0);
-}
+// The context is still written in full (a revise run needs it); only the planning steps are skipped.
+const skip = weeksAhead > 2 && !process.env.PLAN_FORCE;
 
 // Experiments: the scoreboard and next week's allocation (engine/experiments.mjs), the voices and
 // music that exist, and the voice budget left this month.
@@ -54,7 +51,7 @@ if (budget) {   // share of what is left this month that this week may use (week
   allocation.voiceBudget = { charsThisWeek: Math.max(0, Math.floor(budget.left / weeksLeft) - 500), leftThisMonth: budget.left, resetsAt: budget.resetsAt, note: 'Total spoken characters of all voiced items this week must stay under charsThisWeek (the validator checks). Over budget: use formats without voice (reel-kinetic, reel-quiz, reel-list, reel-verse without voice, reel-demo).' };
 }
 writeFileSync(join(OUTD, 'allocation.json'), JSON.stringify(allocation, null, 2));
-await d.collection('experiments').updateOne({ _id: `allocation-${target.week}` }, { $set: { ...allocation, at: new Date() } }, { upsert: true });
+if (!skip) await d.collection('experiments').updateOne({ _id: `allocation-${target.week}` }, { $set: { ...allocation, at: new Date() } }, { upsert: true });
 writeFileSync(join(OUTD, 'experiments.json'), JSON.stringify({ note: 'Per trait value: n = scored item-platform results, mean = average fair score (0.5 = median), avgViews, pBest = chance it is the best. Higher pBest got more slots in allocation.json.', trials: B.trials, items: B.items, board: B.board }, null, 2));
 writeFileSync(join(OUTD, 'voices.json'), JSON.stringify({ note: 'Voice keys a spec may use in "voice". male/female = the two default voices.', voices: voiceKeys(voiceLibrary()).map(k => { const v = voiceLibrary().find(x => x.key === k); return { key: k, name: v?.name || k, gender: v?.gender || (k === 'male' || k === 'female' ? k : null) }; }), musicMoods: musicMoods() }, null, 2));
 
@@ -79,6 +76,15 @@ const before = existsSync(P.paths.usedVerses) ? JSON.parse(readFileSync(P.paths.
 const inDb = new Set(verses.map(v => v.ref));
 const ledger = { note: 'Verses already posted on social. Never reuse one.', verses: [...before.filter(v => !inDb.has(v.ref) && !v.date), ...verses.map(v => ({ ref: v.ref, date: v.at }))] };
 writeFileSync(P.paths.usedVerses, JSON.stringify(ledger, null, 2));
-console.log(`[${P.id}] target ${target.week}; context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
+// Everything planned or posted in the last year (not rejected): verses, subjects and hooks the new week
+// must not repeat (engine/repeats.mjs, checked by the validator and again on import).
+const { historyFrom, VERSE_DAYS, SUBJECT_WEEKS, APP_SUBJECT_WEEKS, HOOK_WEEKS } = await import('../repeats.mjs');
+const history = historyFrom(await d.collection('items').find({ slot: { $gte: new Date(Date.now() - 400 * 864e5) } }).sort({ slot: -1 }).toArray());
+writeFileSync(join(OUTD, 'history.json'), JSON.stringify({ note: `Do not repeat: a verse of the day never again; any shown verse not within ${VERSE_DAYS} days; a subject not within ${SUBJECT_WEEKS} weeks (app/praktisch: ${APP_SUBJECT_WEEKS}) and never twice in a week; a hook not (nearly) the same within ${HOOK_WEEKS} weeks. Newest first.`, items: history }, null, 2));
+console.log(`[${P.id}] target ${target.week}; context: ${rows.length} items, ${history.length} in history, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
+if (skip) {
+  console.log(`[${P.id}] ${target.week} is ${weeksAhead} weeks ahead - the coming weeks are planned already, no new week to plan`);
+  if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
+}
 await heartbeat('plan', { items: rows.length, changes: changes.length });
 await close();

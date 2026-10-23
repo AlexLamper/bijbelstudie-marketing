@@ -49,6 +49,9 @@ const base = {
     note: z.string().max(200).optional(),
   }).default({}),
   basedOn: z.string().max(300),                          // the real fact, pain point or feature it rests on
+  // what the item is about in a few words ("Ruth", "Paulus in Athene", "Leesplannen"). Not repeated within
+  // 12 weeks (engine/repeats.mjs); required for new items except verse-still / reel-verse
+  subject: z.string().min(2).max(60).optional(),
 };
 
 // Left out = the project's default from project.json (endCard.headline / sub / first button).

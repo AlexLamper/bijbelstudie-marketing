@@ -16,6 +16,7 @@
   "line": "Liever 15 minuten echt begrijpen dan een hoofdstuk afraffelen.",
   "sub": "Uitleg naast elk hoofdstuk - BijbelStudie",
   "basedOn": "Customer quote 'plichtmatig ... raffel ik het even af'; hook type opluchting",
+  "subject": "Begrijpen boven afraffelen",
   "experiment": {
     "feedType": "statement",
     "hook": "opluchting"

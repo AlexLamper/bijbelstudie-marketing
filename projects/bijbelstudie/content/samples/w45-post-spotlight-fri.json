@@ -17,6 +17,7 @@
   "headline": "Weet je niet waar je moet beginnen?",
   "sub": "76 studies per bijbelboek, persoon en thema. Elke les duurt zo'n 15 minuten.",
   "basedOn": "Pain 'waar begin ik'; 76 studies on 21 Oct 2026 (07-studies)",
+  "subject": "Studies voor beginners",
   "experiment": {
     "feedType": "spotlight",
     "hook": "waar-begin-je"

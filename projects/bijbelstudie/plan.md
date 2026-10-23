@@ -74,6 +74,21 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
 - Pick verses that stand on their own and comfort, encourage or make you think. Mix well-known and lesser-known.
 - Under 260 characters. No verse starting with a heading ("Een psalm van David"), no acrostic letters (Klaagliederen, Psalm 119 headings), no verse that misleads without its context.
 - Never a verse from `content/used-verses.json`, never twice in one batch (also not as both still and reel).
+
+## No repeats
+
+Alex does not want repetitive videos. The validator (and the import after it) enforces this with
+`content/context/history.json` (`engine/repeats.mjs`); plan around it from the start:
+- **subject** - every item except `verse-still` / `reel-verse` has a `subject`: what it is about in a few
+  words ("Ruth", "Paulus in Athene", "Blijdschap in Filippenzen", "Leesplannen"). Not within 12 weeks of an
+  item with the same subject (app/praktisch topics: 4 weeks), never twice in one week. "Ruth" and "Het boek
+  Ruth" count as the same. Prefer subjects the account has never done; the Bible has plenty.
+- **verses** - a verse of the day is never used again (not as verse of the day, not in any item). Any verse
+  shown in an item (lines, items, scenes, slides, quiz) is not shown again within 180 days. Overlapping
+  ranges count (Psalmen 23:1 and Psalmen 23:1-3).
+- **hooks** - not the same or nearly the same first line as one in the last 26 weeks. A winning hook
+  *type* may be reused; the words may not.
+- A winning format is repeated with a new subject, new verses and a new hook - never the same video again.
 - Caption: one or two short lines that invite reflection + one soft line to read the chapter with explanation in BijbelStudie. 3-5 hashtags.
 
 ## Reel rules
