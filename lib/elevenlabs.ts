@@ -25,9 +25,14 @@ export async function listVoices(project: string, gender?: string): Promise<{ mi
     call(project, `/shared-voices?${q}`).then(r => r.json()).catch(() => ({ voices: [] })),
     call(project, '/user/subscription').then(r => r.json()).catch(() => ({})),
   ]);
+  // your own voices, without ElevenLabs' English default (premade) voices
+  const own = (mine.voices || []).filter((v: any) => v.category !== 'premade' || v.labels?.language === 'nl')
+    .map((v: any) => ({ id: v.voice_id, name: v.name, gender: v.labels?.gender, accent: v.labels?.accent, age: v.labels?.age, description: v.labels?.description || v.description, useCase: v.labels?.use_case, preview: v.preview_url, mine: true }));
+  const ownIds = new Set(own.map((v: Voice) => v.id)); const ownNames = new Set(own.map((v: Voice) => v.name.split(' (')[0]));
   return {
-    mine: (mine.voices || []).map((v: any) => ({ id: v.voice_id, name: v.name, gender: v.labels?.gender, accent: v.labels?.accent, age: v.labels?.age, description: v.labels?.description || v.description, useCase: v.labels?.use_case, preview: v.preview_url, mine: true })),
-    library: (lib.voices || []).map((v: any) => ({ id: v.voice_id, ownerId: v.public_owner_id, name: v.name, gender: v.gender, accent: v.accent, age: v.age, description: v.description, useCase: v.use_case, preview: v.preview_url, language: v.language, mine: false })),
+    mine: own,
+    library: (lib.voices || []).filter((v: any) => !ownIds.has(v.voice_id) && !ownNames.has(v.name))
+      .map((v: any) => ({ id: v.voice_id, ownerId: v.public_owner_id, name: v.name, gender: v.gender, accent: v.accent, age: v.age, description: v.description, useCase: v.use_case, preview: v.preview_url, language: v.language, mine: false })),
     account: { tier: sub.tier, used: sub.character_count, limit: sub.character_limit },
   };
 }
