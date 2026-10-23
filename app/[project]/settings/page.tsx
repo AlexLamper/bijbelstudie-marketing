@@ -23,8 +23,8 @@ const JOBS: [string, string, number][] = [   // job, label, expected interval in
 
 type Status = 'ok' | 'todo' | 'warn' | 'optional';
 
-export default async function Settings({ params, searchParams }: { params: Promise<{ project: string }>; searchParams: Promise<{ ok?: string; error?: string }> }) {
-  const { project } = await params; const { ok, error } = await searchParams;
+export default async function Settings({ params, searchParams }: { params: Promise<{ project: string }>; searchParams: Promise<{ ok?: string; error?: string; p?: string }> }) {
+  const { project } = await params; const { ok, error, p: errorFor } = await searchParams;
   const p = getProject(project)!;
   const db = await getDb(project);
   const [conns, runsList, apps, keys] = await Promise.all([
@@ -73,7 +73,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
     <div>
       <PageHeader title="Instellingen" sub={open_ ? `Nog ${open_} ${open_ === 1 ? 'stap' : 'stappen'} voordat ${p.name} volledig vanzelf loopt.` : `${p.name} is volledig ingesteld.`} />
       {ok && <p role="status" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-success">{PROVIDERS[ok as ProviderId]?.name || ok} is gekoppeld.</p>}
-      {error && <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-danger">{error}</p>}
+      {error && !errorFor && <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-danger">{error}</p>}
 
       <Card className="mt-6 divide-y divide-line">
         {checks.map(c => (
@@ -102,6 +102,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
                 {linked(id) ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-success ring-1 ring-emerald-200">Gekoppeld</span>
                   : <span className="rounded-full bg-bg px-2.5 py-1 text-xs font-bold text-ink-muted ring-1 ring-line">Niet gekoppeld</span>}
               </div>
+              {error && errorFor === id && !linked(id) && <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-danger">{error}</p>}
               {linked(id) && (
                 <div className="mt-3 rounded-lg bg-bg p-3 text-sm">
                   <p className="font-semibold">{c.account?.name}</p>

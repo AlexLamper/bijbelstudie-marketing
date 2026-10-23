@@ -9,7 +9,7 @@ import { checkConnection } from '@/lib/connectionCheck';
 export const dynamic = 'force-dynamic';
 
 const back = (req: Request, project: string, provider: string, q: Record<string, string>) =>
-  NextResponse.redirect(`${studioBase(req)}/${project}/settings?${new URLSearchParams(q)}#${provider}`, 303);
+  NextResponse.redirect(`${studioBase(req)}/${project}/settings?${new URLSearchParams({ ...q, p: provider })}#${provider}`, 303);
 
 async function json(r: Response, what: string) {
   const j = await r.json().catch(() => ({}));
@@ -94,7 +94,11 @@ async function connectMeta(project: string, app: any, code: string, redirect: st
     const granted: string[] = dbg.data?.scopes || [];
     const missing = PROVIDERS.meta.scopes.filter(s => !granted.includes(s));
     const ig = new Set([...targets('instagram_basic'), ...targets('instagram_content_publish')]).size;
-    throw new Error(`Meta gaf geen Facebook-pagina vrij (pagina's: ${seen.join(', ')}; Instagram-accounts gekozen: ${ig}). ${missing.length ? `Niet toegestaan: ${missing.join(', ')}. ` : ''}`
+    const me = await fetch(G('me', { fields: 'name', access_token: token })).then(r => r.json()).catch(() => ({}));
+    if (!missing.length && !ig) throw new Error(`Het Facebook-account waarmee je inlogde (${me.name || 'onbekend'}) beheert geen Facebook-pagina. `
+      + `Instagram en Facebook posten via Meta kan alleen via een pagina: maak met je eigen Facebook-account een pagina "BijbelStudie" (facebook.com/pages/create), `
+      + `koppel daar @bijbelstudie.io aan (Pagina > Instellingen > Gekoppelde accounts > Instagram) en klik hier opnieuw op Koppel > "Instellingen bewerken".`);
+    throw new Error(`Meta gaf geen Facebook-pagina vrij (account: ${me.name || 'onbekend'}; pagina's: ${seen.join(', ')}; Instagram-accounts gekozen: ${ig}). ${missing.length ? `Niet toegestaan: ${missing.join(', ')}. ` : ''}`
       + `Klik opnieuw op Koppel en vink in het Meta-venster de BijbelStudie-pagina en het Instagram-account aan (staat er "Doorgaan als ...", klik dan eerst op "Instellingen bewerken"). `
       + `Heb je nog geen Facebook-pagina? Instagram posten via Meta kan alleen met een pagina die aan het Instagram-account gekoppeld is.`);
   }
