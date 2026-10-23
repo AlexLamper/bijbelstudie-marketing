@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getProject } from '@/lib/projects';
 import { getDb } from '@/lib/mongo';
 import { seal } from '@/lib/crypto';
-import { META_VERSION, accountOf, getApp, isProvider, redirectUri, saveConnection, studioBase } from '@/lib/connections';
+import { META_VERSION, PROVIDERS, accountOf, getApp, isProvider, redirectUri, saveConnection, studioBase } from '@/lib/connections';
 import { checkConnection } from '@/lib/connectionCheck';
 
 export const dynamic = 'force-dynamic';
@@ -57,9 +57,40 @@ async function connectMeta(project: string, app: any, code: string, redirect: st
   const G = (p: string, q: Record<string, string>) => `https://graph.facebook.com/${META_VERSION}/${p}?${new URLSearchParams(q)}`;
   const short = await json(await fetch(G('oauth/access_token', { client_id: app.clientId, client_secret: app.clientSecret, redirect_uri: redirect, code })), 'Meta code');
   const long = await json(await fetch(G('oauth/access_token', { grant_type: 'fb_exchange_token', client_id: app.clientId, client_secret: app.clientSecret, fb_exchange_token: short.access_token })), 'Meta long-lived token');
-  const pages = await json(await fetch(G('me/accounts', { fields: 'id,name,access_token,instagram_business_account{id,username}', limit: '100', access_token: long.access_token })), 'Meta pages');
-  const list = (pages.data || []).map((p: any) => ({ pageId: p.id, pageName: p.name, pageToken: p.access_token, igUserId: p.instagram_business_account?.id || null, igUsername: p.instagram_business_account?.username || null }));
-  if (!list.length) throw new Error('Geen Facebook-pagina gevonden. Kies bij het inloggen je pagina (en het Instagram-account) en geef toegang.');
+  const token = long.access_token;
+  const fields = 'id,name,access_token,instagram_business_account{id,username}';
+  const found = new Map<string, any>();
+  const add = (p: any) => { if (p?.id && p.access_token && !found.has(p.id)) found.set(p.id, p); };
+
+  // 1. Pages you manage directly
+  const mine = await json(await fetch(G('me/accounts', { fields, limit: '100', access_token: token })), 'Meta pages');
+  (mine.data || []).forEach(add);
+
+  // 2. Login for Business: the Pages and Instagram accounts picked in the dialog are listed per permission
+  const dbg = await fetch(G('debug_token', { input_token: token, access_token: `${app.clientId}|${app.clientSecret}` })).then(r => r.json()).catch(() => ({}));
+  const granular: { scope: string; target_ids?: string[] }[] = dbg.data?.granular_scopes || [];
+  const targets = (scope: string) => granular.find(s => s.scope === scope)?.target_ids || [];
+  if (!found.size) {
+    const ids = new Set([...targets('pages_show_list'), ...targets('pages_manage_posts'), ...targets('pages_read_engagement')]);
+    for (const id of ids) add(await fetch(G(id, { fields, access_token: token })).then(r => r.json()).catch(() => null));
+  }
+
+  // 3. Pages owned by (or shared with) a business portfolio you are in
+  if (!found.size) {
+    const biz = await fetch(G('me/businesses', { fields: `id,owned_pages.limit(100){${fields}},client_pages.limit(100){${fields}}`, access_token: token })).then(r => r.json()).catch(() => ({}));
+    for (const b of biz.data || []) [...(b.owned_pages?.data || []), ...(b.client_pages?.data || [])].forEach(add);
+  }
+
+  const igPicked = targets('instagram_content_publish')[0] || targets('instagram_basic')[0] || null;
+  const list = [...found.values()].map((p: any) => ({ pageId: p.id, pageName: p.name, pageToken: p.access_token,
+    igUserId: p.instagram_business_account?.id || (found.size === 1 ? igPicked : null), igUsername: p.instagram_business_account?.username || null }));
+  if (!list.length) {
+    const granted: string[] = dbg.data?.scopes || [];
+    const missing = PROVIDERS.meta.scopes.filter(s => !granted.includes(s));
+    throw new Error(`Meta gaf geen Facebook-pagina vrij. ${missing.length ? `Niet toegestaan: ${missing.join(', ')}. ` : ''}`
+      + `Klik opnieuw op Koppel en vink in het Meta-venster de BijbelStudie-pagina en het Instagram-account aan (staat er "Doorgaan als ...", klik dan eerst op "Instellingen bewerken"). `
+      + `Heb je nog geen Facebook-pagina? Instagram posten via Meta kan alleen met een pagina die aan het Instagram-account gekoppeld is.`);
+  }
   if (list.length === 1) {
     const [p] = list;
     await saveConnection(project, 'meta', accountOf(p), { pageToken: p.pageToken });
