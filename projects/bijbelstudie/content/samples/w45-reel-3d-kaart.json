@@ -1,0 +1,34 @@
+{
+  "id": "w45-reel-3d-kaart",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-06T17:15:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Van Ur naar Haran, naar Kanaän en zelfs Egypte. Abram ging op weg zonder te weten waar hij uit zou komen. Volg zijn reis in de studie Het geloof van Abraham.",
+  "hashtags": ["#abraham", "#genesis", "#bijbelstudie", "#bijbel"],
+  "voice": "female",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Abram vertrok zonder te weten waarheen.",
+  "basedOn": "Genesis 11:31 (Terah, Abram, Lot en Sarai uit Ur der Chaldeeën naar Haran), Genesis 12:1 (ga uit uw land), 12:4-8 (uit Haran, Sichem, Bethel), 12:10 (honger, naar Egypte), Hebreeën 11:8 (niet wetende waar hij komen zou). Studie Het geloof van Abraham (8 lessen) staat in product.md.",
+  "subject": "De reis van Abraham",
+  "experiment": { "hook": "verrassing", "topic": "persoon" },
+  "endCard": { "headline": "Begrijp wat je leest.", "button": "Download gratis" },
+  "cast": [
+    { "id": "lotte", "look": "vrouw-modern-3", "name": "Lotte" }
+  ],
+  "shots": [
+    { "set": "kaart", "camera": "wide", "places": ["ur", "haran"], "text": "Genesis 11",
+      "say": "Abram woonde in Ur der Chaldeeën. Met zijn vader Terah trok hij naar Haran, en daar bleven ze wonen." },
+    { "set": "kaart", "camera": "wide", "places": ["haran", "sichem", "bethel"], "text": "Genesis 12",
+      "say": "Toen zei God: ga uit uw land. Abram trok via Sichem naar Bethel, in het land Kanaän." },
+    { "set": "kaart", "camera": "wide", "places": ["bethel", "egypte"],
+      "say": "Er kwam honger in het land. Dus trok hij verder naar Egypte, om daar als vreemdeling te wonen." },
+    { "set": "slaapkamer", "time": "nacht", "camera": "push-in", "on": "lotte", "verse": "Hebreeën 11:8",
+      "actors": [{ "id": "lotte", "at": "bed", "do": "read", "mood": "nadenkend" }],
+      "say": "De Bijbel zegt: hij is uitgegaan, niet wetende waar hij komen zou." },
+    { "set": "slaapkamer", "time": "nacht", "camera": "medium", "on": "lotte",
+      "actors": [{ "id": "lotte", "at": "bed", "do": "read", "mood": "blij" }],
+      "say": "Volg zijn reis stap voor stap in de studie Het geloof van Abraham, in BijbelStudie." }
+  ]
+}
