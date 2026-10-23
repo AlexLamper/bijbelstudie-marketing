@@ -30,7 +30,7 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
       if (existing && ![STATUS.CHANGES, STATUS.QUEUED, STATUS.REVIEW].includes(existing.status)) throw new Error(`Item ${spec.id} is already ${existing.status}`);
       const aiLabel = spec.kind === 'reel-explainer';           // AI voice -> platform AI label
       await d.collection('items').updateOne({ _id: spec.id }, {
-        $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, updatedAt: new Date() },
+        $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, renderAttempts: 0, updatedAt: new Date() },
         $setOnInsert: { createdAt: new Date(), history: [] },
       }, { upsert: true });
       n++;

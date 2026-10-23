@@ -10,6 +10,7 @@ jobs:
     timeout-minutes: 15
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
       PLATFORM_MONGODB_URI: ${{ secrets.PLATFORM_MONGODB_URI }}
       PLATFORM_MONGODB_DB: ${{ secrets.PLATFORM_MONGODB_DB }}
       META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}

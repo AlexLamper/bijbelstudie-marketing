@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 20
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
       META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
       FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}

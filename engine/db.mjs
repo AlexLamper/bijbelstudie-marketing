@@ -11,7 +11,10 @@ import { MongoClient } from 'mongodb';
 
 let client;
 export async function db() {
-  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
+  if (!process.env.MONGODB_URI) {
+    console.log('MONGODB_URI is not set (add it as a GitHub Actions secret) - nothing to do, skipping.');
+    process.exit(0);
+  }
   client ??= await new MongoClient(process.env.MONGODB_URI).connect();
   return client.db(process.env.MONGODB_DB || 'bijbelstudie_marketing');
 }

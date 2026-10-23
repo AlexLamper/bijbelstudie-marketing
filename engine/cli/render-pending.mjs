@@ -7,17 +7,17 @@ import { db, close, STATUS } from '../db.mjs';
 import { notify } from '../notify.mjs';
 
 const d = await db(); const items = d.collection('items');
-const queued = await items.find({ status: STATUS.QUEUED }).sort({ slot: 1 }).toArray();
+const queued = await items.find({ $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, media: { $exists: false }, renderAttempts: { $lt: 3 } }] }).sort({ slot: 1 }).toArray();
 const weeks = new Set(); const browser = await launch(); let ok = 0;
 
 for (const it of queued) {
-  await items.updateOne({ _id: it._id }, { $set: { status: STATUS.RENDERING } });
+  await items.updateOne({ _id: it._id }, { $set: { status: STATUS.RENDERING }, $inc: { renderAttempts: 1 } });
   try {
     const r = await renderSpec(it.spec, { browser });
     const v = Date.now();                       // version suffix: re-renders never hit a stale cache
     const media = { url: await upload(r.files.media, `items/${it._id}/${v}-${r.files.media.split('/').pop()}`), duration: r.duration };
     if (r.files.cover) media.coverUrl = await upload(r.files.cover, `items/${it._id}/${v}-cover.jpg`);
-    await items.updateOne({ _id: it._id }, { $set: { status: STATUS.REVIEW, media, renderNotes: r.notes, renderedAt: new Date() },
+    await items.updateOne({ _id: it._id }, { $set: { status: STATUS.REVIEW, media, renderNotes: r.notes, renderedAt: new Date(), renderAttempts: 0 }, $unset: { error: '' },
       $push: { history: { at: new Date(), event: 'rendered' } } });
     weeks.add(it.week); ok++;
   } catch (e) {

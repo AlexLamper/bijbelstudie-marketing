@@ -12,6 +12,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: for f in $(find engine -name '*.mjs'); do node --check "$f"; done
       - run: node engine/cli/validate.mjs content/samples
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
       - run: npx playwright install --with-deps chromium
       - run: node engine/render/render.mjs content/samples/w45-verse-mon.json content/samples/w45-reel-demo-wed.json
       - run: npm run build
