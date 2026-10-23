@@ -169,7 +169,7 @@ function subtitles(segs, mode = 'block', { top = 1430 } = {}) {
   }
   let shown = null;
   return t => {
-    const i = groups.findIndex((g, i) => t >= g[0].a - .05 && t < Math.min(groups[i + 1]?.[0].a ?? 1e9, g[g.length - 1].b + .5));
+    const i = groups.findIndex((g, i) => t >= g[0].a - .05 && t < Math.min(groups[i + 1]?.[0].a ?? 1e9, g[g.length - 1].b + .2));
     const g = groups[i];
     if (!g) { cap.style.opacity = 0; return; }
     cap.style.opacity = 1;
