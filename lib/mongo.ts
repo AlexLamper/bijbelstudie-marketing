@@ -4,12 +4,21 @@ import { getProject } from './projects';
 // One client per server instance (survives hot reloads in dev); one database per project.
 const g = globalThis as unknown as { _mongo?: Promise<MongoClient> };
 
+async function client() {
+  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
+  g._mongo ??= new MongoClient(process.env.MONGODB_URI).connect().catch(e => { g._mongo = undefined; throw e; });
+  return g._mongo;
+}
+
 export async function getDb(projectId: string): Promise<Db> {
   const p = getProject(projectId);
   if (!p) throw new Error(`Unknown project "${projectId}"`);
-  if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
-  g._mongo ??= new MongoClient(process.env.MONGODB_URI).connect().catch(e => { g._mongo = undefined; throw e; });
-  return (await g._mongo).db(p.db);
+  return (await client()).db(p.db);
+}
+
+/** Settings shared by all projects (the developer apps used to link accounts). */
+export async function getSharedDb(): Promise<Db> {
+  return (await client()).db(process.env.STUDIO_DB || 'marketing_studio');
 }
 
 export type Item = {

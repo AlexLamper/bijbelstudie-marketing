@@ -3,7 +3,7 @@
 import '../env.mjs';
 import { renderSpec, launch } from '../render/render.mjs';
 import { upload } from '../storage/index.mjs';
-import { db, close, STATUS } from '../db.mjs';
+import { db, close, STATUS, heartbeat } from '../db.mjs';
 import { notify, studioLink } from '../notify.mjs';
 import { project } from '../project.mjs';
 
@@ -38,4 +38,5 @@ for (const week of weeks) {
     studioLink(`/week/${week}`));
 }
 console.log(`[${project().id}] rendered ${ok}/${queued.length}`);
+await heartbeat('render', { rendered: ok, of: queued.length });
 await close();

@@ -16,7 +16,11 @@ import { project, ACCOUNT_KEYS } from './project.mjs';
 const setIfMissing = (k, v) => { if (/^[A-Z][A-Z0-9_]*$/.test(k) && process.env[k] === undefined && v !== '' && v != null) process.env[k] = String(v); };
 
 if (process.env.SECRETS) {
-  try { for (const [k, v] of Object.entries(JSON.parse(process.env.SECRETS))) setIfMissing(k, v); }
+  try {
+    const all = JSON.parse(process.env.SECRETS);
+    globalThis.__secretNames = Object.keys(all).filter(k => /^[A-Z][A-Z0-9_]*$/.test(k)).sort();   // names only, for the studio's checklist
+    for (const [k, v] of Object.entries(all)) setIfMissing(k, v);
+  }
   catch { console.error('SECRETS is not valid JSON - ignored'); }
   delete process.env.SECRETS;
 }

@@ -5,7 +5,8 @@ import '../env.mjs';
 import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { db, close, STATUS } from '../db.mjs';
+import { db, close, STATUS, heartbeat } from '../db.mjs';
+import { applyConnections } from '../connections.mjs';
 import { metaConfigured, publishInstagram, publishFacebook } from '../publish/meta.mjs';
 import { youtubeConfigured, publishYouTube } from '../publish/youtube.mjs';
 import { tiktokConfigured, uploadPostConfigured, publishTikTok } from '../publish/tiktok.mjs';
@@ -18,7 +19,8 @@ const PUBLISHERS = {
   tiktok: { ok: () => tiktokConfigured() || uploadPostConfigured(), run: publishTikTok },
 };
 const MAX_TRIES = 3;
-const d = await db(); const items = d.collection('items');
+const d = await db();
+await applyConnections();                    // accounts linked in the studio const items = d.collection('items');
 const due = await items.find({ status: { $in: [STATUS.APPROVED, STATUS.PARTIAL] }, slot: { $lte: new Date() } }).toArray();
 const tmp = mkdtempSync(join(process.env.TMPDIR || tmpdir(), 'pub-'));
 const problems = [];
@@ -56,4 +58,5 @@ for (const it of due) {
 }
 rmSync(tmp, { recursive: true, force: true });
 if (problems.length) await notify('Iets ging mis bij publiceren', problems);
+await heartbeat('publish', { due: due.length, problems: problems.length });
 await close();

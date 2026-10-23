@@ -1,7 +1,8 @@
 // Daily, per project: per-item metrics (Instagram, YouTube), account numbers, new product signups,
 // new comments to draft replies for, and (weekly) competitor snapshots.
 import '../env.mjs';
-import { db, close, STATUS } from '../db.mjs';
+import { db, close, STATUS, heartbeat } from '../db.mjs';
+import { applyConnections } from '../connections.mjs';
 import { metaConfigured, instagramInsights, instagramAccount, instagramComments, businessDiscovery } from '../publish/meta.mjs';
 import { youtubeConfigured, youtubeStats } from '../publish/youtube.mjs';
 import { MongoClient } from 'mongodb';
@@ -11,6 +12,7 @@ import { join } from 'node:path';
 import { project } from '../project.mjs';
 
 const d = await db(); const items = d.collection('items');
+await applyConnections();
 const since = new Date(Date.now() - 30 * 864e5);
 const live = await items.find({ status: { $in: [STATUS.PUBLISHED, STATUS.PARTIAL] }, publishedAt: { $gte: since } }).toArray();
 const today = new Date().toISOString().slice(0, 10);
@@ -70,4 +72,5 @@ if (storageConfigured()) {
   if (old.length) console.log(`removed media of ${old.length} old items`);
 }
 console.log(`[${project().id}] stats for ${live.length} live items`);
+await heartbeat('stats', { live: live.length });
 await close();

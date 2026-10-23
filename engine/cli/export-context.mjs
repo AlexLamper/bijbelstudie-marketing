@@ -5,7 +5,7 @@ import '../env.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { project } from '../project.mjs';
-import { db, close, STATUS } from '../db.mjs';
+import { db, close, STATUS, heartbeat } from '../db.mjs';
 
 const P = project();
 const OUTD = P.paths.context; mkdirSync(OUTD, { recursive: true });
@@ -39,4 +39,5 @@ const inDb = new Set(verses.map(v => v.ref));
 const ledger = { note: 'Verses already posted on social. Never reuse one.', verses: [...before.filter(v => !inDb.has(v.ref) && !v.date), ...verses.map(v => ({ ref: v.ref, date: v.at }))] };
 writeFileSync(P.paths.usedVerses, JSON.stringify(ledger, null, 2));
 console.log(`[${P.id}] context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
+await heartbeat('plan', { items: rows.length, changes: changes.length });
 await close();

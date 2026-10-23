@@ -7,19 +7,20 @@ import { readFileSync, statSync } from 'node:fs';
 import { getToken, saveToken } from '../db.mjs';
 const env = process.env;
 const API = 'https://open.tiktokapis.com/v2';
-export const tiktokConfigured = () => !!(env.TIKTOK_CLIENT_KEY && env.TIKTOK_CLIENT_SECRET);
+export const tiktokConfigured = () => !!(env.TIKTOK_CLIENT_KEY && env.TIKTOK_CLIENT_SECRET && (env.TIKTOK_REFRESH_TOKEN || env.TIKTOK_LINKED));
 export const uploadPostConfigured = () => !!(env.UPLOADPOST_API_KEY && env.UPLOADPOST_USER);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function accessToken() {
-  const saved = await getToken('tiktok');
-  if (saved?.access_token && saved.expires_at > Date.now() + 60_000) return saved.access_token;
-  const refresh = saved?.refresh_token || env.TIKTOK_REFRESH_TOKEN;
-  if (!refresh) throw new Error('No TikTok refresh token: run the one-time login (SETUP.md, TikTok step)');
+  const saved = await getToken('tiktok');   // { accessToken, refreshToken, expiresAt } from the studio, or the legacy snake_case shape
+  const access = saved?.accessToken || saved?.access_token, expires = saved?.expiresAt || saved?.expires_at;
+  if (access && expires > Date.now() + 60_000) return access;
+  const refresh = saved?.refreshToken || saved?.refresh_token || env.TIKTOK_REFRESH_TOKEN;
+  if (!refresh) throw new Error('TikTok is not linked: Instellingen > TikTok > Koppel in the studio');
   const r = await fetch(`${API}/oauth/token/`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ client_key: env.TIKTOK_CLIENT_KEY, client_secret: env.TIKTOK_CLIENT_SECRET, grant_type: 'refresh_token', refresh_token: refresh }) });
   const j = await r.json(); if (!r.ok || j.error) throw new Error(`TikTok token: ${j.error_description || j.error}`);
-  await saveToken('tiktok', { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + j.expires_in * 1000 });
+  await saveToken('tiktok', { accessToken: j.access_token, refreshToken: j.refresh_token, expiresAt: Date.now() + j.expires_in * 1000, refreshExpiresAt: Date.now() + j.refresh_expires_in * 1000 });
   return j.access_token;
 }
 

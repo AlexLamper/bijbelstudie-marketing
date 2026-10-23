@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
 import { isUsed } from '../verses.mjs';
-import { db, close, STATUS } from '../db.mjs';
+import { db, close, STATUS, heartbeat } from '../db.mjs';
 
 const P = project();
 const Q = P.paths.queue;
@@ -49,4 +49,5 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
 mkdirSync(Q, { recursive: true });
 writeFileSync(join(Q, '_errors.json'), JSON.stringify(errors, null, 2));
 console.log(`[${P.id}] imported ${n} items, ${errors.length} errors`); errors.forEach(e => console.log(` - ${e.file}: ${e.error}`));
+await heartbeat('import', { items: n, errors: errors.length });
 await close();
