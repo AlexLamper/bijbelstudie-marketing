@@ -1,0 +1,45 @@
+{
+  "note": "Background music beds (ElevenLabs Music, instrumental). The renderer picks one per mood and loops it.",
+  "tracks": [
+    {
+      "file": "calm-1.mp3",
+      "mood": "calm",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Gentle, calm instrumental background music for a short Bible study video. Soft felt piano and warm pads, slow tempo around 70 BPM, peaceful, no drums, no vocals, even dynamics without big swells, suitable to speak over.",
+      "at": "2026-10-23"
+    },
+    {
+      "file": "hopeful-1.mp3",
+      "mood": "hopeful",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Hopeful, uplifting instrumental background music. Light piano arpeggios with soft strings and a gentle pulse, around 90 BPM, warm and encouraging, no vocals, even dynamics, suitable to speak over.",
+      "at": "2026-10-23"
+    },
+    {
+      "file": "reflective-1.mp3",
+      "mood": "reflective",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Reflective ambient instrumental music. Sparse felt piano notes over airy, warm textures, around 65 BPM, contemplative and quiet, no drums, no vocals, suitable to speak over.",
+      "at": "2026-10-23"
+    },
+    {
+      "file": "warm-1.mp3",
+      "mood": "warm",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Warm acoustic instrumental. Fingerpicked acoustic guitar with a light shaker and soft bass, around 95 BPM, friendly and positive, no vocals, even dynamics, suitable to speak over.",
+      "at": "2026-10-23"
+    },
+    {
+      "file": "upbeat-1.mp3",
+      "mood": "upbeat",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Light, playful upbeat instrumental for a quiz video. Pizzicato strings, marimba and soft claps, around 110 BPM, fun but not loud, no vocals, even dynamics, suitable to speak over.",
+      "at": "2026-10-23"
+    }
+  ]
+}
