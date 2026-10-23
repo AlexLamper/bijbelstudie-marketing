@@ -48,14 +48,16 @@ for (const it of due) {
     writeFileSync(f, Buffer.from(await (await fetch(it.media.url)).arrayBuffer()));
     it.media.file = f;
   }
+  // remember a platform's in-flight state (e.g. the Instagram container) before the irreversible step
+  it.checkpoint = async (pl, data) => { it.results[pl] = { ...(it.results[pl] || {}), ...data }; await items.updateOne({ _id: it._id }, { $set: { [`results.${pl}`]: it.results[pl] } }); };
   for (const pl of ready) {
     const before = it.results[pl];
     try {
-      it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };
+      it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };   // replaces any container checkpoint
       if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push(it._id); }
     } catch (e) {
       const tries = (before?.tries || 0) + 1;
-      it.results[pl] = { error: e.message, tries, at: new Date() };
+      it.results[pl] = { ...(it.results[pl]?.container ? { container: it.results[pl].container } : {}), error: e.message, tries, at: new Date() };
       if (tries >= MAX_TRIES) problems.push(`${it._id} op ${PUBLISHERS[pl].label}: ${e.message}`);
     }
   }
@@ -66,10 +68,11 @@ for (const it of due) {
   const status = !allDone ? (anyOk ? STATUS.PARTIAL : STATUS.APPROVED)
     : anyOk ? (states.every(r => r?.id || r?.skipped) ? STATUS.PUBLISHED : STATUS.PARTIAL) : STATUS.FAILED;
   if (it.media) delete it.media.file;
+  delete it.checkpoint;
   const update = { $set: { results: it.results, status, ...(anyOk && !it.publishedAt ? { publishedAt: new Date() } : {}) } };
   if (status !== it.status || ready.length) update.$push = { history: { at: new Date(), event: `publish:${status}` } };
   await items.updateOne({ _id: it._id }, update);
-  if (anyOk && it.spec.verse) await d.collection('verses').updateOne({ _id: it.spec.verse.ref }, { $set: { ref: it.spec.verse.ref, itemId: it._id, at: new Date() } }, { upsert: true });
+  if (anyOk && it.spec.verse?.ref) await d.collection('verses').updateOne({ _id: it.spec.verse.ref }, { $set: { ref: it.spec.verse.ref, itemId: it._id, at: new Date() } }, { upsert: true });
   console.log(`[${project().id}] ${it._id}: ${status} ${JSON.stringify(Object.fromEntries(Object.entries(it.results).map(([k, v]) => [k, v.id ? 'ok' : v.skipped || v.waiting || v.error])))}`);
 }
 rmSync(tmp, { recursive: true, force: true });

@@ -96,7 +96,7 @@ export function scoreboard(rows, catalogue, { seed = 1, draws = 4000 } = {}) {
     for (const row of rows) { const v = row.traits[key]; if (v == null || !stats[v]) continue; const s = stats[v]; s.n++; s.a += row.score; s.b += 1 - row.score; s.views += row.views; }
     const wins = Object.fromEntries(values.map(v => [v, 0]));
     for (let i = 0; i < draws; i++) { let best = null, bv = -1; for (const v of values) { const x = beta(r, stats[v].a, stats[v].b); if (x > bv) { bv = x; best = v; } } wins[best]++; }
-    out[trait] = values.map(v => ({ value: v, n: stats[v].n, mean: +(stats[v].a / (stats[v].a + stats[v].b)).toFixed(3), avgViews: stats[v].n ? Math.round(stats[v].views / stats[v].n) : null, pBest: +(wins[v] / draws).toFixed(3) }))
+    out[trait] = values.map(v => ({ value: v, n: stats[v].n, mean: +(stats[v].a / (stats[v].a + stats[v].b)).toFixed(3), avgViews: stats[v].n ? Math.round(stats[v].views / stats[v].n) : null, pBest: +(wins[v] / draws).toFixed(3), p: wins[v] / draws }))
       .sort((x, y) => y.pBest - x.pBest);
   }
   return out;
@@ -106,12 +106,16 @@ export function scoreboard(rows, catalogue, { seed = 1, draws = 4000 } = {}) {
 export function allocate(rows, slots, explore, { minN = 0 } = {}) {
   if (!rows?.length || slots <= 0) return {};
   // exploit only what has a track record (minN results), when anything has one
-  const known = rows.filter(r => r.n >= minN); const base = minN && known.length ? known : rows;
-  const sum = base.reduce((n, r) => n + r.pBest, 0) || 1;
-  const w = rows.map(r => ({ v: r.value, x: slots * (explore / rows.length + (1 - explore) * (base.includes(r) ? r.pBest / sum : 0)) }));
+  const P = r => r.p ?? r.pBest;
+  const known = rows.filter(r => r.n >= minN);
+  let base = minN && known.length ? known : rows;
+  if (!base.reduce((n, r) => n + P(r), 0)) base = rows;                 // nothing known has a chance: use everything
+  const sum = base.reduce((n, r) => n + P(r), 0) || 1;
+  const w = rows.map(r => ({ v: r.value, x: slots * (explore / rows.length + (1 - explore) * (base.includes(r) ? P(r) / sum : 0)) }));
   const res = Object.fromEntries(w.map(o => [o.v, Math.floor(o.x)]));
   let left = slots - Object.values(res).reduce((a, b) => a + b, 0);
-  for (const o of [...w].sort((a, b) => (b.x % 1) - (a.x % 1))) { if (left <= 0) break; res[o.v]++; left--; }
+  const order = [...w].sort((a, b) => (b.x % 1) - (a.x % 1) || b.x - a.x);
+  for (let i = 0; left > 0; i++) { res[order[i % order.length].v]++; left--; }   // largest remainder, as often as needed
   return Object.fromEntries(Object.entries(res).filter(([, n]) => n > 0));
 }
 
@@ -147,10 +151,10 @@ export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPos
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)
     targets: {
       style: allocate(board.style, reels, .4), music: allocate(board.music, reels, .4),
-      voice: allocate(board.voice, voiced, .4), voiceStyle: allocate(board.voiceStyle, voiced, .4),
-      captions: allocate(board.captions, voiced, .4), hook: allocate(board.hook, reels + feedPosts, .5), topic: allocate(board.topic, reels + feedPosts, .5),
+      voice: allocate(board.voice, voiced, .4), voiceStyle: allocate(board.voiceStyle, Math.round(reels * .6), .4),
+      captions: allocate(board.captions, Math.round(reels * .35), .4), hook: allocate(board.hook, reels + feedPosts, .5), topic: allocate(board.topic, reels + feedPosts, .5),
     },
-    rule: 'Formats per group are hard (within 1). Targets are soft: within 1 is fine. Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).',
+    rule: 'Formats per group are hard (within 1), the number of feed posts too. Targets are soft (voiceStyle and captions are estimates for the voiced reels that have them). Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).',
   };
 }
 export { hasVoice, VOICE_REQUIRED };

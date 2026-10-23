@@ -35,7 +35,7 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
 - **reel-kinetic** - big words appearing line by line. 2-8 lines of max ~8 words, one thought per line,
   `emphasis` = the one word that carries it. Works with and without voice (test both) and with music.
 - **reel-quiz** - a question Bible readers can answer, 3-4 plausible options, the answer straight from
-  the Bible text, `explain` in one or two sentences with `verse`. Caption invites answers in the comments.
+  the Bible text, `explain` in one or two sentences, `verseRef` for the verse it rests on. Caption invites answers in the comments.
   Facts only; no trick questions about translations or denominations.
 - **reel-list** - "N dingen die je niet wist over ..." with 3-6 items, each a fact from the text with
   `verse`. Use `say` for the spoken version when it differs from the short title.

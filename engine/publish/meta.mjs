@@ -19,34 +19,54 @@ async function call(method, path, params = {}) {
 
 const fullCaption = s => [s.caption, s.hashtags?.join(' ')].filter(Boolean).join('\n\n');
 
-/** Instagram: image post, carousel or reel. Returns { id, url }. */
-export async function publishInstagram(item) {
-  const s = item.spec; const ig = env.IG_USER_ID;
-  if (s.kind === 'carousel') {
-    const children = [];
-    for (const url of item.media.slides) children.push((await call('POST', `${ig}/media`, { image_url: url, is_carousel_item: 'true' })).id);
-    const { id: container } = await call('POST', `${ig}/media`, { media_type: 'CAROUSEL', children: children.join(','), caption: fullCaption(s) });
-    for (let i = 0; i < 24; i++) { const { status_code } = await call('GET', container, { fields: 'status_code' }); if (status_code === 'FINISHED') break; if (status_code === 'ERROR') throw new Error('IG carousel container ERROR'); await sleep(5000); }
-    const { id } = await call('POST', `${ig}/media_publish`, { creation_id: container });
-    const { permalink } = await call('GET', id, { fields: 'permalink' });
-    return { id, url: permalink };
-  }
-  const video = s.kind.startsWith('reel-');
-  const params = video
-    ? { media_type: 'REELS', video_url: item.media.url, cover_url: item.media.coverUrl, caption: fullCaption(s), share_to_feed: 'true' }
-    : { image_url: item.media.url, caption: fullCaption(s) };
-  if (item.aiLabel) params.is_ai_generated = 'true';     // AI voice / visuals get the platform label
-  const { id: container } = await call('POST', `${ig}/media`, params);
-  // videos are processed asynchronously; wait until the container is ready (max ~5 min)
-  for (let i = 0; video && i < 60; i++) {
+/** Find the post a container became (after media_publish), by its container status and our caption. */
+async function publishedFrom(container, caption) {
+  const { status_code } = await call('GET', container, { fields: 'status_code' }).catch(() => ({}));
+  if (status_code !== 'PUBLISHED') return null;
+  const { data = [] } = await call('GET', `${env.IG_USER_ID}/media`, { fields: 'id,permalink,caption,timestamp', limit: '10' });
+  const m = data.find(x => (x.caption || '').slice(0, 60) === caption.slice(0, 60)) || null;
+  return m ? { id: m.id, url: m.permalink } : null;
+}
+const permalinkOf = async id => (await call('GET', id, { fields: 'permalink' }).catch(() => ({}))).permalink || `https://www.instagram.com/`;
+
+/** Wait until a container is ready to publish (videos are processed asynchronously). */
+async function waitReady(container, tries) {
+  for (let i = 0; i < tries; i++) {
     const { status_code } = await call('GET', container, { fields: 'status_code' });
-    if (status_code === 'FINISHED') break;
+    if (status_code === 'FINISHED') return;
     if (status_code === 'ERROR' || status_code === 'EXPIRED') throw new Error(`IG container ${status_code}`);
     await sleep(5000);
   }
-  const { id } = await call('POST', `${ig}/media_publish`, { creation_id: container });
-  const { permalink } = await call('GET', id, { fields: 'permalink' });
-  return { id, url: permalink };
+  throw new Error('IG container not ready in time - next run tries again');
+}
+
+/** Instagram: image post, carousel or reel. Returns { id, url }.
+ *  Never posts twice: the container id is saved (item.checkpoint) before publishing; a retry first
+ *  checks whether that container already went live and returns that post instead. */
+export async function publishInstagram(item) {
+  const s = item.spec; const ig = env.IG_USER_ID; const caption = fullCaption(s);
+  const prev = item.results?.instagram?.container;
+  if (prev) { const done = await publishedFrom(prev, caption); if (done) return done; }
+  let container;
+  if (s.kind === 'carousel') {
+    const children = [];
+    for (const url of item.media.slides) children.push((await call('POST', `${ig}/media`, { image_url: url, is_carousel_item: 'true' })).id);
+    ({ id: container } = await call('POST', `${ig}/media`, { media_type: 'CAROUSEL', children: children.join(','), caption }));
+    await waitReady(container, 24);
+  } else {
+    const video = s.kind.startsWith('reel-');
+    const params = video
+      ? { media_type: 'REELS', video_url: item.media.url, cover_url: item.media.coverUrl, caption, share_to_feed: 'true' }
+      : { image_url: item.media.url, caption };
+    if (item.aiLabel) params.is_ai_generated = 'true';     // AI voice / visuals get the platform label
+    ({ id: container } = await call('POST', `${ig}/media`, params));
+    await waitReady(container, video ? 60 : 12);
+  }
+  await item.checkpoint?.('instagram', { container });
+  let id;
+  try { ({ id } = await call('POST', `${ig}/media_publish`, { creation_id: container })); }
+  catch (e) { const done = await publishedFrom(container, caption).catch(() => null); if (done) return done; throw e; }   // went live despite the error
+  return { id, url: await permalinkOf(id) };
 }
 
 /** Facebook Page: photo post, or a Reel uploaded from the public file URL. */

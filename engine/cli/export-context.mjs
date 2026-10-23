@@ -33,6 +33,13 @@ const target = { week: isoWeekOf(monday), idPrefix: isoWeekOf(monday).toLowerCas
     return { day: name, date: dt.toISOString().slice(0, 10), utcOffset: off }; }),
   alreadyPlanned: [...planned].sort() };
 writeFileSync(join(OUTD, 'target-week.json'), JSON.stringify(target, null, 2));
+// Never plan more than two weeks ahead (a second run on the same Friday would otherwise plan the week after).
+const weeksAhead = Math.round((monday - new Date(Date.now() - ((new Date().getUTCDay() || 7) - 1) * 864e5)) / (7 * 864e5));
+if (weeksAhead > 2 && !process.env.PLAN_FORCE) {
+  console.log(`[${P.id}] ${target.week} is ${weeksAhead} weeks ahead - the coming weeks are planned already, nothing to do`);
+  if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
+  await close(); process.exit(0);
+}
 
 // Experiments: the scoreboard and next week's allocation (engine/experiments.mjs), the voices and
 // music that exist, and the voice budget left this month.

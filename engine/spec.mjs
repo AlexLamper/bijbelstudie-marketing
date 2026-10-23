@@ -107,7 +107,7 @@ export const ReelQuiz = z.object({
   options: z.array(z.string().min(1).max(60)).min(2).max(4),
   answer: z.number().int().min(0).max(3),
   explain: said(10, 200),
-  verse: ref.optional(),
+  verseRef: ref.optional(),                              // shown under the explanation (exact text from data/)
 }).refine(s => s.answer < s.options.length, { message: 'answer must point to one of the options (0-based)', path: ['answer'] });
 
 // "5 dingen die je niet wist over ..." - a numbered list, one item per beat.
@@ -189,9 +189,10 @@ export async function prepare(raw) {
   if (!schema) throw new Error(`Unknown kind "${raw?.kind}". Use one of: ${KINDS.join(', ')}`);
   if (!RENDERABLE.includes(raw.kind)) throw new Error(`"${raw.kind}" has no template yet - use one of: ${RENDERABLE.join(', ')}`);
   const spec = schema.parse(raw);
+  if (VOICE_REQUIRED.includes(spec.kind) && (!spec.voice || spec.voice === 'none')) throw new Error(`${spec.kind} always speaks: set voice to male, female or a key from voices.json`);
   const { getVerse } = await import('./verses.mjs');
   if (spec.ref) spec.verse = getVerse(spec.ref);
-  if (spec.kind === 'reel-quiz' && spec.verse) spec.verseData = getVerse(spec.verse);
+  if (spec.kind === 'reel-quiz' && spec.verseRef) spec.verseData = getVerse(spec.verseRef);
   for (const l of spec.lines || []) if (l.verse) l.verseData = getVerse(l.verse);
   for (const l of spec.items || []) if (l.verse) l.verseData = getVerse(l.verse);
   for (const l of spec.scenes || []) if (l.verse) l.verseData = getVerse(l.verse);

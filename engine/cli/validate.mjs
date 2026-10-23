@@ -14,7 +14,7 @@ const P = project();
 const arg = process.argv[2];
 const dir = !arg ? P.paths.queue : arg === 'samples' ? P.paths.samples : arg;
 const files = existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') : [];
-const seenRefs = []; const slots = new Map(); let bad = 0; const planned = [];
+const seenRefs = []; const slots = new Map(); let bad = 0; let weekFails = 0; const planned = [];
 const HEADING = /^(Een psalm|Een lied|Een gebed|Een onderwijzing|Voor den opperzangmeester|Aleph|Beth|Gimel|Daleth|He\.|Vau|Zain|Cheth|Teth|Jod|Caph|Lamed|Mem|Nun|Samech|Ain|Pe\.|Tsade|Koph|Resch|Schin|Thau)\b/;
 // When planning (not for samples): every new item belongs to the target week, revisions keep their own.
 const ctx = name => { try { return JSON.parse(readFileSync(join(P.paths.context, name), 'utf8')); } catch { return null; } };
@@ -78,7 +78,8 @@ if (allocation && planned.length) {
   compare('extra reels format', count(extra), allocation.extraReels.format, true);
   const feed = planned.filter(x => ['post-spotlight', 'post-statement', 'carousel'].includes(x.kind));
   compare('feed posts format', count(feed), allocation.feedPosts.format, true);
-  for (const [trait, want] of Object.entries(allocation.targets || {})) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, false);
+  if (feed.length !== allocation.feedPosts.slots) fails.push(`${feed.length} feed posts planned, allocation.json wants ${allocation.feedPosts.slots}`);
+  for (const [trait, want] of Object.entries(allocation.targets || {})) if (!['voiceStyle', 'captions'].includes(trait)) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, false);
   if (allocation.voiceBudget) {
     const chars = planned.reduce((n, x) => n + spokenText(x).length, 0);
     if (chars > allocation.voiceBudget.charsThisWeek) fails.push(`voiced text is ${chars} characters, the voice budget this week is ${allocation.voiceBudget.charsThisWeek} - shorten lines or use formats without voice`);
@@ -86,7 +87,7 @@ if (allocation && planned.length) {
   }
   warns.forEach(w => console.log(`WARN ${w}`));
   fails.forEach(f => console.log(`FAIL week: ${f}`));
-  bad += fails.length;
+  weekFails = fails.length;
 }
-console.log(`\n[${P.id}] ${files.length - bad}/${files.length} valid${bad ? ' - fix every FAIL above' : ''}`);
-process.exit(bad ? 1 : 0);
+console.log(`\n[${P.id}] ${files.length - bad}/${files.length} valid${weekFails ? `, ${weekFails} week problem${weekFails > 1 ? 's' : ''}` : ''}${bad || weekFails ? ' - fix every FAIL above' : ''}`);
+process.exit(bad || weekFails ? 1 : 0);
