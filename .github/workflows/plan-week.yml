@@ -24,7 +24,7 @@ jobs:
     strategy: { matrix: { project: '${{ fromJSON(needs.projects.outputs.list) }}' }, fail-fast: false, max-parallel: 1 }
     concurrency: { group: 'planner-${{ matrix.project }}', cancel-in-progress: false }
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       PROJECT: ${{ matrix.project }}
     steps:
@@ -49,7 +49,7 @@ jobs:
             Read planner/PLAN.md and follow it exactly: report on last week, plan next ISO week,
             draft comment replies, and run the validator until it passes.
           claude_args: >-
-            --model claude-sonnet-5-5 --max-turns 120
+            --model claude-sonnet-5-5 --max-turns 260
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
         run: node engine/cli/validate.mjs 2>&1 | tee -a run.log

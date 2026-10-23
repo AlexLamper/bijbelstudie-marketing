@@ -1,0 +1,59 @@
+{
+  "id": "w45-carousel-sun",
+  "kind": "carousel",
+  "week": "2026-W45",
+  "slot": "2026-11-08T12:00:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook"
+  ],
+  "caption": "Drie vragen die elk hoofdstuk openen. Bewaar deze voor je volgende keer lezen.",
+  "hashtags": [
+    "#bijbellezen",
+    "#bijbelstudie",
+    "#bijbel"
+  ],
+  "experiment": {
+    "feedType": "carousel",
+    "hook": "waardebelofte",
+    "topic": "praktisch"
+  },
+  "basedOn": "Klassieke drie-stappen-methode: observatie, uitleg, toepassing; BijbelStudie toont context per hoofdstuk.",
+  "style": "dark",
+  "slides": [
+    {
+      "type": "cover",
+      "title": "3 vragen voor elk hoofdstuk dat je leest",
+      "sub": "Bewaar deze voor je volgende keer lezen."
+    },
+    {
+      "type": "point",
+      "title": "Wat staat er?",
+      "text": "Lees het hoofdstuk een keer rustig door. Wie, wat, waar en wanneer?"
+    },
+    {
+      "type": "point",
+      "title": "Wat betekent het?",
+      "text": "Zoek de context: wie schreef het, aan wie, en waarom?"
+    },
+    {
+      "type": "point",
+      "title": "Wat doe ik ermee?",
+      "text": "Kies een zin die je meeneemt in je dag."
+    },
+    {
+      "type": "verse",
+      "verse": "Jakobus 1:22",
+      "note": "Lezen is het begin. Doen is het doel."
+    },
+    {
+      "type": "screen",
+      "screenshot": "08-les-context",
+      "title": "Context bij elk hoofdstuk",
+      "text": "BijbelStudie zet uitleg en achtergrond naast de tekst."
+    }
+  ],
+  "endCard": {
+    "headline": "Begrijp wat je leest."
+  }
+}

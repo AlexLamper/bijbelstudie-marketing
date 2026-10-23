@@ -1,0 +1,260 @@
+{
+ "note": "Places a reel-story map scene can show. key -> Dutch name and real coordinates (lat, lon). Add more as needed.",
+ "places": {
+  "jeruzalem": {
+   "name": "Jeruzalem",
+   "lat": 31.778,
+   "lon": 35.235
+  },
+  "bethlehem": {
+   "name": "Bethlehem",
+   "lat": 31.705,
+   "lon": 35.2
+  },
+  "nazareth": {
+   "name": "Nazareth",
+   "lat": 32.699,
+   "lon": 35.304
+  },
+  "kapernaum": {
+   "name": "Kapernaüm",
+   "lat": 32.88,
+   "lon": 35.575
+  },
+  "meer-van-galilea": {
+   "name": "Meer van Galilea",
+   "lat": 32.82,
+   "lon": 35.59
+  },
+  "jericho": {
+   "name": "Jericho",
+   "lat": 31.871,
+   "lon": 35.444
+  },
+  "dode-zee": {
+   "name": "Dode Zee",
+   "lat": 31.5,
+   "lon": 35.5
+  },
+  "samaria": {
+   "name": "Samaria",
+   "lat": 32.276,
+   "lon": 35.197
+  },
+  "sichem": {
+   "name": "Sichem",
+   "lat": 32.213,
+   "lon": 35.282
+  },
+  "bethel": {
+   "name": "Bethel",
+   "lat": 31.93,
+   "lon": 35.22
+  },
+  "hebron": {
+   "name": "Hebron",
+   "lat": 31.532,
+   "lon": 35.095
+  },
+  "berseba": {
+   "name": "Berseba",
+   "lat": 31.245,
+   "lon": 34.84
+  },
+  "emmaus": {
+   "name": "Emmaüs",
+   "lat": 31.84,
+   "lon": 34.99
+  },
+  "bethanie": {
+   "name": "Bethanië",
+   "lat": 31.771,
+   "lon": 35.26
+  },
+  "caesarea": {
+   "name": "Caesarea",
+   "lat": 32.5,
+   "lon": 34.892
+  },
+  "joppe": {
+   "name": "Joppe",
+   "lat": 32.054,
+   "lon": 34.752
+  },
+  "gaza": {
+   "name": "Gaza",
+   "lat": 31.5,
+   "lon": 34.47
+  },
+  "tyrus": {
+   "name": "Tyrus",
+   "lat": 33.27,
+   "lon": 35.196
+  },
+  "sidon": {
+   "name": "Sidon",
+   "lat": 33.56,
+   "lon": 35.37
+  },
+  "damascus": {
+   "name": "Damascus",
+   "lat": 33.513,
+   "lon": 36.292
+  },
+  "tarsus": {
+   "name": "Tarsus",
+   "lat": 36.918,
+   "lon": 34.895
+  },
+  "antiochie": {
+   "name": "Antiochië",
+   "lat": 36.202,
+   "lon": 36.16
+  },
+  "antiochie-pisidie": {
+   "name": "Antiochië (Pisidië)",
+   "lat": 38.306,
+   "lon": 31.189
+  },
+  "ikonium": {
+   "name": "Ikonium",
+   "lat": 37.871,
+   "lon": 32.485
+  },
+  "lystra": {
+   "name": "Lystra",
+   "lat": 37.578,
+   "lon": 32.373
+  },
+  "derbe": {
+   "name": "Derbe",
+   "lat": 37.35,
+   "lon": 33.37
+  },
+  "efeze": {
+   "name": "Efeze",
+   "lat": 37.941,
+   "lon": 27.342
+  },
+  "smyrna": {
+   "name": "Smyrna",
+   "lat": 38.42,
+   "lon": 27.14
+  },
+  "laodicea": {
+   "name": "Laodicea",
+   "lat": 37.836,
+   "lon": 29.107
+  },
+  "kolosse": {
+   "name": "Kolosse",
+   "lat": 37.788,
+   "lon": 29.26
+  },
+  "troas": {
+   "name": "Troas",
+   "lat": 39.753,
+   "lon": 26.159
+  },
+  "filippi": {
+   "name": "Filippi",
+   "lat": 41.013,
+   "lon": 24.284
+  },
+  "thessalonica": {
+   "name": "Thessalonica",
+   "lat": 40.64,
+   "lon": 22.944
+  },
+  "berea": {
+   "name": "Berea",
+   "lat": 40.524,
+   "lon": 22.202
+  },
+  "athene": {
+   "name": "Athene",
+   "lat": 37.984,
+   "lon": 23.728
+  },
+  "korinthe": {
+   "name": "Korinthe",
+   "lat": 37.906,
+   "lon": 22.878
+  },
+  "kreta": {
+   "name": "Kreta",
+   "lat": 35.1,
+   "lon": 24.9
+  },
+  "malta": {
+   "name": "Malta",
+   "lat": 35.9,
+   "lon": 14.45
+  },
+  "rome": {
+   "name": "Rome",
+   "lat": 41.893,
+   "lon": 12.483
+  },
+  "patmos": {
+   "name": "Patmos",
+   "lat": 37.31,
+   "lon": 26.55
+  },
+  "cyprus": {
+   "name": "Cyprus",
+   "lat": 35.0,
+   "lon": 33.2
+  },
+  "pafos": {
+   "name": "Pafos",
+   "lat": 34.775,
+   "lon": 32.42
+  },
+  "salamis": {
+   "name": "Salamis",
+   "lat": 35.185,
+   "lon": 33.9
+  },
+  "alexandrie": {
+   "name": "Alexandrië",
+   "lat": 31.2,
+   "lon": 29.918
+  },
+  "egypte": {
+   "name": "Egypte",
+   "lat": 30.0,
+   "lon": 31.2
+  },
+  "sinai": {
+   "name": "Sinaï",
+   "lat": 28.539,
+   "lon": 33.973
+  },
+  "babel": {
+   "name": "Babel",
+   "lat": 32.536,
+   "lon": 44.42
+  },
+  "ur": {
+   "name": "Ur",
+   "lat": 30.963,
+   "lon": 46.103
+  },
+  "haran": {
+   "name": "Haran",
+   "lat": 36.866,
+   "lon": 39.031
+  },
+  "nineve": {
+   "name": "Ninevé",
+   "lat": 36.359,
+   "lon": 43.152
+  },
+  "susan": {
+   "name": "Susan",
+   "lat": 32.189,
+   "lon": 48.258
+  }
+ }
+}

@@ -51,6 +51,12 @@
   /* captions */
   .cap { left: 120px; width: 840px; top: 1430px; display: flex; justify-content: center; }
   .cap span { background: color-mix(in srgb, var(--panel) 88%, transparent); color: #fff; font-weight: 700; font-size: 50px; line-height: 1.2; padding: 16px 26px; border-radius: 18px; text-align: center; letter-spacing: -.3px; }
+  /* karaoke subtitles: big outlined words, the spoken word on a teal pill */
+  .cap.karaoke span { background: none; padding: 0; font-weight: 800; font-size: 66px; line-height: 1.25; letter-spacing: -.5px; color: #fff;
+    -webkit-text-stroke: 7px rgba(10,16,20,.9); paint-order: stroke fill; text-shadow: 0 6px 22px rgba(0,0,0,.35); }
+  .cap.karaoke i { font-style: normal; display: inline-block; padding: 0 10px; border-radius: 14px; transition: none; }
+  .cap.karaoke i.on { background: var(--accent); -webkit-text-stroke: 0; transform: scale(1.06); }
+  .cap.karaoke i.done { color: #fff; }
 </style>
 </head>
 <body>
@@ -122,146 +128,96 @@ function endCard(spec, top = 420) {
 }
 const END = 2.8; // end card length in reels (2-3 s, approved rule)
 
-/* ---------- templates ---------- */
-const T = {};
-
-/* Daily verse still, 1080x1350 */
-T['verse-still'] = spec => {
-  const W = 1080, H = 1350;
-  img(photoSrc(spec.photo), 'abs full photo'); el('div', 'abs full scrim');
-  const box = el('div', 'abs'); css(box, { left: '110px', width: '860px', top: '0', height: H + 'px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', color: '#fff' });
-  const text = spec.verse.text;
-  el('div', '', box, esc(ctx.verse.eyebrow)).style.cssText = 'font-weight:700;font-size:26px;letter-spacing:4px;opacity:.82';
-  el('div', 'serif', box, esc(text)).style.cssText = `margin-top:44px;font-size:${fit(text, [[80, 72], [140, 62], [220, 54], [320, 46], [999, 40]])}px;line-height:1.36`;
-  el('div', '', box, vref(spec.verse.ref)).style.cssText = 'margin-top:44px;font-weight:700;font-size:28px;letter-spacing:3px;opacity:.9';
-  const lock = el('div', 'abs'); css(lock, { left: 0, width: '100%', top: '1190px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '18px' });
-  img(ctx.logos.iconOnDark, '', lock).style.height = '60px';
-  img(ctx.logos.wordmarkOnDark, '', lock).style.height = '36px';
-  return { width: W, height: H, duration: 0, render() {} };
-};
-
-/* Animated daily verse reel, 1080x1920 */
-T['reel-verse'] = spec => {
-  const W = 1080, H = 1920;
-  const bg = img(photoSrc(spec.photo), 'abs full photo'); el('div', 'abs full scrim');
-  const box = el('div', 'abs'); css(box, { left: '120px', width: '780px', top: '330px', height: '1260px', display: 'flex', flexDirection: 'column', justifyContent: 'center', color: '#fff' });
-  const eyebrow = el('div', '', box, esc(ctx.verse.eyebrow)); eyebrow.style.cssText = 'font-weight:700;font-size:30px;letter-spacing:4px;opacity:.85';
-  const text = spec.verse.text;
-  const size = fit(text, [[80, 84], [140, 72], [220, 62], [320, 54], [999, 46]]);
-  const vbox = el('div', 'serif', box); vbox.style.cssText = `margin-top:48px;font-size:${size}px;line-height:1.34`;
-  const phrases = text.match(/[^,;:.!?]+[,;:.!?]*\s*/g) || [text];
-  const spans = phrases.map(p => el('span', '', vbox, esc(p)));
-  const refEl = el('div', '', box, vref(spec.verse.ref)); refEl.style.cssText = 'margin-top:48px;font-weight:700;font-size:32px;letter-spacing:3px';
-  const per = Math.min(1.1, 4.2 / spans.length);
-  const textEnd = .9 + spans.length * per;
-  const duration = Math.max(8, textEnd + 2.6) + END;
-  const end = endCard(spec);
-  return { width: W, height: H, duration, render(t) {
-    bg.style.transform = `scale(${1 + .07 * (t / duration)})`;
-    let q = out(prog(t, .2, .8)); set(eyebrow, q * .85, (1 - q) * 24);
-    spans.forEach((s, i) => { const a = .9 + i * per; s.style.opacity = .12 + .88 * out(prog(t, a, a + .7)); });
-    q = out(prog(t, textEnd, textEnd + .6)); set(refEl, q, (1 - q) * 20);
-    end(t, duration - END);
-  } };
-};
-
-/* App demo reel: hook, 2-5 phone scenes, end card */
-T['reel-demo'] = spec => {
-  const W = 1080, H = 1920; const HOOK = 2.0, SCENE = 2.7;
-  const hook = el('div', 'abs serif'); css(hook, { left: '96px', width: '800px', top: '700px', fontWeight: 600, fontSize: fit(spec.hook, [[30, 96], [50, 84], [999, 72]]) + 'px', lineHeight: 1.08, letterSpacing: '-1px', color: 'var(--ink)' });
-  el('div', '', hook).style.cssText = 'width:124px;height:8px;border-radius:4px;background:var(--accent);margin-bottom:52px';
-  el('div', '', hook, esc(spec.hook));
-  const scenes = spec.scenes.map((s, i) => {
-    const cap = el('div', 'abs'); css(cap, { left: '96px', width: '820px', top: '290px', fontWeight: 700, fontSize: fit(s.caption, [[28, 66], [48, 58], [999, 50]]) + 'px', lineHeight: 1.1, letterSpacing: '-1.2px', color: 'var(--ink)' });
-    cap.innerHTML = esc(s.caption);
-    const ph = phone(stage, s.screenshot, 600); css(ph.node, { left: '240px', top: '560px' });
-    return { cap, ph: ph.node };
+/* ---------- shared: spoken units, subtitles, looks ---------- */
+// A template that speaks registers T[kind].units = spec => [{ text, pause? }]. render.mjs voices each
+// unit and passes timing[i] = { dur, words: [{ w, a, b }] } (times relative to the unit start), or
+// null when the reel is silent. layout() puts the units on one clock; render.mjs mixes the voice
+// with the same starts (returned by setup), so picture and sound always line up.
+const est = text => Math.max(1.4, String(text).length / 14);
+function layout(units, timing) {
+  let at = .3;
+  return units.map((u, i) => {
+    at += u.pause || 0;
+    const tm = timing?.[i]; const dur = tm ? (typeof tm === 'number' ? tm : tm.dur) : (u.dur || est(u.text));
+    const s = { ...u, start: at, dur, words: tm?.words || null }; at += dur + .25; return s;
   });
-  const duration = HOOK + scenes.length * SCENE + END;
-  const end = endCard(spec);
-  return { width: W, height: H, duration, render(t) {
-    const r = out(prog(t, .05, .4)); hook.firstChild.style.width = 124 * r + 'px';
-    const q = out(prog(t, .1, .55)); const x = inout(prog(t, HOOK - .35, HOOK));
-    set(hook, q * (1 - x), (1 - q) * 40 - 80 * x);
-    scenes.forEach((s, i) => {
-      const a = HOOK + i * SCENE, b = a + SCENE;
-      const inP = out(prog(t, a - .3, a + .35)), outP = inout(prog(t, b - .3, b));
-      const last = i === scenes.length - 1;
-      const o = inP * (last ? 1 : 1 - outP);
-      set(s.cap, o, (1 - inP) * 30);
-      set(s.ph, inP > 0 ? (last ? 1 : 1 - outP) : 0, (1 - inP) * (i === 0 ? 1100 : 60), .97 + .03 * inP + .02 * inout(prog(t, a, b)), last ? 0 : -60 * outP);
-    });
-    end(t, duration - END);
-  } };
-};
+}
+const endOf = segs => segs.length ? segs[segs.length - 1].start + segs[segs.length - 1].dur : 0;
+const hasVoice = spec => !!spec.voice && spec.voice !== 'none';
 
-/* Voiceover explainer: spoken hook + lines with verse/screen/text visuals and burned-in captions */
-T['reel-explainer'] = (spec, timing) => {
-  const W = 1080, H = 1920;
-  const units = [{ say: spec.hook, hook: true }, ...spec.lines];
-  const tm = timing || units.map(u => Math.max(1.6, u.say.length / 14));
-  let acc = .3; const segs = units.map((u, i) => { const s = { ...u, start: acc, dur: tm[i] }; acc += tm[i] + .25; return s; });
-  const talkEnd = acc;
-  const duration = talkEnd + .4 + END;
-  const visuals = segs.map(s => {
-    const v = el('div', 'abs full'); v.style.opacity = 0;
-    if (s.hook) {
-      const h = el('div', 'serif', v, esc(s.say)); h.style.cssText = `position:absolute;left:96px;width:830px;top:560px;font-weight:600;font-size:${fit(s.say, [[30, 96], [55, 84], [999, 70]])}px;line-height:1.08;letter-spacing:-1px;color:var(--ink)`;
-      s.noCap = true;
-    } else if (s.verseData) {
-      const card = el('div', '', v); card.style.cssText = 'position:absolute;left:96px;width:830px;top:430px;background:var(--accent-faint);border-radius:28px;padding:56px 56px 60px';
-      el('div', '', card, vref(s.verseData.ref)).style.cssText = 'font-weight:700;font-size:28px;letter-spacing:3px;color:var(--accent-dark)';
-      el('div', 'serif', card, esc(s.verseData.text)).style.cssText = `margin-top:28px;font-size:${fit(s.verseData.text, [[90, 60], [180, 50], [300, 42], [999, 36]])}px;line-height:1.4;color:var(--ink)`;
-    } else if (s.screenshot) {
-      const ph = phone(v, s.screenshot, 500); css(ph.node, { left: '290px', top: '260px' }); // ends ~1345px, clear of the captions at 1430px
-    } else {
-      const h = el('div', '', v, esc(s.say)); h.style.cssText = `position:absolute;left:96px;width:830px;top:640px;font-weight:700;font-size:${fit(s.say, [[60, 76], [110, 64], [999, 54]])}px;line-height:1.12;letter-spacing:-1.2px;color:var(--ink)`;
-      s.noCap = true;
+/** Word times on the reel clock: real ones from the voice, else spread over the unit by length. */
+function wordTimes(seg) {
+  if (seg.words?.length) return seg.words.map(w => ({ w: w.w, a: seg.start + w.a, b: seg.start + w.b }));
+  const ws = String(seg.text).split(/\s+/).filter(Boolean); const total = ws.reduce((n, w) => n + w.length + 1, 0); let a = seg.start;
+  return ws.map(w => { const d = seg.dur * (w.length + 1) / total; const r = { w, a, b: a + d }; a += d; return r; });
+}
+
+/** Burned-in subtitles. 'block': the current few words. 'karaoke': same, the spoken word lit up. 'none'. */
+function subtitles(segs, mode = 'block', { top = 1430 } = {}) {
+  if (mode === 'none') return () => {};
+  const k = mode === 'karaoke';
+  const cap = el('div', 'abs cap' + (k ? ' karaoke' : '')); cap.style.top = top + 'px'; cap.style.opacity = 0;
+  const span = el('span', '', cap);
+  const groups = [];
+  for (const s of segs) {
+    if (s.noCap) continue; let cur = [];
+    for (const w of wordTimes(s)) {
+      cur.push(w); const txt = cur.map(x => x.w).join(' ');
+      if (txt.length > (k ? 18 : 26) || (/[.,;:?!]$/.test(w.w) && txt.length > 10)) { groups.push(cur); cur = []; }
     }
-    return v;
-  });
-  const cap = el('div', 'abs cap'); const capSpan = el('span', '', cap); cap.style.opacity = 0;
-  const capTimeline = [];
-  segs.forEach(s => { if (s.noCap) return; const cs = chunks(s.say); const total = cs.reduce((n, c) => n + c.length, 0); let a = s.start; cs.forEach(c => { const d = s.dur * c.length / total; capTimeline.push({ a, b: a + d, c }); a += d; }); });
-  const end = endCard(spec);
-  return { width: W, height: H, duration, units, render(t) {
-    segs.forEach((s, i) => {
-      const next = segs[i + 1]; const until = next ? next.start : talkEnd + .4;
-      const q = out(prog(t, s.start - .25, s.start + .2)) * (1 - inout(prog(t, until - .25, until)));
-      set(visuals[i], i === segs.length - 1 ? out(prog(t, s.start - .25, s.start + .2)) : q, (1 - out(prog(t, s.start - .25, s.start + .2))) * 30, 1 + .02 * prog(t, s.start, until));
-    });
-    const c = capTimeline.find(c => t >= c.a && t < c.b);
-    if (c) { if (capSpan.textContent !== c.c) capSpan.textContent = c.c; cap.style.opacity = 1; } else cap.style.opacity = 0;
-    end(t, duration - END);
-  } };
-};
+    if (cur.length) groups.push(cur);
+  }
+  let shown = null;
+  return t => {
+    const i = groups.findIndex((g, i) => t >= g[0].a - .05 && t < Math.min(groups[i + 1]?.[0].a ?? 1e9, g[g.length - 1].b + .2));
+    const g = groups[i];
+    if (!g) { cap.style.opacity = 0; return; }
+    cap.style.opacity = 1;
+    if (k) span.innerHTML = g.map(w => `<i class="${t >= w.a - .02 ? (t < w.b + .04 ? 'on' : 'done') : ''}">${esc(w.w)}</i>`).join(' ');
+    else if (shown !== g) span.textContent = g.map(w => w.w).join(' ');
+    shown = g;
+  };
+}
 
-/* Feature spotlight post, 1080x1350 */
-T['post-spotlight'] = spec => {
-  const W = 1080, H = 1350;
-  const lock = el('div', 'abs'); css(lock, { left: '96px', top: '86px', display: 'flex', alignItems: 'center', gap: '16px' });
-  img(ctx.logos.full, '', lock).style.height = '50px';
-  const h = el('div', 'abs', null, esc(spec.headline)); css(h, { left: '96px', width: '888px', top: '196px', fontWeight: 700, fontSize: fit(spec.headline, [[28, 76], [48, 66], [999, 58]]) + 'px', lineHeight: 1.08, letterSpacing: '-1.5px', color: 'var(--ink)' });
-  const s = el('div', 'abs', null, esc(spec.sub)); css(s, { left: '96px', width: '860px', top: '0', fontSize: '36px', lineHeight: 1.4, color: 'var(--ink-body)' });
-  const ph = phone(stage, spec.screenshot, 560); css(ph.node, { left: '260px', top: '560px' });
-  return { width: W, height: H, duration: 0, render() { s.style.top = (h.offsetTop + h.offsetHeight + 24) + 'px'; } };
+/** Looks: light (white ground), dark (brand panel), photo (calm landscape + scrim). Paints the ground. */
+const LOOKS = {
+  light: { ink: 'var(--ink)', body: 'var(--ink-body)', muted: 'var(--ink-muted)', accent: 'var(--accent)', accentText: 'var(--accent-dark)', card: 'var(--accent-faint)', line: 'var(--line)', dark: false },
+  dark: { ink: '#fff', body: 'rgba(255,255,255,.82)', muted: 'rgba(255,255,255,.6)', accent: 'var(--accent)', accentText: 'var(--accent-soft)', card: 'rgba(255,255,255,.08)', line: 'rgba(255,255,255,.18)', dark: true },
 };
+LOOKS.photo = { ...LOOKS.dark, card: 'rgba(0,0,0,.34)' };
+const hashNo = (s, n) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return 1 + (h % Math.max(1, n)); };
+function ground(look, spec, photoNo) {
+  const L = LOOKS[look] || LOOKS.light;
+  stage.style.background = look === 'light' ? 'var(--surface)' : look === 'dark' ? 'var(--panel)' : '#000';
+  let bg = null;
+  if (look === 'photo') { bg = img(photoSrc(photoNo || hashNo(spec.id, ctx.photoCount || 365)), 'abs full photo'); el('div', 'abs full scrim'); }
+  let glow = null;   // dark look: a soft teal light drifting behind the content
+  if (look === 'dark') { glow = el('div', 'abs'); css(glow, { left: '-300px', top: '-200px', width: '1400px', height: '1400px', borderRadius: '50%', background: 'radial-gradient(closest-side, color-mix(in srgb, var(--accent) 26%, transparent), transparent)' }); }
+  return { ...L, look, bg, glow, logo: L.dark ? ctx.logos.iconOnDark : ctx.logos.full };
+}
+/** Slow background motion for a look: Ken Burns on photos, drifting glow on dark. */
+function drift(L, t, duration) {
+  if (L.bg) L.bg.style.transform = `scale(${1 + .07 * (t / duration)})`;
+  if (L.glow) { const k = t / Math.max(1, duration); L.glow.style.transform = `translate(${-80 + 260 * k}px, ${60 + 520 * Math.sin(Math.PI * k)}px)`; }
+}
+/** Small logo lockup for a corner of a slide or reel (respects the dark/light logo rule). */
+function lockup(parent, L, h = 52) {
+  const box = el('div', '', parent); css(box, { display: 'flex', alignItems: 'center', gap: Math.round(h * .3) + 'px' });
+  if (L.dark) { img(ctx.logos.iconOnDark, '', box).style.height = h + 'px'; img(ctx.logos.wordmarkOnDark, '', box).style.height = Math.round(h * .6) + 'px'; }
+  else img(ctx.logos.full, '', box).style.height = h + 'px';
+  return box;
+}
 
-/* One-line statement post, 1080x1350 */
-T['post-statement'] = spec => {
-  const W = 1080, H = 1350;
-  stage.style.background = 'var(--surface)';
-  const box = el('div', 'abs'); css(box, { left: '96px', width: '860px', top: '0', height: '1150px', display: 'flex', flexDirection: 'column', justifyContent: 'center' });
-  el('div', '', box).style.cssText = 'width:124px;height:8px;border-radius:4px;background:var(--accent);margin-bottom:56px';
-  el('div', 'serif', box, esc(spec.line)).style.cssText = `font-weight:600;font-size:${fit(spec.line, [[40, 96], [70, 82], [999, 68]])}px;line-height:1.1;letter-spacing:-1px;color:var(--ink)`;
-  if (spec.sub) el('div', '', box, esc(spec.sub)).style.cssText = 'margin-top:44px;font-size:38px;line-height:1.4;color:var(--accent-dark);font-weight:600';
-  const lock = el('div', 'abs'); css(lock, { left: '96px', top: '1176px' });
-  img(ctx.logos.full, '', lock).style.height = '56px';
-  return { width: W, height: H, duration: 0, render() {} };
-};
-
+/* ---------- templates (templates/*.js register on T) ---------- */
+const T = {};
+</script>
+<script src="templates/base.js"></script>
+<script src="templates/formats.js"></script>
+<script>
 /* ---------- entry ---------- */
 let current;
+/** The spoken units of a voiced spec (render.mjs voices them), or null for a silent reel. */
+window.units = spec => { const t = T[spec.kind]; return t?.units && hasVoice(spec) ? t.units(spec) : null; };
 window.setup = async (spec, timing, context) => {
   const t = T[spec.kind]; if (!t) throw new Error('No template for ' + spec.kind);
   if (context) {
@@ -279,8 +235,10 @@ window.setup = async (spec, timing, context) => {
   await document.fonts.ready;
   await Promise.all([...document.images].map(i => i.decode().catch(() => { throw new Error('Image failed: ' + i.src); })));
   current.render(current.duration ? current.duration - .05 : 0);
-  return { width: current.width, height: current.height, duration: current.duration };
+  return { width: current.width, height: current.height, duration: current.duration, starts: current.starts || null, slides: current.slides || 0 };
 };
+/** Carousels: show slide i (0-based) for the screenshot. */
+window.slide = i => current.showSlide(i);
 window.render = t => current.render(t);
 </script>
 </body>

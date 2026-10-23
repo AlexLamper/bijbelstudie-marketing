@@ -1,0 +1,51 @@
+{
+  "id": "w45-reel-list-thu",
+  "kind": "reel-list",
+  "week": "2026-W45",
+  "slot": "2026-11-05T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Ruth is meer dan een liefdesverhaal. Vier dingen die je misschien nog niet wist.",
+  "hashtags": [
+    "#ruth",
+    "#bijbel",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "basedOn": "Ruth 1:1, 1:4, 4:17 en Mattheüs 1:5.",
+  "style": "light",
+  "music": "warm",
+  "voice": "male",
+  "captions": "karaoke",
+  "hook": "4 dingen die je niet wist over Ruth",
+  "items": [
+    {
+      "title": "Ze kwam uit Moab",
+      "say": "Ruth kwam uit Moab, een volk waar Israël vaak mee in conflict was.",
+      "verse": "Ruth 1:4"
+    },
+    {
+      "title": "Het speelt in de tijd van de richters",
+      "say": "Het verhaal speelt in de tijd van de richters, een onrustige periode.",
+      "verse": "Ruth 1:1"
+    },
+    {
+      "title": "Ze was de overgrootmoeder van David",
+      "say": "Haar achterkleinzoon werd koning David.",
+      "verse": "Ruth 4:17"
+    },
+    {
+      "title": "Ze staat in het geslachtsregister van Jezus",
+      "say": "En Mattheüs noemt haar bij naam in het geslachtsregister van Jezus.",
+      "verse": "Mattheüs 1:5"
+    }
+  ],
+  "endCard": {
+    "headline": "Lees Ruth met uitleg."
+  }
+}

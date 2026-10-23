@@ -31,7 +31,7 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
       // Only items Alex sent back (changes), or that never rendered, may be replaced. Anything he is
       // reviewing, approved or that went out stays as it is - a new plan must use new ids.
       if (existing && ![STATUS.CHANGES, STATUS.QUEUED, STATUS.FAILED].includes(existing.status)) throw new Error(`Item ${spec.id} already exists (${existing.status}) - use a new id / the target week`);
-      const aiLabel = spec.kind === 'reel-explainer';           // AI voice -> platform AI label
+      const aiLabel = !!spec.voice && spec.voice !== 'none';      // AI voice -> platform AI label
       await d.collection('items').updateOne({ _id: spec.id }, {
         $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, renderAttempts: 0, updatedAt: new Date() },
         $setOnInsert: { createdAt: new Date(), history: [] },

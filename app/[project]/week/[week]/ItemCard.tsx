@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Pill } from '@/components/ui';
-import { KIND, PLATFORM, STATUS } from '@/lib/labels';
+import { KIND, PLATFORM, STATUS, traitValue } from '@/lib/labels';
 
 const TIME = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' });
 
@@ -16,7 +16,16 @@ export default function ItemCard({ project, item }: { project: string; item: any
   const [caption, setCaption] = useState(item.spec.caption || '');
   const [tags, setTags] = useState((item.spec.hashtags || []).join(' '));
   const [msg, setMsg] = useState('');
+  const [slide, setSlide] = useState(0);
   const s = item.spec; const video = item.kind.startsWith('reel-');
+  const slides: string[] = item.media?.slides || [];
+  const voiced = !!s.voice && s.voice !== 'none';
+  // what this item tests (shown as chips): look, voice, music, subtitles, hook
+  const chips = [video || item.kind === 'carousel' ? ['Look', traitValue('style', s.style || (item.kind === 'reel-verse' ? 'photo' : ['reel-kinetic', 'reel-story'].includes(item.kind) ? 'dark' : 'light'))] : null,
+    video ? ['Stem', voiced ? `${traitValue('voice', s.voice)}${s.voiceStyle === 'levendig' ? ', levendig' : ''}` : 'geen'] : null,
+    video ? ['Muziek', traitValue('music', s.music || 'none')] : null,
+    voiced && ['reel-explainer', 'reel-list', 'reel-story'].includes(item.kind) ? ['Ondertitels', traitValue('captions', s.captions || 'block')] : null,
+    s.experiment?.hook ? ['Hook', s.experiment.hook] : null].filter(Boolean) as [string, string][];
   const st = STATUS[item.status] ?? { label: item.status, tone: 'bg-bg' };
   const canDecide = ['review', 'approved', 'changes', 'rejected'].includes(item.status);
 
@@ -42,6 +51,16 @@ export default function ItemCard({ project, item }: { project: string; item: any
       <div className={`relative bg-panel ${video ? 'aspect-[9/16]' : 'aspect-[4/5]'}`}>
         {item.media?.url ? (video
           ? <video src={item.media.url} poster={item.media.coverUrl} controls playsInline preload="none" className="h-full w-full object-contain" />
+          : slides.length > 1 ? (
+            <div className="relative h-full">
+              <a href={slides[slide]} target="_blank" rel="noreferrer" className="block h-full cursor-pointer" title="Open op volle grootte"><img src={slides[slide]} alt={`Slide ${slide + 1} van ${slides.length}`} className="h-full w-full object-contain" /></a>
+              {(['prev', 'next'] as const).map(d => (
+                <button key={d} type="button" aria-label={d === 'prev' ? 'Vorige slide' : 'Volgende slide'} disabled={d === 'prev' ? slide === 0 : slide === slides.length - 1}
+                  onClick={() => setSlide(x => x + (d === 'prev' ? -1 : 1))}
+                  className={`absolute top-1/2 -translate-y-1/2 ${d === 'prev' ? 'left-2' : 'right-2'} grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white/90 text-lg font-bold text-ink shadow transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-30`}>{d === 'prev' ? '‹' : '›'}</button>
+              ))}
+              <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1">{slides.map((_, i) => <button key={i} type="button" aria-label={`Slide ${i + 1}`} onClick={() => setSlide(i)} className={`h-2 cursor-pointer rounded-full transition ${i === slide ? 'w-5 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`} />)}</div>
+            </div>)
           : <a href={item.media.url} target="_blank" rel="noreferrer" className="block h-full cursor-pointer" title="Open op volle grootte"><img src={item.media.url} alt="" className="h-full w-full object-contain" /></a>)
           : <div className="grid h-full place-items-center p-6 text-center text-sm text-white/60">{item.status === 'failed' ? item.error : 'Nog niet gerenderd'}</div>}
         <Pill tone={`${st.tone} absolute left-3 top-3 shadow-sm`}>{st.label}</Pill>
@@ -51,7 +70,8 @@ export default function ItemCard({ project, item }: { project: string; item: any
           <span>{KIND[item.kind] || item.kind}</span><span>{TIME.format(new Date(item.slot))}</span>
         </div>
         {s.verse && <p className="mt-2 font-serif text-[15px] leading-snug text-ink">&ldquo;{s.verse.text}&rdquo; <span className="whitespace-nowrap text-xs font-bold text-accent-dark">{s.verse.ref}</span></p>}
-        {(s.hook || s.headline || s.line) && <p className="mt-2 font-semibold leading-snug">{s.hook || s.headline || s.line}</p>}
+        {(s.hook || s.question || s.headline || s.line || s.slides?.[0]?.title) && <p className="mt-2 font-semibold leading-snug">{s.hook || s.question || s.headline || s.line || s.slides[0].title}</p>}
+        {chips.length > 0 && <div className="mt-2 flex flex-wrap gap-1">{chips.map(([k, v]) => <span key={k} className="rounded-md bg-bg px-1.5 py-0.5 text-[11px] text-ink-muted ring-1 ring-line"><span className="font-semibold text-ink-body">{k}:</span> {v}</span>)}</div>}
         <details className="group mt-3 rounded-lg text-sm text-ink-body">
           <summary className="flex cursor-pointer items-center gap-1 rounded-md font-medium text-ink-muted transition hover:text-ink">
             <svg viewBox="0 0 20 20" className="h-4 w-4 transition group-open:rotate-90" fill="currentColor" aria-hidden><path d="M7.2 4.2a.75.75 0 0 1 1.06 0l5.27 5.27a.75.75 0 0 1 0 1.06L8.26 15.8a.75.75 0 1 1-1.06-1.06L11.94 10 7.2 5.26a.75.75 0 0 1 0-1.06Z" /></svg>
@@ -78,7 +98,11 @@ export default function ItemCard({ project, item }: { project: string; item: any
               {s.hashtags?.length > 0 && <p className="text-accent-dark">{s.hashtags.join(' ')}</p>}
               {canDecide && <button type="button" onClick={() => setEditing(true)} className="cursor-pointer rounded-md text-xs font-semibold text-accent-dark transition hover:text-accent hover:underline">Tekst zelf aanpassen</button>}
             </>}
-            {s.lines && <ol className="list-decimal space-y-1 pl-5">{s.lines.map((l: any, i: number) => <li key={i}>{l.say}</li>)}</ol>}
+            {s.lines && <ol className="list-decimal space-y-1 pl-5">{s.lines.map((l: any, i: number) => <li key={i}>{l.say || l.text}{l.verse ? <span className="text-xs text-ink-muted"> ({l.verse})</span> : null}</li>)}</ol>}
+            {s.items && <ol className="list-decimal space-y-1 pl-5">{s.items.map((l: any, i: number) => <li key={i}><span className="font-semibold">{l.title}</span>{l.say ? ` - ${l.say}` : l.text ? ` - ${l.text}` : ''}</li>)}</ol>}
+            {s.scenes && <ol className="list-decimal space-y-1 pl-5">{s.scenes.map((l: any, i: number) => <li key={i}><span className="text-xs font-semibold uppercase text-ink-muted">{({ map: 'kaart', timeline: 'tijdlijn', text: 'tekst', verse: 'vers', photo: 'foto' } as any)[l.show]}</span> {l.say}</li>)}</ol>}
+            {s.options && <ul className="space-y-1">{s.options.map((o: string, i: number) => <li key={i} className={i === s.answer ? 'font-semibold text-success' : ''}>{'ABCD'[i]}. {o}{i === s.answer ? ' (goed)' : ''}</li>)}<li className="pt-1">{s.explain}</li></ul>}
+            {s.slides && <ol className="list-decimal space-y-1 pl-5">{s.slides.map((l: any, i: number) => <li key={i}>{l.title || l.text || l.verse}</li>)}</ol>}
             <p className="text-xs text-ink-muted">Platforms: {s.platforms.map((x: string) => PLATFORM[x] || x).join(', ')}{item.aiLabel ? ' - krijgt AI-label' : ''}</p>
             {s.basedOn && <p className="text-xs text-ink-muted">Gebaseerd op: {s.basedOn}</p>}
             {s.experiment && Object.keys(s.experiment).length > 0 && <p className="text-xs text-ink-muted">Test: {Object.entries(s.experiment).map(([k, v]) => `${k}=${v}`).join(', ')}</p>}

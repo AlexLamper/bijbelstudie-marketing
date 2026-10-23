@@ -63,3 +63,22 @@ export async function publishViaUploadPost(item, platform) {
   const j = await r.json().catch(() => ({})); if (!r.ok || j.success === false) throw new Error(`Upload-Post ${r.status}: ${JSON.stringify(j)}`);
   return { id: j.request_id || j.id || 'upload-post', via: 'upload-post' };
 }
+
+/** Numbers for published TikTok videos (needs the video.list scope): { [videoId]: { views, likes, comments, shares } } */
+export async function tiktokStats(ids) {
+  const token = await accessToken(); const out = {};
+  for (let i = 0; i < ids.length; i += 20) {
+    const r = await fetch(`${API}/video/query/?fields=id,view_count,like_count,comment_count,share_count`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ filters: { video_ids: ids.slice(i, i + 20) } }) });
+    const j = await r.json(); if (j.error?.code && j.error.code !== 'ok') throw new Error(`TikTok video/query: ${j.error.code} ${j.error.message}`);
+    for (const v of j.data?.videos || []) out[v.id] = { views: v.view_count || 0, likes: v.like_count || 0, comments: v.comment_count || 0, shares: v.share_count || 0 };
+  }
+  return out;
+}
+
+/** Account numbers (needs user.info.stats): { followers, likes, videos } */
+export async function tiktokAccount() {
+  const token = await accessToken();
+  const r = await fetch(`${API}/user/info/?fields=follower_count,likes_count,video_count`, { headers: { Authorization: `Bearer ${token}` } });
+  const j = await r.json(); if (j.error?.code && j.error.code !== 'ok') throw new Error(`TikTok user/info: ${j.error.code} ${j.error.message}`);
+  const u = j.data?.user || {}; return { followers: u.follower_count, likes: u.likes_count, videos: u.video_count };
+}

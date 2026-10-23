@@ -8,6 +8,7 @@ import { notify, studioLink } from '../notify.mjs';
 import { project } from '../project.mjs';
 
 const d = await db(); const items = d.collection('items');
+await (await import('../library.mjs')).loadVoices(d);     // voice test set for tts
 const queued = await items.find({ $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, media: { $exists: false }, renderAttempts: { $not: { $gte: 3 } } }] }).sort({ slot: 1 }).toArray();
 const weeks = new Set(); const browser = await launch(); let ok = 0;
 
@@ -18,6 +19,7 @@ for (const it of queued) {
     const v = Date.now();                       // version suffix: re-renders never hit a stale cache
     const key = `${project().id}/items/${it._id}/${v}`;
     const media = { url: await upload(r.files.media, `${key}-${r.files.media.split('/').pop()}`), duration: r.duration };
+    if (r.files.slides) { media.slides = [media.url]; for (const f of r.files.slides.slice(1)) media.slides.push(await upload(f, `${key}-${f.split('/').pop()}`)); }
     if (r.files.cover) media.coverUrl = await upload(r.files.cover, `${key}-cover.jpg`);
     await items.updateOne({ _id: it._id }, { $set: { status: STATUS.REVIEW, media, renderNotes: r.notes, renderedAt: new Date(), renderAttempts: 0 }, $unset: { error: '' },
       $push: { history: { at: new Date(), event: 'rendered' } } });

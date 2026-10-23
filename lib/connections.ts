@@ -26,13 +26,13 @@ export const PROVIDERS: Record<ProviderId, {
   google: {
     name: 'YouTube Shorts', platforms: 'youtube', idLabel: 'Client ID', secretLabel: 'Client secret',
     console: 'https://console.cloud.google.com/apis/credentials', consoleName: 'Google Cloud Console', env: ['YT_CLIENT_ID', 'YT_CLIENT_SECRET'],
-    scopes: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
+    scopes: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/yt-analytics.readonly'],
     steps: ['Zet YouTube Data API v3 aan en publiceer het OAuth-toestemmingsscherm.', 'Maak een OAuth client ID (Web application) met de redirect-URL hieronder.', 'Kopieer Client ID en Client secret.'],
   },
   tiktok: {
     name: 'TikTok', platforms: 'tiktok', idLabel: 'Client key', secretLabel: 'Client secret',
     console: 'https://developers.tiktok.com/apps/', consoleName: 'TikTok for Developers', env: ['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET'],
-    scopes: ['user.info.basic', 'video.publish', 'video.upload'],
+    scopes: ['user.info.basic', 'user.info.stats', 'video.publish', 'video.upload', 'video.list'],
     steps: ['Maak een app met Login Kit en Content Posting API (Direct Post).', 'Zet de redirect-URL hieronder bij Login Kit.', 'Kopieer Client key en Client secret. Tot TikTok de app goedkeurt, worden posts privé geplaatst.'],
   },
 };

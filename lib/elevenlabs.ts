@@ -1,4 +1,5 @@
 import { readSecret, saveSecret } from './secrets';
+import { getDb } from './mongo';
 
 // The studio's side of ElevenLabs: browse Dutch voices, hear a sample, pick the male and female
 // voice for the explainer reels (saved as ELEVENLABS_VOICE_MALE / _FEMALE, which the engine reads).
@@ -37,18 +38,44 @@ export async function listVoices(project: string, gender?: string): Promise<{ mi
   };
 }
 
-/** Pick a voice for a role. A library voice is first added to the account so the API may use it. */
+/** A library voice must be added to the account before the API may use it. Returns the usable id. */
+async function addToAccount(project: string, voiceId: string, ownerId: string | undefined, label: string) {
+  if (!ownerId) return voiceId;
+  const r = await fetch(`${API}/voices/add/${encodeURIComponent(ownerId)}/${encodeURIComponent(voiceId)}`, {
+    method: 'POST', headers: { 'xi-api-key': await key(project), 'content-type': 'application/json' }, body: JSON.stringify({ new_name: label }) });
+  const j = await r.json().catch(() => ({}));
+  if (r.ok && j.voice_id) return j.voice_id as string;
+  if (/already/i.test(JSON.stringify(j))) return voiceId;
+  throw new Error(`Stem toevoegen mislukt: ${j.detail?.message || j.detail || r.status}`);
+}
+
+/** Pick a voice for a role (the default man / woman). */
 export async function chooseVoice(project: string, role: 'male' | 'female', voiceId: string, ownerId?: string, name?: string) {
-  let id = voiceId;
-  if (ownerId) {
-    const r = await fetch(`${API}/voices/add/${encodeURIComponent(ownerId)}/${encodeURIComponent(voiceId)}`, {
-      method: 'POST', headers: { 'xi-api-key': await key(project), 'content-type': 'application/json' }, body: JSON.stringify({ new_name: `${name || 'Stem'} (BijbelStudie ${role === 'male' ? 'man' : 'vrouw'})` }) });
-    const j = await r.json().catch(() => ({}));
-    if (r.ok && j.voice_id) id = j.voice_id;
-    else if (!/already/i.test(JSON.stringify(j))) throw new Error(`Stem toevoegen mislukt: ${j.detail?.message || j.detail || r.status}`);
-  }
+  const id = await addToAccount(project, voiceId, ownerId, `${name || 'Stem'} (BijbelStudie ${role === 'male' ? 'man' : 'vrouw'})`);
   await saveSecret(project, role === 'male' ? 'ELEVENLABS_VOICE_MALE' : 'ELEVENLABS_VOICE_FEMALE', id);
   return id;
+}
+
+// The voice test set: extra voices the planner rotates through so the experiments can compare them.
+// Stored in the project database (settings.voices); the engine reads it when rendering.
+export type TestVoice = { key: string; provider: 'elevenlabs'; id: string; name: string; gender?: string };
+export async function testSet(project: string): Promise<TestVoice[]> {
+  return ((await (await getDb(project)).collection('settings').findOne({ _id: 'voices' as any }))?.list || []) as TestVoice[];
+}
+export async function addTestVoice(project: string, voiceId: string, ownerId: string | undefined, name: string, gender?: string) {
+  const list = await testSet(project);
+  const id = await addToAccount(project, voiceId, ownerId, `${name} (BijbelStudie test)`);
+  if (list.some(v => v.id === id)) return list;
+  const base = (name.split(/[\s-]/)[0] || 'stem').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '') || 'stem';
+  let k = base, n = 2; while (['male', 'female', 'none', 'geen'].includes(k) || list.some(v => v.key === k)) k = `${base}${n++}`;
+  const next = [...list, { key: k, provider: 'elevenlabs' as const, id, name: name.split(' - ')[0].slice(0, 40), gender }];
+  await (await getDb(project)).collection('settings').updateOne({ _id: 'voices' as any }, { $set: { list: next, updatedAt: new Date() } }, { upsert: true });
+  return next;
+}
+export async function removeTestVoice(project: string, keyName: string) {
+  const next = (await testSet(project)).filter(v => v.key !== keyName);
+  await (await getDb(project)).collection('settings').updateOne({ _id: 'voices' as any }, { $set: { list: next, updatedAt: new Date() } }, { upsert: true });
+  return next;
 }
 
 /** A short Dutch sample in a voice (costs ~120 characters of the monthly quota). */

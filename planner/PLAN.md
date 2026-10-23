@@ -17,7 +17,11 @@ but write as if it will go out exactly as written.
 8. `P/content/context/competitor-top-posts.json` - what works for similar accounts (patterns only, never copy wording).
 9. `P/content/context/account-metrics.json` - followers and new signups per day.
 10. `P/content/context/target-week.json` - which week to plan, its dates and time offsets.
-11. `P/content/used-verses.json` - verses that went out. Never reuse one.
+11. `P/content/context/allocation.json` - how many of each format to make this week (decided by the
+    experiments, not by you), targets for look/voice/music/subtitles/hook/topic, and the voice budget.
+12. `P/content/context/experiments.json` - the scoreboard behind it: per trait value its fair score and chance to be best.
+13. `P/content/context/voices.json` - the voice keys you may use and the music moods that exist.
+14. `P/content/used-verses.json` - verses that went out. Never reuse one.
 
 ## 2. Write a report on the past week
 
@@ -34,6 +38,12 @@ e.g. `2026-w46-verse-mon`; `week` is the target week. Use the dates and `utcOffs
 target-week.json for `slot` (e.g. `2026-11-09T07:00:00+01:00`) - the offset changes with summer/winter time.
 Set `experiment` on every item as `P/plan.md` describes, and `basedOn` to the real fact, quote or
 feature the item rests on.
+
+Follow `allocation.json`: the number of reels per day (main + extra), the formats per group (the
+validator fails when a count is off by more than 1) and, as closely as you can, the targets for look,
+voice, music, subtitles, hook and topic. Spread variants over the week and over formats, so no trait
+is tied to one format or one day (otherwise the experiment cannot tell them apart). Stay under the
+voice budget.
 
 ## 4. Answer comments
 

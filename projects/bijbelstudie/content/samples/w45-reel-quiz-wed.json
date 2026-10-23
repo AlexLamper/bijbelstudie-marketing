@@ -1,0 +1,33 @@
+{
+  "id": "w45-reel-quiz-wed",
+  "kind": "reel-quiz",
+  "week": "2026-W45",
+  "slot": "2026-11-04T17:00:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Weet jij het zonder te googelen? Zet je antwoord in de reacties.",
+  "hashtags": [
+    "#bijbelquiz",
+    "#bijbel",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "vraag",
+    "topic": "boek"
+  },
+  "basedOn": "De Statenvertaling telt 39 boeken in het Oude en 27 in het Nieuwe Testament.",
+  "style": "light",
+  "music": "upbeat",
+  "voice": "female",
+  "question": "Hoeveel boeken telt de Statenvertaling?",
+  "options": [
+    "39",
+    "66",
+    "73",
+    "27"
+  ],
+  "answer": 1,
+  "explain": "39 in het Oude Testament en 27 in het Nieuwe Testament. Samen 66 boeken."
+}

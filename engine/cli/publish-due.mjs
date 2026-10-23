@@ -28,7 +28,7 @@ const items = d.collection('items');
 const linked = await applyConnections();          // accounts linked in the studio
 const due = await items.find({ status: { $in: [STATUS.APPROVED, STATUS.PARTIAL] }, slot: { $lte: new Date() } }).sort({ slot: 1 }).toArray();
 const tmp = mkdtempSync(join(process.env.TMPDIR || tmpdir(), 'pub-'));
-const problems = []; const waiting = new Set();
+const problems = []; const waiting = new Set(); const tiktokPrivate = [];
 
 for (const it of due) {
   it.results ??= {};
@@ -52,9 +52,7 @@ for (const it of due) {
     const before = it.results[pl];
     try {
       it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };
-      if (it.results[pl].needsManual) problems.push(pl === 'youtube'
-        ? `${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`
-        : `${it._id}: TikTok heeft de app nog niet goedgekeurd - de video staat privé. Zet hem zelf op openbaar in TikTok.`);
+      if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push(it._id); }
     } catch (e) {
       const tries = (before?.tries || 0) + 1;
       it.results[pl] = { error: e.message, tries, at: new Date() };
@@ -77,6 +75,14 @@ for (const it of due) {
 rmSync(tmp, { recursive: true, force: true });
 
 if (problems.length) await notify('Iets ging mis bij publiceren', problems, studioLink('/settings'));
+// TikTok keeps posts private until it approves the app: one note a day, not one per video
+if (tiktokPrivate.length) {
+  const key = `tiktok-private:${new Date().toISOString().slice(0, 10)}`;
+  const first = await d.collection('settings').updateOne({ _id: key }, { $setOnInsert: { at: new Date() } }, { upsert: true });
+  if (first.upsertedCount) await notify('TikTok-video\'s staan nog privé', [
+    'TikTok plaatst video\'s van nog niet goedgekeurde apps alleen privé. Ze staan op je TikTok-account; zet ze daar op openbaar als je wilt.',
+    'Na goedkeuring van de app (of via Upload-Post) gaan ze vanzelf openbaar.'], studioLink('/settings'), { replaces: 'TikTok-video' });
+}
 // one reminder a day while approved posts wait for an account that is not linked
 if (waiting.size) {
   const key = `waiting:${new Date().toISOString().slice(0, 10)}`;
