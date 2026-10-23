@@ -59,9 +59,10 @@ const STYLES = {
 
 // language_code only for models that take it (not multilingual_v2); previous/next text keep the
 // intonation flowing between separately generated lines (not supported by eleven_v3).
-async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, timestamps = true } = {}) {
+async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, timestamps = true, seed } = {}) {
   const S = STYLES[style] || STYLES.rustig; const model = S.model();
   const body = { text, model_id: model, voice_settings: S.settings };
+  if (Number.isInteger(seed)) body.seed = seed;
   if (!model.startsWith('eleven_multilingual_v2')) body.language_code = 'nl';
   if (!model.startsWith('eleven_v3')) { if (previous) body.previous_text = previous; if (next) body.next_text = next; }
   const path = timestamps ? `${voiceId}/with-timestamps` : voiceId;
@@ -70,15 +71,15 @@ async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, tim
   });
   if (!r.ok) {
     const msg = (await r.text()).slice(0, 300);
-    if (timestamps && r.status !== 401 && r.status !== 429) return elevenlabs(text, voiceId, { style, previous, next, timestamps: false });   // model without alignment
+    if (timestamps && r.status !== 401 && r.status !== 429) return elevenlabs(text, voiceId, { style, previous, next, seed, timestamps: false });   // model without alignment
     throw new Error(`ElevenLabs ${r.status}: ${msg}`);
   }
   if (!timestamps) return { audio: Buffer.from(await r.arrayBuffer()), words: null };
   const j = await r.json();
-  return { audio: Buffer.from(j.audio_base64, 'base64'), words: wordsFrom(j.alignment) };
+  return { audio: Buffer.from(j.audio_base64, 'base64'), words: wordsFrom(j.alignment), alignment: j.alignment || null };
 }
 
-/** Speak text with a voice key. Returns { audio: Buffer (mp3), words: [{ w, a, b }] | null }. */
+/** Speak text with a voice key. Returns { audio: Buffer (mp3), words: [{ w, a, b }] | null, alignment? }. */
 export async function synthesize(text, voice = 'female', opts = {}) {
   const v = resolveVoice(voice);
   if (v.provider === 'google') return google(text, v.id);

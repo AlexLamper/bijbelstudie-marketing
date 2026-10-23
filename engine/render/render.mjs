@@ -8,7 +8,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, readdirSyn
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { prepare, isVideo, PHOTO_DIR, PHOTO_COUNT } from '../spec.mjs';
 import { OUT } from '../paths.mjs';
 import { project, assetPath } from '../project.mjs';
@@ -45,16 +45,82 @@ export function stageContext(p = project()) {
 
 const probe = f => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim());
 
-/** Voice every spoken unit separately, so each unit's timing is exact. */
-async function voiceClips(spec, units, work) {
+// One voice per video. The whole script is voiced in ONE request - one take, so the voice cannot drift
+// between lines (separately generated lines can sound like different speakers). The take is then cut
+// into the template's units: by the character timings ElevenLabs returns, or, when a model gives none,
+// at the longest silences. A script too long for one request is voiced in as few takes as possible,
+// all with the same seed and the text around them as context.
+const SEP = '\n\n';
+const MAX_CHARS = { eleven_v3: 2800 };
+const seedOf = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 4294967295; };
+const cut = (src, from, to, out) => { execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-ss', Math.max(0, from).toFixed(3), ...(to != null ? ['-to', to.toFixed(3)] : []), '-ar', '44100', '-ac', '1', out]); return out; };
+
+/** Per unit: [first, last] alignment index and its words, matched on non-space characters (whitespace may be normalised). */
+export function unitsFromAlignment(al, texts) {
+  if (!al?.characters?.length) return null;
+  const S = al.character_start_times_seconds, E = al.character_end_times_seconds;
+  const ink = []; al.characters.forEach((c, k) => { if (!/\s/.test(c)) ink.push(k); });
+  const want = texts.map(t => t.replace(/\s+/g, ''));
+  if (ink.length !== want.reduce((n, t) => n + t.length, 0) || ink.map(k => al.characters[k]).join('') !== want.join('')) return null;
+  let at = 0;
+  return want.map(t => {
+    const ks = ink.slice(at, at + t.length); at += t.length;
+    const words = []; let cur = null, prev = -1;
+    for (const k of ks) {
+      if (cur && k !== prev + 1) { words.push(cur); cur = null; }   // a gap in the indices = whitespace
+      if (!cur) cur = { w: '', a: S[k], b: E[k] };
+      cur.w += al.characters[k]; cur.b = E[k]; prev = k;
+    }
+    if (cur) words.push(cur);
+    return { a: S[ks[0]], b: E[ks.at(-1)], words };
+  });
+}
+/** Fallback without timings: cut points at the (n-1) longest silences, in time order. */
+function cutsFromSilence(file, n) {
+  const log = String(spawnSync('ffmpeg', ['-hide_banner', '-i', file, '-af', 'silencedetect=noise=-38dB:d=0.2', '-f', 'null', '-']).stderr || '');   // silencedetect logs to stderr
+  const starts = [...log.matchAll(/silence_start: ([\d.]+)/g)].map(m => +m[1]);
+  const gaps = [...log.matchAll(/silence_end: ([\d.]+) \| silence_duration: ([\d.]+)/g)].map((m, i) => ({ mid: (starts[i] + +m[1]) / 2, d: +m[2] })).filter(g => Number.isFinite(g.mid) && g.mid > 0.3);
+  if (gaps.length < n - 1) return null;
+  return gaps.sort((a, b) => b.d - a.d).slice(0, n - 1).map(g => g.mid).sort((a, b) => a - b);
+}
+
+/** Group unit indexes into takes that fit one request. */
+function takesOf(texts, max) {
+  const takes = [[]]; let len = 0;
+  texts.forEach((t, i) => { if (takes.at(-1).length && len + t.length + SEP.length > max) { takes.push([]); len = 0; } takes.at(-1).push(i); len += t.length + SEP.length; });
+  return takes;
+}
+
+export async function voiceClips(spec, units, work, say = synthesize) {   // say: injectable for tests
   if (!units?.length) return null;
   if (!ttsConfigured()) return { timing: null, clips: [], note: 'Nog geen stem ingesteld - gemaakt zonder stem (Instellingen > Sleutels/Stemmen, daarna Opnieuw renderen)' };
-  const clips = [];
-  for (const [i, u] of units.entries()) {
-    const f = join(work, `v${i}.mp3`);
-    const { audio, words } = await synthesize(u.text, spec.voice, { style: spec.voiceStyle, previous: units.slice(0, i).map(x => x.text).join(' ').slice(-400) || undefined, next: units[i + 1]?.text });
-    writeFileSync(f, audio); clips.push({ f, dur: probe(f), words });
+  const texts = units.map(u => u.text.trim());
+  const max = spec.voiceStyle === 'levendig' ? MAX_CHARS.eleven_v3 : 9000;
+  const seed = seedOf(spec.id); const clips = [];
+  for (const [n, take] of takesOf(texts, max).entries()) {
+    const part = take.map(i => texts[i]);
+    const full = join(work, `take${n}.mp3`);
+    const said = await say(part.join(SEP), spec.voice, { style: spec.voiceStyle, seed,
+      previous: texts.slice(0, take[0]).join(' ').slice(-400) || undefined, next: texts.slice(take.at(-1) + 1).join(' ').slice(0, 400) || undefined });
+    writeFileSync(full, said.audio);
+    const total = probe(full);
+    const aligned = unitsFromAlignment(said.alignment, part);
+    if (aligned) {
+      // tight clips: a little air before the first and after the last word, never past the middle of a pause
+      aligned.forEach((u, j) => {
+        const lo = j ? (aligned[j - 1].b + u.a) / 2 : 0, hi = j < aligned.length - 1 ? (u.b + aligned[j + 1].a) / 2 : total;
+        const from = Math.max(lo, u.a - 0.08), to = Math.min(hi, u.b + 0.25);
+        const f = cut(full, from, to, join(work, `v${clips.length}.wav`));
+        clips.push({ f, dur: probe(f), words: u.words.map(w => ({ w: w.w, a: w.a - from, b: w.b - from })) });
+      });
+    } else {
+      const inner = part.length === 1 ? [] : cutsFromSilence(full, part.length);
+      if (!inner) throw new Error(`Voice: could not split the take into its ${part.length} lines - render again`);
+      const cuts = [0, ...inner, total];
+      for (let j = 0; j < part.length; j++) { const f = cut(full, cuts[j], j === part.length - 1 ? null : cuts[j + 1], join(work, `v${clips.length}.wav`)); clips.push({ f, dur: probe(f), words: null }); }
+    }
   }
+  if (clips.length !== units.length || clips.some(c => !(c.dur > 0.1))) throw new Error('Voice: a line came out empty - render again');
   return { timing: clips.map(c => ({ dur: c.dur, words: c.words })), clips };
 }
 
