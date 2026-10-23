@@ -58,6 +58,9 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
   Dialog rules: every speaker has a different voice (validator checks); keep lines short and spoken
   (max ~15 words); a character speaks in their own shot (`on` = the speaker for close/medium). Never show
   Jesus or God as a figure (narrate about them instead), no angels as figures, no violence on screen.
+  Walking (`to`): only between spots on the same ground - not up to `trap` or `muur` (raised), not between
+  the deck and the hold (`ruim`, `ruim-staan` are a separate room below deck). Lying (`ruim`, `bed-liggen`):
+  use `wide` or `two-shot`, not `close`.
   Staging for portrait video: put the people of a conversation close to each other (adjacent spots),
   start with a `wide` or `push-in`, use `close` for the key line, `two-shot`/`over-shoulder` for dialog,
   `phone` when the app is shown in a hand.
