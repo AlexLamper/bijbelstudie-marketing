@@ -128,3 +128,26 @@ export function SecretRow({ project, s }: { project: string; s: SecretRowData })
     </div>
   );
 }
+
+/** Instagram accounts to learn from (patterns only). Saved in the project's database. */
+export function CompetitorsForm({ project, initial }: { project: string; initial: string[] }) {
+  const router = useRouter();
+  const [text, setText] = useState(initial.map(u => `@${u}`).join('\n')); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('');
+  async function save() {
+    setBusy(true); setMsg('');
+    const r = await fetch(`/api/${project}/competitors`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ instagram: text }) });
+    const j = await r.json().catch(() => ({})); setBusy(false);
+    if (!r.ok) { setMsg(j.error || 'Opslaan mislukt'); return; }
+    setText(j.instagram.map((u: string) => `@${u}`).join('\n')); setMsg(`${j.instagram.length} accounts opgeslagen`); router.refresh();
+  }
+  return (
+    <div>
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={5} placeholder={'@account1\n@account2'}
+        className="w-full rounded-lg border border-line-strong bg-surface p-3 font-mono text-sm outline-none transition hover:border-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
+      <div className="mt-2 flex items-center gap-3">
+        <Button variant="primary" size="sm" disabled={busy} onClick={save}>Opslaan</Button>
+        {msg && <span role="status" className="text-sm text-ink-muted">{msg}</span>}
+      </div>
+    </div>
+  );
+}

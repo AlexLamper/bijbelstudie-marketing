@@ -4,7 +4,7 @@ import { getProject } from '@/lib/projects';
 import { open } from '@/lib/crypto';
 import { PROVIDERS, PLATFORM_PROVIDER, type ProviderId } from '@/lib/connections';
 import { Card, PageHeader } from '@/components/ui';
-import { AppForm, ConnectActions, PagePicker, CopyField, SecretRow } from './SettingsClient';
+import { AppForm, ConnectActions, PagePicker, CopyField, SecretRow, CompetitorsForm } from './SettingsClient';
 import { listSecrets, readSecret } from '@/lib/secrets';
 import VoicePicker from './VoicePicker';
 
@@ -40,6 +40,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
   const secrets: string[] = latest?.secrets || [];
   const key = (name: string) => keys.find(k => k.name === name);
   const hasEleven = !!(await readSecret(project, 'ELEVENLABS_API_KEY'));
+  const competitors: string[] = (await db.collection('settings').findOne({ _id: 'competitors' as any }))?.instagram || [];
   const [maleVoice, femaleVoice] = hasEleven ? await Promise.all([readSecret(project, 'ELEVENLABS_VOICE_MALE'), readSecret(project, 'ELEVENLABS_VOICE_FEMALE')]) : [null, null];
   const hasKey = (name: string) => !!key(name)?.inStudio || secrets.includes(name);
   const h = await headers();
@@ -152,6 +153,10 @@ export default async function Settings({ params, searchParams }: { params: Promi
         <p className="mt-1 text-sm text-ink-muted">Kies een mannen- en een vrouwenstem voor de uitleg-reels (de planner wisselt ze af en meet welke beter werkt). Nederlandse stemmen uit de ElevenLabs-bibliotheek; &quot;Test in het Nederlands&quot; kost ongeveer 120 tekens van je tegoed.</p>
         <Card className="mt-4 p-5"><VoicePicker project={project} male={maleVoice || undefined} female={femaleVoice || undefined} /></Card>
       </>)}
+
+      <h2 className="mt-10 text-lg font-bold">Leren van anderen</h2>
+      <p className="mt-1 text-sm text-ink-muted">Instagram-accounts (zakelijk of creator) waarvan de planner elke maandag de best scorende posts bekijkt - alleen patronen, nooit tekst overnemen. Werkt zodra Instagram gekoppeld is.</p>
+      <Card className="mt-4 p-5"><CompetitorsForm project={project} initial={competitors} /></Card>
 
       <h2 className="mt-10 text-lg font-bold">Laatste runs</h2>
       <Card className="mt-3 overflow-x-auto">

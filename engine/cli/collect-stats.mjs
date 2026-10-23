@@ -30,10 +30,13 @@ if (metaConfigured()) {
   }
   try { const a = await instagramAccount(); await d.collection('metrics').updateOne({ _id: today }, { $set: { instagram: a } }, { upsert: true }); } catch (e) { console.error(e.message); }
 
-  // competitors: once a week (Monday), from projects/<id>/content/competitors.json
+  // competitors: once a week (Monday) - the list from the studio (settings.competitors), else content/competitors.json
   const listFile = project().paths.competitors;
-  if (new Date().getDay() === 1 && existsSync(listFile)) {
-    for (const username of JSON.parse(readFileSync(listFile, 'utf8')).instagram) {
+  const fromStudio = (await d.collection('settings').findOne({ _id: 'competitors' }))?.instagram;
+  const competitors = fromStudio?.length ? fromStudio : existsSync(listFile) ? JSON.parse(readFileSync(listFile, 'utf8')).instagram || [] : [];
+  const lastSnap = await d.collection('insights').findOne({}, { sort: { at: -1 } });
+  if (competitors.length && (new Date().getDay() === 1 || !lastSnap)) {
+    for (const username of competitors) {
       try { const snap = await businessDiscovery(username); await d.collection('insights').insertOne({ username, at: new Date(), snap }); }
       catch (e) { console.error(`competitor ${username}: ${e.message}`); }
     }
