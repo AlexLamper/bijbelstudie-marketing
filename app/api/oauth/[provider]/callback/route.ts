@@ -43,7 +43,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
     else if (provider === 'google') await connectGoogle(project, app, code, redirect);
     else await connectTikTok(project, app, code, redirect);
   } catch (e: any) {
-    return back(req, project, provider, { error: e.message.slice(0, 300) });
+    return back(req, project, provider, { error: e.message.slice(0, 700) });
   }
   await checkConnection(project, provider).catch(() => {});   // shows account details right away
   const res = back(req, project, provider, { ok: provider });
@@ -61,10 +61,13 @@ async function connectMeta(project: string, app: any, code: string, redirect: st
   const fields = 'id,name,access_token,instagram_business_account{id,username}';
   const found = new Map<string, any>();
   const add = (p: any) => { if (p?.id && p.access_token && !found.has(p.id)) found.set(p.id, p); };
+  const seen: string[] = [];   // what each lookup returned, for a precise message when nothing is found
+  const errOf = (j: any) => j?.error?.message ? ` (${j.error.message.slice(0, 80)})` : '';
 
   // 1. Pages you manage directly
   const mine = await json(await fetch(G('me/accounts', { fields, limit: '100', access_token: token })), 'Meta pages');
   (mine.data || []).forEach(add);
+  seen.push(`direct ${mine.data?.length || 0}`);
 
   // 2. Login for Business: the Pages and Instagram accounts picked in the dialog are listed per permission
   const dbg = await fetch(G('debug_token', { input_token: token, access_token: `${app.clientId}|${app.clientSecret}` })).then(r => r.json()).catch(() => ({}));
@@ -72,13 +75,16 @@ async function connectMeta(project: string, app: any, code: string, redirect: st
   const targets = (scope: string) => granular.find(s => s.scope === scope)?.target_ids || [];
   if (!found.size) {
     const ids = new Set([...targets('pages_show_list'), ...targets('pages_manage_posts'), ...targets('pages_read_engagement')]);
-    for (const id of ids) add(await fetch(G(id, { fields, access_token: token })).then(r => r.json()).catch(() => null));
+    let fail = '';
+    for (const id of ids) { const p = await fetch(G(id, { fields, access_token: token })).then(r => r.json()).catch(() => null); if (p?.access_token) add(p); else fail ||= errOf(p); }
+    seen.push(`gekozen in het venster ${ids.size}${fail}`);
   }
 
   // 3. Pages owned by (or shared with) a business portfolio you are in
   if (!found.size) {
     const biz = await fetch(G('me/businesses', { fields: `id,owned_pages.limit(100){${fields}},client_pages.limit(100){${fields}}`, access_token: token })).then(r => r.json()).catch(() => ({}));
     for (const b of biz.data || []) [...(b.owned_pages?.data || []), ...(b.client_pages?.data || [])].forEach(add);
+    seen.push(`via bedrijfsportfolio ${found.size}${errOf(biz)}`);
   }
 
   const igPicked = targets('instagram_content_publish')[0] || targets('instagram_basic')[0] || null;
@@ -87,7 +93,8 @@ async function connectMeta(project: string, app: any, code: string, redirect: st
   if (!list.length) {
     const granted: string[] = dbg.data?.scopes || [];
     const missing = PROVIDERS.meta.scopes.filter(s => !granted.includes(s));
-    throw new Error(`Meta gaf geen Facebook-pagina vrij. ${missing.length ? `Niet toegestaan: ${missing.join(', ')}. ` : ''}`
+    const ig = new Set([...targets('instagram_basic'), ...targets('instagram_content_publish')]).size;
+    throw new Error(`Meta gaf geen Facebook-pagina vrij (pagina's: ${seen.join(', ')}; Instagram-accounts gekozen: ${ig}). ${missing.length ? `Niet toegestaan: ${missing.join(', ')}. ` : ''}`
       + `Klik opnieuw op Koppel en vink in het Meta-venster de BijbelStudie-pagina en het Instagram-account aan (staat er "Doorgaan als ...", klik dan eerst op "Instellingen bewerken"). `
       + `Heb je nog geen Facebook-pagina? Instagram posten via Meta kan alleen met een pagina die aan het Instagram-account gekoppeld is.`);
   }
