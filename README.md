@@ -4,7 +4,7 @@ Plans, makes, publishes and measures BijbelStudie's social content. Alex only ap
 
 ```
 Friday      Claude (planner/PLAN.md) reads results + brand -> writes report, next week's specs, comment replies
-            validate -> import to Mongo -> render (Playwright + ffmpeg, voice via Google TTS/ElevenLabs) -> R2
+            validate -> import to Mongo -> render (Playwright + ffmpeg, voice via ElevenLabs/Google TTS) -> Vercel Blob
             email "week ready"
 Studio      Alex approves / comments / removes  (comments -> "Aanpassingen naar Claude" -> revise workflow)
 Every 30m   approved items whose time has come -> Instagram, Facebook, YouTube Shorts, TikTok
