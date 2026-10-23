@@ -3,7 +3,7 @@
 name: Plan week
 on:
   schedule:
-    - cron: '23 14 * * 5'   # Friday 15:23 (winter) / 16:23 (summer) Amsterdam
+    - cron: '23 14 * * 5'   # Friday 15:23 (winter) / 16:23 (summer) Amsterdam; schedules run as the GitHub user who last changed this line
   workflow_dispatch:
     inputs:
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }

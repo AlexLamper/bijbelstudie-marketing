@@ -3,7 +3,7 @@
 name: Publish
 on:
   schedule:
-    - cron: '7,37 5-20 * * *'   # twice an hour, 06:07-21:37 Amsterdam (winter); off the busy :00/:30 marks, GitHub may still start a few minutes late
+    - cron: '7,37 5-20 * * *'   # twice an hour, 06:07-21:37 Amsterdam (winter); off the busy :00/:30 marks, GitHub may still start a few minutes late; schedules run as the GitHub user who last changed this line
   workflow_dispatch: {}
 concurrency: { group: publish, cancel-in-progress: false }
 permissions: { contents: read, actions: write, issues: write }

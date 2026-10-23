@@ -2,7 +2,7 @@
 name: Stats
 on:
   schedule:
-    - cron: '15 4 * * *'
+    - cron: '15 4 * * *'   # daily 05:15 (winter) / 06:15 (summer) Amsterdam
   workflow_dispatch: {}
 permissions: { contents: read, issues: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
