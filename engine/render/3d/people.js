@@ -51,7 +51,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   const hairC = L.hair?.[1] || '#222'; const hair = mat(hairC, { rough: .9 });
   const P = {};   // joints
 
-  const root = new THREE.Group();
+  const root = new THREE.Group(); root.rotation.order = 'YXZ';   // yaw first, then tip over (lying)
   const hips = P.hips = at(group(root), 0, HIP, 0);
   hips.add(scl(at(mesh(G.sphere(.18, 24, 16), legs), 0, -.02, 0), 1.12, .72, .9));
   const spine = P.spine = group(hips);
@@ -262,8 +262,8 @@ function pose(A, t, s) {
     P.hips.position.y = .5; P.hipL.rotation.x = P.hipR.rotation.x = -.05; P.kneeL.rotation.x = P.kneeR.rotation.x = 1.55; P.ankleL.rotation.x = P.ankleR.rotation.x = .5;
     if (A.skirt) A.skirt.scale.set(1.05, .55, 1.15);
   }
-  if (base === 'lie') {   // on the back, head toward -z
-    A.root.rotation.x = -Math.PI / 2; P.hips.position.set(0, .14, 0);
+  if (base === 'lie') {   // on the back, head toward -z turned by the yaw (root rotation order YXZ), back resting on y = 0
+    A.root.rotation.x = -Math.PI / 2; P.hips.position.set(0, .14, .16);
     if (A.skirt) A.skirt.scale.set(1, 1, 1);
   }
 

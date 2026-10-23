@@ -84,8 +84,10 @@ export function mat(color, o = {}) {
   if (mats.has(key)) return mats.get(key);
   const common = { color, emissive: o.emissive || '#000000', emissiveIntensity: o.glow ?? 1, side: o.side ?? THREE.FrontSide, transparent: !!o.transparent, opacity: o.opacity ?? 1 };
   let m;
+  // Lambert (diffuse only) where a look is matte anyway: about a quarter faster in software WebGL.
   if (STYLE.name === 'toon') m = new THREE.MeshToonMaterial({ ...common, gradientMap: toonRamp() });
-  else if (STYLE.name === 'klei') m = new THREE.MeshStandardMaterial({ ...common, roughness: 1, metalness: 0, map: o.metal ? null : clayGrain(), flatShading: !!o.flat });
+  else if (STYLE.name === 'klei') m = new THREE.MeshLambertMaterial({ ...common, map: o.metal ? null : clayGrain(), flatShading: !!o.flat });
+  else if (faceted() && !o.metal) m = new THREE.MeshLambertMaterial({ ...common, flatShading: o.flat ?? true });
   else m = new THREE.MeshStandardMaterial({ ...common, roughness: o.rough ?? (faceted() ? .9 : .78), metalness: o.metal ?? 0, flatShading: o.flat ?? faceted() });
   mats.set(key, m); return m;
 }

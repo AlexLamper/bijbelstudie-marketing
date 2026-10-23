@@ -103,12 +103,12 @@ T['reel-3d'] = (spec, timing) => {
         if (k < 1) { const e = smooth(k) * .15 + k * .85; x += dx * e; z += dz * e; yaw = Math.atan2(dx, dz); base = 'walk'; walk = { phase: (t - s.start) * 6.4, amount: Math.min(1, Math.min(k, 1 - k) * 8) }; }
         else { x = to.p[0]; z = to.p[1]; yaw = to.yaw || 0; base = a.base || to.base || 'stand'; seat = to.seat; }
       }
-      const y = s.world.groundY ? s.world.groundY(x, z) : 0;
+      const y = (!walk && (a.to ? def.spots[a.to] : sp)?.y) ?? (s.world.groundY ? s.world.groundY(x, z) : 0);   // a spot may say its own height (a bed)
       out.push({ a, p, x, y, z, yaw, base, seat, walk });
     }
     return out;
   }
-  const headOf = st => V(st.x, st.y + (HEAD[st.base] ?? 1.6), st.z);
+  const headOf = st => st.base === 'lie' ? V(st.x - Math.sin(st.yaw) * .89, st.y + .2, st.z - Math.cos(st.yaw) * .89) : V(st.x, st.y + (HEAD[st.base] ?? 1.6), st.z);
   /** Where the face points: toward what the person looks at (the head turns), else the body's facing. */
   const faceDir = st => { if (st.look) { const d = st.look.clone().sub(headOf(st)); d.y = 0; if (d.lengthSq() > .01) { const f = fwd(st.yaw); return f.multiplyScalar(.35).add(d.normalize().multiplyScalar(.65)).normalize(); } } return fwd(st.yaw); };
   const GAZE_DOWN = ['read', 'scroll', 'phone', 'pray', 'sleep'];
@@ -147,6 +147,7 @@ T['reel-3d'] = (spec, timing) => {
       let score = d * .35;
       for (const [st, wt] of faces) { const f = faceDir(st), to = cam.clone().sub(headOf(st)); to.y = 0; to.normalize(); const dot = f.dot(to); score += wt * (dot < .25 ? (.25 - dot) * 6 : 0) + wt * (1 - dot) * .8; }
       if (prefer) score += (1 - dir.dot(prefer)) * preferW;
+      if (blocked(w, cam, focus)) score += 6;   // a tree, a wall, a mast between the camera and the people
       for (const o of others) { const h = headOf(o); const seg = focus.clone().sub(cam); const tt = clamp(h.clone().sub(cam).dot(seg) / seg.lengthSq()); const near = cam.clone().add(seg.multiplyScalar(tt)); if (h.distanceTo(near) < .3 && tt > .05 && tt < .95) score += 3; if (h.distanceTo(cam) < .85 || o.x != null && Math.hypot(o.x - cam.x, o.z - cam.z) < .7) score += 6; }
       if (!best || score < best.score) best = { score, dir, d, cam };
     }
@@ -155,6 +156,22 @@ T['reel-3d'] = (spec, timing) => {
       best = { dir, d, cam: focus.clone().add(dir.clone().multiplyScalar(d)).add(V(0, up, 0)) };
     }
     return best;
+  }
+  /** Is the view from cam to focus blocked by the set (not by people)? Meshes of the set, cached per world. */
+  const ray = new THREE.Raycaster();
+  function blocked(w, cam, focus) {
+    if (!w.occluders) {
+      const actorRoots = new Set(Object.values(w.actors).map(p => p.root)); w.occluders = [];
+      w.scene.traverse(o => {
+        if (!o.isMesh || o.material?.isShaderMaterial || o.material?.side === THREE.BackSide || o.material?.transparent) return;
+        for (let p = o; p; p = p.parent) if (actorRoots.has(p) || p.userData.noOcclude) return;
+        o.geometry.computeBoundingSphere(); if (o.geometry.boundingSphere.radius > 60) return;   // sky, sea, ground plane
+        w.occluders.push(o);
+      });
+    }
+    const d = focus.clone().sub(cam); const len = d.length(); if (len < .3) return false;
+    ray.set(cam, d.normalize()); ray.far = len - .35; ray.near = .05;
+    return ray.intersectObjects(w.occluders, false).length > 0;
   }
   const plans = new Map();   // per shot: the solved framing (deterministic, from the shot's own data)
   function plan(s, states, type, on, other) {
@@ -239,6 +256,7 @@ T['reel-3d'] = (spec, timing) => {
       else if (sg?.by === a.id) { const o = states.find(o => o !== st); look = o ? headOf(o) : null; }
       st.look = look; st.speaking = speaking;
       if (look && st.base === 'stand' && !st.walk) { const d = look.clone().sub(V(st.x, 0, st.z)); st.yaw = Math.atan2(d.x, d.z); }
+      if (st.base === 'lie') st.look = null;
     }
     return states;
   }

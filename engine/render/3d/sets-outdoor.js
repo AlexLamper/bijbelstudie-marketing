@@ -212,7 +212,7 @@ defineSet('zee', {
     achtersteven: { p: [.3, 3.95], yaw: 2.45 },
     reling: { p: [1.15, .3], yaw: Math.PI / 2 },
     dek: { p: [-.2, .9], yaw: .3 },
-    ruim: { p: [HX - 1.0, -.15], yaw: .55, base: 'lie' },
+    ruim: { p: [HX - 1.0, -.25], yaw: 0, base: 'lie' },
     'ruim-staan': { p: [HX - .3, -1.95], yaw: -.75 },
   },
   build({ time = 'dag', weather = 'helder', seed: reelSeed = '' } = {}) {
