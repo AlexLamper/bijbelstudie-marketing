@@ -1,0 +1,73 @@
+{
+  "id": "w45-reel-story-sat",
+  "kind": "reel-story",
+  "week": "2026-W45",
+  "slot": "2026-11-07T19:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Waarom ging Paulus naar Europa? Een visioen in Troas veranderde zijn route. De tweede zendingsreis in een minuut, met kaart.",
+  "hashtags": [
+    "#paulus",
+    "#handelingen",
+    "#bijbelstudie",
+    "#bijbel"
+  ],
+  "voice": "female",
+  "style": "dark",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Eén visioen in de nacht stuurde Paulus naar Europa.",
+  "scenes": [
+    {
+      "say": "Rond het jaar 49 na Christus begint Paulus aan zijn tweede zendingsreis, samen met Silas.",
+      "show": "timeline",
+      "events": [
+        { "year": "ca. 46-48", "label": "Eerste zendingsreis" },
+        { "year": "ca. 49", "label": "Apostelconvent in Jeruzalem" },
+        { "year": "ca. 49-52", "label": "Tweede zendingsreis" },
+        { "year": "ca. 53-57", "label": "Derde zendingsreis" }
+      ],
+      "focus": 2
+    },
+    {
+      "say": "In de havenstad Troas krijgt Paulus in de nacht een visioen.",
+      "show": "map",
+      "places": ["troas"]
+    },
+    {
+      "say": "Een man uit Macedonië roept hem: kom over en help ons.",
+      "show": "verse",
+      "verse": "Handelingen 16:9"
+    },
+    {
+      "say": "Paulus steekt meteen over naar Macedonië en komt in Filippi.",
+      "show": "map",
+      "places": ["troas", "filippi"]
+    },
+    {
+      "say": "Daarna reist hij via Thessalonica en Berea naar Athene en Korinthe.",
+      "show": "map",
+      "places": ["filippi", "thessalonica", "berea", "athene", "korinthe"]
+    },
+    {
+      "say": "Zo begon het werk van Paulus in Europa: bij een rivier in Filippi.",
+      "show": "text"
+    },
+    {
+      "say": "Lees Handelingen 16 met uitleg en context ernaast, in BijbelStudie.",
+      "show": "photo",
+      "photo": 22
+    }
+  ],
+  "basedOn": "Handelingen 15:40-18:11: Silas (15:40), visioen in Troas (16:8-10), Filippi en de rivier (16:12-15), Thessalonica (17:1), Berea (17:10), Athene (17:15), Korinthe (18:1, 18:11). Jaartallen zijn de gangbare benadering.",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}
