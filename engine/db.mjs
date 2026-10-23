@@ -17,8 +17,29 @@ export async function db() {
     console.log('MONGODB_URI is not set (add it as a GitHub Actions secret) - nothing to do, skipping.');
     process.exit(0);
   }
-  client ??= await new MongoClient(process.env.MONGODB_URI).connect();
+  if (!client) {
+    client = await new MongoClient(process.env.MONGODB_URI).connect();
+    await loadStudioSecrets(client);
+  }
   return client.db(project().db);
+}
+
+/** Keys pasted on the studio's Instellingen page (sealed in Mongo). GitHub secrets and env win. */
+async function loadStudioSecrets(c) {
+  if (!process.env.ENGINE_KEY) return;
+  try {
+    const { open } = await import('./crypto.mjs');
+    const shared = await c.db(process.env.STUDIO_DB || 'marketing_studio').collection('secrets').find().toArray();
+    const own = await c.db(project().db).collection('secrets').find().toArray();
+    const names = [];
+    for (const d of [...shared, ...own]) {
+      if (!/^[A-Z][A-Z0-9_]*$/.test(d._id)) continue;
+      names.push(d._id);
+      if (process.env[d._id]) continue;
+      try { process.env[d._id] = open(d.value); } catch { console.error(`studio key ${d._id} could not be read (ENGINE_KEY changed?)`); }
+    }
+    globalThis.__studioKeyNames = names.sort();
+  } catch (e) { console.error(`studio keys: ${e.message}`); }
 }
 export async function close() { await client?.close(); client = undefined; }
 
@@ -48,7 +69,7 @@ export async function heartbeat(job, summary = {}) {
       notify: process.env.RESEND_API_KEY && process.env.NOTIFY_TO ? 'email' : 'github',
     };
     await (await db()).collection('runs').updateOne({ _id: job }, { $set: {
-      at: new Date(), ok: true, summary, configured, secrets: globalThis.__secretNames || [],
+      at: new Date(), ok: true, summary, configured, secrets: globalThis.__secretNames || [], studioKeys: globalThis.__studioKeyNames || [],
       run: process.env.GITHUB_RUN_ID ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}` : 'local',
     } }, { upsert: true });
   } catch (e) { console.error(`heartbeat: ${e.message}`); }

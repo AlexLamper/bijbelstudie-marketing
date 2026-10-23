@@ -4,7 +4,8 @@ import { getProject } from '@/lib/projects';
 import { open } from '@/lib/crypto';
 import { PROVIDERS, PLATFORM_PROVIDER, type ProviderId } from '@/lib/connections';
 import { Card, PageHeader } from '@/components/ui';
-import { AppForm, ConnectActions, PagePicker, CopyField } from './SettingsClient';
+import { AppForm, ConnectActions, PagePicker, CopyField, SecretRow } from './SettingsClient';
+import { listSecrets } from '@/lib/secrets';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Instellingen' };
@@ -25,16 +26,19 @@ export default async function Settings({ params, searchParams }: { params: Promi
   const { project } = await params; const { ok, error } = await searchParams;
   const p = getProject(project)!;
   const db = await getDb(project);
-  const [conns, runsList, apps] = await Promise.all([
+  const [conns, runsList, apps, keys] = await Promise.all([
     db.collection('connections').find().toArray(),
     db.collection('runs').find().toArray(),
     (await getSharedDb()).collection('apps').find().toArray(),
+    listSecrets(project),
   ]);
   const conn = Object.fromEntries(conns.map(c => [c._id, c])) as Record<string, any>;
   const runs = Object.fromEntries(runsList.map(r => [r._id, r])) as Record<string, any>;
   const latest = [...runsList].sort((a, b) => +new Date(b.at) - +new Date(a.at))[0];
   const cfg = runs.publish?.configured || latest?.configured || {};
   const secrets: string[] = latest?.secrets || [];
+  const key = (name: string) => keys.find(k => k.name === name);
+  const hasKey = (name: string) => !!key(name)?.inStudio || secrets.includes(name);
   const h = await headers();
   const origin = process.env.STUDIO_URL || `${h.get('x-forwarded-proto') || 'https'}://${h.get('host')}`;
 
@@ -52,7 +56,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
     { title: 'Studio en database', detail: 'De studio draait en bereikt de database.', status: 'ok' },
     { title: 'Media-opslag', detail: process.env.BLOB_READ_WRITE_TOKEN ? 'Vercel Blob is gekoppeld.' : 'Koppel een Vercel Blob-store aan het studio-project.', status: process.env.BLOB_READ_WRITE_TOKEN ? 'ok' : 'todo' },
     { title: 'Engine in GitHub Actions', detail: runs.publish ? `Publiceren draaide ${ago(runs.publish.at)}.` : 'Nog geen run gezien. De secrets MONGODB_URI en ENGINE_KEY moeten in GitHub staan.', status: runs.publish ? (publishLate ? 'warn' : 'ok') : 'todo' },
-    { title: 'Weekplanner (Claude)', detail: secrets.includes('CLAUDE_CODE_OAUTH_TOKEN') ? 'Draait elke vrijdag.' : 'Zet CLAUDE_CODE_OAUTH_TOKEN in de GitHub-secrets (claude setup-token).', status: !latest ? 'todo' : secrets.includes('CLAUDE_CODE_OAUTH_TOKEN') ? 'ok' : 'todo', href: 'https://github.com/AlexLamper/bijbelstudie-marketing/settings/secrets/actions' },
+    { title: 'Weekplanner (Claude)', detail: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'Draait elke vrijdag.' : 'Plak je Claude-token onder Sleutels (op je computer: claude setup-token).', status: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'ok' : 'todo', href: '#sleutels' },
     ...providers.map(id => ({ title: PROVIDERS[id].name, detail: linked(id) ? `Gekoppeld: ${conn[id].account?.name}${id === 'tiktok' ? ' (privé tot TikTok de app goedkeurt)' : ''}` : (cfg[id === 'google' ? 'youtube' : id] ? 'Via GitHub-secrets ingesteld.' : conn[id]?.pending ? 'Kies hieronder de pagina.' : 'Nog niet gekoppeld.'),
       status: (linked(id) ? (conn[id].lastCheck?.ok === false ? 'warn' : 'ok') : cfg[id === 'google' ? 'youtube' : id] ? 'ok' : 'todo') as Status, href: `#${id}` })),
     { title: 'Stem voor uitleg-reels', detail: cfg.tts ? `Stem via ${cfg.tts === 'elevenlabs' ? 'ElevenLabs' : 'Google'}.` : 'Nog geen stem: uitleg-reels hebben alleen ondertitels. ElevenLabs volgt later.', status: cfg.tts ? 'ok' : 'optional' },
@@ -132,6 +136,12 @@ export default async function Settings({ params, searchParams }: { params: Promi
           );
         })}
       </div>
+
+      <h2 id="sleutels" className="mt-10 scroll-mt-20 text-lg font-bold">Sleutels</h2>
+      <p className="mt-1 text-sm text-ink-muted">Plak sleutels hier in plaats van in GitHub. Ze worden versleuteld opgeslagen en daarna nooit meer getoond; de engine leest ze bij elke run. Een GitHub-secret met dezelfde naam gaat voor.</p>
+      <Card className="mt-4 divide-y divide-line">
+        {keys.map(k => <SecretRow key={k.name} project={project} s={{ name: k.name, label: k.label, help: k.help, secret: k.secret, optional: k.optional, scope: k.scope, inStudio: k.inStudio, inGitHub: secrets.includes(k.name) && !k.inStudio, hint: k.hint }} />)}
+      </Card>
 
       <h2 className="mt-10 text-lg font-bold">Laatste runs</h2>
       <Card className="mt-3 overflow-x-auto">

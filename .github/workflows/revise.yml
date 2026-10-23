@@ -23,12 +23,16 @@ jobs:
       - name: Export context
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
+      - name: Planner token (GitHub secret, or pasted in the studio)
+        id: token
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/studio-secret.mjs CLAUDE_CODE_OAUTH_TOKEN
       - name: Today
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
       - name: Claude revises the items
         uses: anthropics/claude-code-action@v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_code_oauth_token: ${{ steps.token.outputs.value }}
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ env.PROJECT }} (folder projects/${{ env.PROJECT }}/).
             Read planner/REVISE.md and follow it exactly.

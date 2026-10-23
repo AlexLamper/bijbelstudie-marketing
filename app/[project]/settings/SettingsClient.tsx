@@ -90,3 +90,41 @@ export function CopyField({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+type SecretRowData = { name: string; label: string; help: string; secret: boolean; optional?: boolean; scope: string; inStudio: boolean; inGitHub: boolean; hint?: string };
+
+/** One key: status, and a field to paste a new value (never shows the stored value). */
+export function SecretRow({ project, s }: { project: string; s: SecretRowData }) {
+  const router = useRouter();
+  const [value, setValue] = useState(''); const [open, setOpen] = useState(false); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  async function send(method: 'POST' | 'DELETE') {
+    setBusy(true); setErr('');
+    const r = await fetch(`/api/${project}/secrets`, { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: s.name, value }) });
+    setBusy(false);
+    if (!r.ok) { setErr((await r.json().catch(() => ({}))).error || 'Mislukt'); return; }
+    setValue(''); setOpen(false); router.refresh();
+  }
+  const status = s.inStudio ? `Ingesteld${s.hint ? ` (${s.hint})` : ''}` : s.inGitHub ? 'Ingesteld in GitHub' : s.optional ? 'Niet ingesteld (optioneel)' : 'Ontbreekt';
+  const tone = s.inStudio || s.inGitHub ? 'bg-emerald-50 text-success ring-emerald-200' : s.optional ? 'bg-bg text-ink-muted ring-line' : 'bg-orange-50 text-warn ring-orange-200';
+  return (
+    <div className="px-5 py-3.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="font-semibold">{s.label}</p>
+        <code className="text-xs text-ink-muted">{s.name}</code>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${tone}`}>{status}</span>
+        {!open && <Button size="sm" onClick={() => setOpen(true)}>{s.inStudio ? 'Vervangen' : 'Instellen'}</Button>}
+      </div>
+      <p className="mt-1 text-sm text-ink-muted">{s.help.split('`').map((part, i) => i % 2 ? <code key={i} className="rounded bg-bg px-1 text-ink-body">{part}</code> : part)}</p>
+      {open && (
+        <form onSubmit={e => { e.preventDefault(); send('POST'); }} className="mt-2 flex flex-wrap gap-2">
+          <input value={value} onChange={e => setValue(e.target.value)} autoFocus type={s.secret ? 'password' : 'text'} autoComplete="off" placeholder={s.secret ? 'Plak hier' : ''}
+            className="min-w-0 flex-1 rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm outline-none transition hover:border-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
+          <Button type="submit" variant="primary" disabled={busy || !value.trim()}>Opslaan</Button>
+          {s.inStudio && <Button variant="danger" disabled={busy} onClick={() => send('DELETE')}>Verwijderen</Button>}
+          <Button variant="ghost" onClick={() => { setOpen(false); setValue(''); setErr(''); }}>Annuleer</Button>
+        </form>
+      )}
+      {err && <p role="alert" className="mt-1 text-xs text-danger">{err}</p>}
+    </div>
+  );
+}
