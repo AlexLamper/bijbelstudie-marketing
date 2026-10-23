@@ -40,7 +40,7 @@ defineSet('slaapkamer', {
     bed: { p: [-1.05, -.55], yaw: Math.PI / 2 - .35, seat: .5, base: 'sit' },
     'bed-liggen': { p: [-1.75, -.9], yaw: 0, base: 'lie' },
     bureau: { p: [.75, -1.35], yaw: Math.PI - .5, seat: .48, base: 'sit' },
-    midden: { p: [.05, .2], yaw: -2.0 },
+    midden: { p: [-.05, -1.05], yaw: -1.6 },
     deur: { p: [2.2, -1.1], yaw: -1.9 },
     raam: { p: [-.55, -1.75], yaw: -.3 },
   },
