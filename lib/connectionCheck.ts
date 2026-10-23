@@ -45,8 +45,9 @@ async function checkTikTok(project: string, secret: any): Promise<string> {
   }
   const c = await json(await fetch('https://open.tiktokapis.com/v2/post/publish/creator_info/query/', { method: 'POST',
     headers: { Authorization: `Bearer ${s.accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' }, body: '{}' }), 'TikTok');
-  const pub = (c.data?.privacy_level_options || []).includes('PUBLIC_TO_EVERYONE');
-  return `TikTok: ${c.data?.creator_nickname || c.data?.creator_username || 'account'} - posts worden ${pub ? 'openbaar' : 'privé (app nog niet goedgekeurd door TikTok)'}`;
+  // creator_info lists PUBLIC_TO_EVERYONE even for apps TikTok has not audited yet; those posts still land as private
+  const name = c.data?.creator_username ? `@${c.data.creator_username}` : c.data?.creator_nickname || 'account';
+  return `TikTok: ${name} - posts blijven privé tot TikTok de app goedkeurt`;
 }
 
 export async function checkConnection(project: string, provider: ProviderId): Promise<CheckResult> {
