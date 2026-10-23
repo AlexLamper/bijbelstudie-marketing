@@ -11,7 +11,7 @@
 //   update(): animate the world (waves, fire, sheep) from t. overlay(): place HTML labels (project with camera).
 //   fixedCamera: true in the def = always use camera().
 // The catalogue the planner sees (names, spots, descriptions) is engine/render/3d/catalog.json; keep it in sync.
-import { THREE, mat, mesh, at, rot, scl, group, G, sky, lights, canvasTexture, rng, V } from './core.js';
+import { THREE, mat, mesh, at, rot, scl, group, G, sky, lights, canvasTexture, rng, V, bake } from './core.js';
 import * as props from './props.js';
 
 export const SETS = {};
@@ -65,6 +65,7 @@ defineSet('slaapkamer', {
       const pl = new THREE.PointLight('#ffc27a', 3.2, 6, 1.6); pl.position.set(1.35, 1.25, -2.6); scene.add(pl);
       const bl = new THREE.PointLight('#ffd7a0', 1.4, 5, 1.8); bl.position.set(-.6, 1.6, .4); scene.add(bl);
     } else lights(scene, { key: '#fff4e2', keyI: 2.4, keyDir: [-1.5, 3.5, 3], focus: [-.3, .9, -.6], box: 3.5, fillSky: '#dbe9f5', fillGround: '#8a7360', fillI: 1.1, rimI: .6 });
+    bake(scene);
     return { scene, wide: { pos: [2.5, 1.75, 3.1], target: [-.5, .9, -.9] }, bounds: { x: [-2.6, 3.5], z: [-2.5, 4.5], y: [.4, 2.6] } };
   },
 });
@@ -97,6 +98,7 @@ defineSet('woonkamer', {
       lights(scene, { key: '#ffd8a8', keyI: 1.7, keyDir: [2.5, 3.5, 2.5], focus: [0, .9, -1], box: 3.5, fillSky: '#6d7f9c', fillGround: '#3a2f27', fillI: .6, rim: '#ffb26b', rimI: .6 });
       const pl = new THREE.PointLight('#ffc27a', 2.4, 6, 1.6); pl.position.set(-1.3, 1.3, -2.2); scene.add(pl);
     } else lights(scene, { key: '#fff4e2', keyI: 2.5, keyDir: [-3, 3.5, 2.2], focus: [0, .9, -1], box: 3.5, fillSky: '#dbe9f5', fillGround: '#8a7360', fillI: 1.15, rimI: .55 });
+    bake(scene);
     return { scene, wide: { pos: [2.1, 1.6, 3.4], target: [-.2, .85, -1.2] }, bounds: { x: [-2.6, 3.5], z: [-2.4, 4.5], y: [.4, 2.6] } };
   },
 });

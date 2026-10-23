@@ -2,7 +2,7 @@
    Loaded as a module (it imports three.js); registers T['reel-3d'] like the other templates.
    Each shot is one spoken line (narrator "say", or a character's "line" with "by") or a silent "hold".
    The camera, the actors and the overlays are all set from t (pure function of time). */
-import { THREE, getRenderer, V, clamp, lerp, prog, smooth, inout, out, wobble, texture } from '../3d/core.js';
+import { THREE, getRenderer, V, clamp, lerp, prog, smooth, inout, out, wobble, texture, setStyle } from '../3d/core.js';
 import { person, setPhoneScreen } from '../3d/people.js';
 import { SETS } from '../3d/sets.js';
 import '../3d/sets-outdoor.js';
@@ -13,6 +13,7 @@ const HEAD = { stand: 1.6, walk: 1.6, sit: 1.22, row: 1.22, kneel: 1.18, lie: .3
 
 T['reel-3d'] = (spec, timing) => {
   const W = 1080, H = 1920;
+  setStyle(spec.style3d || 'lowpoly');   // before anything 3D is built
   const L = ground('dark', spec); stage.style.background = '#000';
   const r = getRenderer(stage);
   r.domElement.style.zIndex = '0';

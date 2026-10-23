@@ -214,6 +214,7 @@ export const ReelScene = z.object({
   ...base, ...reel, kind: z.literal('reel-3d'),
   voice: voice.optional(),                                // narrator (needed when a shot has "say")
   hook: shortLine,                                        // big title over the first shot
+  style3d: z.enum(['lowpoly', 'rond', 'toon', 'blok', 'klei']).optional(),   // look: lowpoly (default, faceted) | rond (smooth toy) | toon (cel-shaded, outlines) | blok (blocks) | klei (claymation)
   cast: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]+$/), look: enumOf(keys(CATALOG3D.looks), 'look'), name: z.string().max(30).optional(), voice: voice.optional() })).max(4).default([]),
   shots: z.array(shot3d).min(3).max(14),
 }).superRefine((s, c) => {

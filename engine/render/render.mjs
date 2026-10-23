@@ -238,11 +238,12 @@ export async function renderStills(raw, times, { outDir = join(OUT, project().id
     page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); else if (process.env.DEBUG3D) console.log('page:', m.text()); });
     await page.goto(STAGE);
     if (process.env.DEBUG3D) await page.evaluate(() => { window.__debug3d = true; });
+    if (process.env.PERF3D) await page.evaluate(o => { window.__3dopts = o; }, JSON.parse(process.env.PERF3D));
     const info = await page.evaluate(([s, c]) => window.setup(s, null, c), [spec, stageContext()]).catch(e => { throw new Error(e.message + (errs.length ? ' | ' + errs.join(' | ') : '')); });
     const files = [];
     for (const t of times.length ? times : [0, info.duration / 3, info.duration / 2, info.duration - 1]) {
-      const t0 = Date.now(); await page.evaluate(t => window.render(t), t);
-      const f = join(dir, `t${t.toFixed(1).padStart(5, '0')}.jpg`); await page.screenshot({ path: f, type: 'jpeg', quality: 88 }); files.push({ f, ms: Date.now() - t0 });
+      const t0 = Date.now(); await page.evaluate(t => { window.render(t); const c = document.querySelector('canvas'); const gl = c?.getContext('webgl2'); if (gl) gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); }, t); const tr = Date.now() - t0;
+      const f = join(dir, `t${t.toFixed(1).padStart(5, '0')}.jpg`); await page.screenshot({ path: f, type: 'jpeg', quality: 88 }); files.push({ f, ms: `${tr}+${Date.now() - t0 - tr}` });
     }
     await page.close();
     return { duration: info.duration, fps: info.fps, files, errors: errs };

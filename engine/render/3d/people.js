@@ -3,7 +3,7 @@
 // Bible times. pose(t, state) sets every joint from t: base (stand/sit/kneel/lie/walk), an action layer
 // (read, phone, point, pray, ...), talking (mouth + gestures from the word times), mood (brows, mouth),
 // blinking and looking at a point. The figure faces +z; its right hand is at -x.
-import { THREE, mat, mesh, at, rot, scl, group, G, rng, wobble, clamp, lerp, smooth, V } from './core.js';
+import { THREE, mat, mesh, at, rot, scl, group, G, rng, wobble, clamp, lerp, smooth, V, bake, segs, STYLE, outline } from './core.js';
 
 /* ---------- looks ---------- */
 const SKIN = { licht: '#f1c7a5', medium: '#d9a37c', olijf: '#c58e62', bruin: '#9c6644', donker: '#6e4529' };
@@ -104,7 +104,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   // beard
   if (L.beard) {
     const bm = mat(L.beard[1], { rough: .95 });
-    head.add(scl(at(mesh(G.cap(headR * 1.02, Math.PI * .42, Math.PI * .5, 32, 12), bm), 0, -.0, .012), 1.03, 1.05, 1.02));
+    head.add(scl(at(mesh(G.cap(headR * 1.02, Math.PI * .36, Math.PI * .6, 32, 12), bm), 0, -.0, .012), 1.03, 1.05, 1.02));
     head.add(rot(scl(at(mesh(G.capsule(.014, .075, 4, 8), bm, { cast: false }), 0, -.064, headR * .97), 1.3, 1, 1), 0, 0, Math.PI / 2));   // moustache
     if (L.beard[0] === 'lang') head.add(rot(scl(at(mesh(G.cone(.12, .26, 20), bm), 0, -.25, .06), 1, 1, .7), Math.PI, 0, 0));
     F.mouth.position.z = headR * 1.02;
@@ -114,7 +114,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
     const [hk, c1, c2] = L.head; const hm = mat(c1, { rough: .95 }), hm2 = mat(c2 || c1);
     if (hk === 'doek' || hk === 'sluier') {
       head.add(at(rot(scl(mesh(G.cap(headR, Math.PI * .56, 0, 36, 16), hm), 1.13, 1.13, 1.13), -.32, 0, 0), 0, .01, -.01));
-      const drape = mesh(new THREE.CylinderGeometry(headR * 1.06, hk === 'sluier' ? .27 : .25, hk === 'sluier' ? .52 : .4, 28, 1, true, Math.PI * .62, Math.PI * 1.76), mat(c1, { rough: .95, side: THREE.DoubleSide }));
+      const drape = mesh(new THREE.CylinderGeometry(headR * 1.06, hk === 'sluier' ? .27 : .25, hk === 'sluier' ? .52 : .4, segs(28, 8), 1, true, Math.PI * .62, Math.PI * 1.76), mat(c1, { rough: .95, side: THREE.DoubleSide }));
       head.add(at(drape, 0, hk === 'sluier' ? -.2 : -.15, -.035));
       if (hk === 'doek') head.add(rot(scl(at(mesh(G.torus(headR * 1.1, .018, Math.PI * 2, 8, 32), hm2), 0, .085, -.02), 1, 1, 1), Math.PI / 2 - .2, 0, 0));
     }
@@ -153,7 +153,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
     const len = robe ? .8 : .52; const c = robe ? topC : L.bottom[1];
     skirt = mesh(G.lathe([[robe ? .35 : .3, -len], [robe ? .29 : .26, -len * .55], [.22, -.05], [.19, .06]], 32), mat(c, { side: THREE.DoubleSide }));
     hips.add(skirt);
-    if (robe) hips.add(at(rot(mesh(G.torus(.31, .02, Math.PI * 2, 6, 32), top2), Math.PI / 2, 0, 0), 0, -len + .03, 0));   // hem
+    if (robe) skirt.add(at(rot(mesh(G.torus(.335, .02, Math.PI * 2, 6, 32), top2), Math.PI / 2, 0, 0), 0, -len + .03, 0));   // hem
   }
   // props
   const props = {};
@@ -162,6 +162,19 @@ export function person(lookKey, { seed = lookKey } = {}) {
   if (L.staff) { props.staff = at(group(P.handL), 0, -.04, .02); props.staff.add(at(mesh(G.cyl(.022, .026, 1.75, 10), mat('#7a5634', { rough: .9 })), 0, .35, 0)); props.staff.add(at(rot(mesh(G.torus(.07, .022, Math.PI * 1.2, 8, 16), mat('#7a5634', { rough: .9 })), 0, 0, -.3), -.06, 1.22, 0)); }
   props.scroll = scroll(); props.scroll.visible = false; chest.add(props.scroll);
 
+  // fewer draw calls: each joint's own static meshes become one mesh per material (face parts stay separate)
+  const keepFace = new Set([F.smile, F.open, skirt].filter(Boolean));
+  for (const k of Object.keys(P)) if (P[k]?.isObject3D) bake(P[k], { deep: false, keep: keepFace });
+  if (STYLE.name === 'toon') {   // cartoon outlines on the body, not on the small face parts or props
+    const skip = new Set([...F.eyes.map(e => e.g), ...F.brows, F.mouth, ...Object.values(props)].filter(Boolean));
+    const list = []; root.traverse(m => {
+      if (!m.isMesh || m.userData.outline || m.material.transparent) return;
+      for (let p = m; p; p = p.parent) if (skip.has(p)) return;
+      m.geometry.computeBoundingSphere(); if (m.geometry.boundingSphere.radius * Math.max(m.scale.x, m.scale.y, m.scale.z) < .055) return;   // nose, ears, thumbs
+      list.push(m);
+    });
+    list.forEach(m => outline(m));
+  }
   const blinkAt = Array.from({ length: 40 }, (_, i) => i * 3.6 + r() * 2.4);
   const idle = wobble(seed + 'idle'), gest = wobble(seed + 'gest');
   return { root, P, look: L, skirt, props, female: !!L.female, height: 1.9,

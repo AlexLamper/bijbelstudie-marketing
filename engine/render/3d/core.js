@@ -6,18 +6,21 @@
 // post-processing, one shadow-casting light per set, modest polygon counts.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 export { THREE, RoundedBoxGeometry };
 
 export const W = 1080, H = 1920;
 
 let renderer = null;
 /** The one renderer (canvas appended to `parent` the first time). */
+export const SCALE = .8;   // drawing buffer at 80% (864x1536), shown at 1080x1920: a third fewer pixels to shade
 export function getRenderer(parent) {
   if (renderer) return renderer;
-  renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(1);
+  const o = globalThis.__3dopts || {};   // experiments only (render.mjs --stills with PERF3D)
+  renderer = new THREE.WebGLRenderer({ antialias: o.aa ?? true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(o.scale ?? SCALE);
   renderer.setSize(W, H);
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = o.shadows ?? true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -46,14 +49,52 @@ export function wobble(seed) {
 }
 export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 
-/* ---------- materials (cached per colour) ---------- */
+/* ---------- styles: one world, several looks (spec.style3d, an experiment trait) ----------
+   lowpoly  faceted triangles, flat shading, few segments (default)
+   rond     smooth, rounded toy look
+   toon     cel-shaded cartoon: 3 light steps + dark outlines on the characters
+   blok     blocky (everything boxes, like building blocks)
+   klei     claymation: smooth shapes with a hand-made clay grain
+   Set once per reel before anything is built (templates/scene3d.js). G.* and mat() follow it, so sets
+   and props built with them get every look. Custom geometry: use segs() and flatShading: faceted(). */
+export const STYLES3D = ['lowpoly', 'rond', 'toon', 'blok', 'klei'];
+export const STYLE = { name: 'lowpoly' };
+export const setStyle = name => { STYLE.name = STYLES3D.includes(name) ? name : 'lowpoly'; };
+export const lowpoly = () => STYLE.name === 'lowpoly';
+export const blocky = () => STYLE.name === 'blok';
+/** Flat-shaded facets in this style? */
+export const faceted = () => STYLE.name === 'lowpoly' || STYLE.name === 'blok';
+/** Segment count for the current style (low poly / blok: about a third, at least `min`). */
+export const segs = (n, min = 5) => faceted() ? Math.max(min, Math.round(n / 3)) : n;
+
+let ramp = null, grain = null;
+const toonRamp = () => ramp ||= (() => { const d = new Uint8Array([70, 70, 70, 255, 160, 160, 160, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1, THREE.RGBAFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+const clayGrain = () => grain ||= (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); const r = rng(11);
+  g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) { const v = 205 + Math.floor(r() * 50); g.fillStyle = `rgba(${v},${v},${v},${.25 + r() * .35})`; g.beginPath(); g.ellipse(r() * 256, r() * 256, 1 + r() * 4, .6 + r() * 2.2, r() * 3.14, 0, 6.28); g.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 2); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+
+/* ---------- materials (cached per style + colour) ---------- */
 const mats = new Map();
-/** Matte painted look: MeshStandardMaterial, no metal. opts: rough, emissive, side, flat, transparent, opacity. */
+/** The style's surface: opts rough, metal, emissive + glow, side, flat, transparent, opacity. */
 export function mat(color, o = {}) {
-  const key = color + JSON.stringify(o);
-  if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? .78, metalness: o.metal ?? 0, flatShading: !!o.flat,
-    emissive: o.emissive || '#000000', emissiveIntensity: o.glow ?? 1, side: o.side ?? THREE.FrontSide, transparent: !!o.transparent, opacity: o.opacity ?? 1 }));
-  return mats.get(key);
+  const key = STYLE.name + color + JSON.stringify(o);
+  if (mats.has(key)) return mats.get(key);
+  const common = { color, emissive: o.emissive || '#000000', emissiveIntensity: o.glow ?? 1, side: o.side ?? THREE.FrontSide, transparent: !!o.transparent, opacity: o.opacity ?? 1 };
+  let m;
+  if (STYLE.name === 'toon') m = new THREE.MeshToonMaterial({ ...common, gradientMap: toonRamp() });
+  else if (STYLE.name === 'klei') m = new THREE.MeshStandardMaterial({ ...common, roughness: 1, metalness: 0, map: o.metal ? null : clayGrain(), flatShading: !!o.flat });
+  else m = new THREE.MeshStandardMaterial({ ...common, roughness: o.rough ?? (faceted() ? .9 : .78), metalness: o.metal ?? 0, flatShading: o.flat ?? faceted() });
+  mats.set(key, m); return m;
+}
+/** Dark outlines (toon): a back-face shell pushed out along the normals. Add to a mesh with outline(mesh). */
+let outlineMat = null;
+export function outline(m, px = .012) {
+  outlineMat ||= (() => { const om = new THREE.MeshBasicMaterial({ color: '#1b1410', side: THREE.BackSide });
+    om.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed += normalize(normal) * ' + px.toFixed(4) + ';'); }; return om; })();
+  const o = new THREE.Mesh(m.geometry, outlineMat); o.castShadow = false; o.receiveShadow = false; o.userData.outline = true; m.add(o); return o;
 }
 export const basic = (color, o = {}) => new THREE.MeshBasicMaterial({ color, fog: o.fog ?? true, transparent: !!o.transparent, opacity: o.opacity ?? 1, side: o.side ?? THREE.FrontSide, depthWrite: o.depthWrite ?? true });
 
@@ -68,19 +109,20 @@ export function group(parent, ...children) { const g = new THREE.Group(); childr
 
 /* ---------- geometry helpers (cached) ---------- */
 const geos = new Map();
-const cached = (key, make) => { if (!geos.has(key)) geos.set(key, make()); return geos.get(key); };
+const cached = (key, make) => { key = STYLE.name + key; if (!geos.has(key)) geos.set(key, make()); return geos.get(key); };
+const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);   // blok style: everything is a block
 export const G = {
-  sphere: (r, w = 32, h = 22) => cached(`s${r},${w},${h}`, () => new THREE.SphereGeometry(r, w, h)),
-  capsule: (r, len, cap = 8, radial = 20) => cached(`c${r},${len},${cap},${radial}`, () => new THREE.CapsuleGeometry(r, len, cap, radial)),
-  box: (w, h, d, r = 0) => cached(`b${w},${h},${d},${r}`, () => r ? new RoundedBoxGeometry(w, h, d, 3, r) : new THREE.BoxGeometry(w, h, d)),
-  cyl: (rt, rb, h, seg = 24, open = false) => cached(`y${rt},${rb},${h},${seg},${open}`, () => new THREE.CylinderGeometry(rt, rb, h, seg, 1, open)),
-  cone: (r, h, seg = 20) => cached(`k${r},${h},${seg}`, () => new THREE.ConeGeometry(r, h, seg)),
-  torus: (r, tube, arc = Math.PI * 2, rs = 12, ts = 32) => cached(`t${r},${tube},${arc},${rs},${ts}`, () => new THREE.TorusGeometry(r, tube, rs, ts, arc)),
+  sphere: (r, w = 32, h = 22) => cached(`s${r},${w},${h}`, () => blocky() ? B(r * 1.7, r * 1.7, r * 1.7) : lowpoly() ? new THREE.IcosahedronGeometry(r, r > .035 ? 1 : 0) : new THREE.SphereGeometry(r, w, h)),
+  capsule: (r, len, cap = 8, radial = 20) => cached(`c${r},${len},${cap},${radial}`, () => blocky() ? B(r * 1.8, len + r * 1.8, r * 1.8) : new THREE.CapsuleGeometry(r, len, lowpoly() ? 2 : cap, segs(radial, 6))),
+  box: (w, h, d, r = 0) => cached(`b${w},${h},${d},${r}`, () => r && !faceted() ? new RoundedBoxGeometry(w, h, d, 3, r) : B(w, h, d)),
+  cyl: (rt, rb, h, seg = 24, open = false) => cached(`y${rt},${rb},${h},${seg},${open}`, () => blocky() && !open ? B(Math.max(rt, rb) * 1.8, h, Math.max(rt, rb) * 1.8) : new THREE.CylinderGeometry(rt, rb, h, blocky() ? 4 : segs(seg, 6), 1, open)),
+  cone: (r, h, seg = 20) => cached(`k${r},${h},${seg}`, () => new THREE.ConeGeometry(r, h, blocky() ? 4 : segs(seg, 5))),
+  torus: (r, tube, arc = Math.PI * 2, rs = 12, ts = 32) => cached(`t${r},${tube},${arc},${rs},${ts}`, () => new THREE.TorusGeometry(r, tube, blocky() ? 4 : segs(rs, 4), blocky() ? 8 : segs(ts, 8), arc)),
   plane: (w, h, sx = 1, sy = 1) => cached(`p${w},${h},${sx},${sy}`, () => new THREE.PlaneGeometry(w, h, sx, sy)),
   /** Part of a sphere: theta from the top (0) down to thetaLen. */
-  cap: (r, thetaLen, thetaStart = 0, w = 32, h = 16) => cached(`a${r},${thetaLen},${thetaStart},${w},${h}`, () => new THREE.SphereGeometry(r, w, h, 0, Math.PI * 2, thetaStart, thetaLen)),
+  cap: (r, thetaLen, thetaStart = 0, w = 32, h = 16) => cached(`a${r},${thetaLen},${thetaStart},${w},${h}`, () => new THREE.SphereGeometry(r, blocky() ? 4 : segs(w, 8), blocky() ? 2 : segs(h, 4), Math.PI / 4, Math.PI * 2, thetaStart, thetaLen)),
   /** Lathe from [[radius, y], ...] bottom to top. */
-  lathe: (pts, seg = 28) => cached(`l${JSON.stringify(pts)},${seg}`, () => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg)),
+  lathe: (pts, seg = 28) => cached(`l${JSON.stringify(pts)},${seg}`, () => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), blocky() ? 4 : segs(seg, 7), Math.PI / 4)),
 };
 
 /* ---------- sky + lights ---------- */
@@ -144,4 +186,43 @@ export function texture(url) {
 export function canvasTexture(w, h, draw) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+
+/**
+ * Fewer draw calls (the main cost in software WebGL): merge every static mesh under `root` into one mesh
+ * per material (+ shadow flags). Skips anything with userData.dynamic (or inside it), and `keep` objects.
+ * Call at the end of a set's build(), before people are added. deep: false = only the direct children
+ * (a character's joint: its own meshes, not the joints below it). Returns the number of meshes merged.
+ */
+export function bake(root, { keep = new Set(), deep = true } = {}) {
+  root.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const buckets = new Map(); const done = [];
+  const visit = fn => deep ? root.traverse(fn) : root.children.slice().forEach(fn);
+  visit(o => {
+    if (!o.isMesh || keep.has(o)) return;
+    for (let p = o; p && p !== root; p = p.parent) if (p.userData.dynamic || keep.has(p)) return;
+    if (Array.isArray(o.material) || o.material.isShaderMaterial || o.isInstancedMesh || o.isSkinnedMesh) return;
+    const g = o.geometry; if (!g.attributes.position || !g.attributes.normal) return;
+    const key = o.material.uuid + '|' + o.castShadow + '|' + o.receiveShadow + '|' + (g.index ? 'i' : 'n') + '|' + Object.keys(g.attributes).sort().join(',');
+    if (!buckets.has(key)) buckets.set(key, { material: o.material, cast: o.castShadow, receive: o.receiveShadow, geos: [] });
+    const m = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+    const c = g.clone(); c.applyMatrix4(m); for (const k of Object.keys(c.attributes)) if (!['position', 'normal', 'uv'].includes(k)) c.deleteAttribute(k);
+    buckets.get(key).geos.push(c); done.push(o);
+  });
+  let n = 0;
+  for (const b of buckets.values()) {
+    if (b.geos.length < 2) { b.geos.forEach(g => g.dispose()); continue; }
+    const merged = mergeGeometries(b.geos, false); if (!merged) continue;
+    const m = new THREE.Mesh(merged, b.material); m.castShadow = b.cast; m.receiveShadow = b.receive; root.add(m); n += b.geos.length;
+    b.geos.forEach(g => g.dispose());
+    b.merged = true;
+  }
+  // remove the originals that went into a merged mesh
+  const mergedKeys = new Set([...buckets].filter(([, b]) => b.merged).map(([k]) => k));
+  for (const o of done) {
+    const g = o.geometry; const key = o.material.uuid + '|' + o.castShadow + '|' + o.receiveShadow + '|' + (g.index ? 'i' : 'n') + '|' + Object.keys(g.attributes).sort().join(',');
+    if (mergedKeys.has(key)) o.parent.remove(o);
+  }
+  return n;
 }
