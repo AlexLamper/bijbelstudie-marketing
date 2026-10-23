@@ -12,6 +12,7 @@ jobs:
       PLATFORM_MONGODB_URI: ${{ secrets.PLATFORM_MONGODB_URI }}
       PLATFORM_MONGODB_DB: ${{ secrets.PLATFORM_MONGODB_DB }}
       META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
       YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}

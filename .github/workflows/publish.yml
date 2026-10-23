@@ -1,9 +1,11 @@
-# Every 30 minutes during the day: publish APPROVED items whose time has come.
+# Every 30 minutes during the day: publish APPROVED items whose time has come,
+# and start the Revise workflow when Alex asked for changes in the studio.
 name: Publish
 on:
   schedule: [{ cron: '0,30 5-20 * * *' }]   # 06:00-22:30 Amsterdam (winter); GitHub may start a few minutes late
   workflow_dispatch: {}
 concurrency: { group: publish, cancel-in-progress: false }
+permissions: { contents: read, actions: write, issues: write }
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,9 +26,15 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
       DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund --omit=dev
       - run: node engine/cli/publish-due.mjs
+      - id: revise
+        run: node engine/cli/revise-check.mjs
+      - if: steps.revise.outputs.revise == 'true'
+        run: gh workflow run revise.yml --repo ${{ github.repository }}
+        env: { GH_TOKEN: '${{ github.token }}' }

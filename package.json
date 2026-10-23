@@ -9,9 +9,10 @@
     "validate": "node engine/cli/validate.mjs",
     "render": "node engine/render/render.mjs",
     "samples": "node engine/render/render.mjs content/samples/*.json",
-    "check": "node -e \"for (const f of require('child_process').execSync('find engine -name *.mjs').toString().trim().split('\\n')) require('child_process').execFileSync('node',['--check',f])\" && node engine/cli/validate.mjs content/samples"
+    "check": "for f in $(find engine -name '*.mjs'); do node --check $f || exit 1; done && node engine/cli/validate.mjs content/samples"
   },
   "dependencies": {
+    "@vercel/blob": "^1.1.1",
     "mongodb": "^6.10.0",
     "next": "^15.2.8",
     "playwright": "1.56.0",
@@ -27,5 +28,7 @@
     "tailwindcss": "^4.1.0",
     "typescript": "^5"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

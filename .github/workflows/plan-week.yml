@@ -5,9 +5,10 @@ on:
   schedule: [{ cron: '0 15 * * 5' }]   # Friday 16:00 (winter) / 17:00 (summer) Amsterdam
   workflow_dispatch: {}
 concurrency: { group: planner, cancel-in-progress: false }
-permissions: { contents: write }
+permissions: { contents: write, issues: write }
 env:
   MONGODB_URI: ${{ secrets.MONGODB_URI }}
+  BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
   R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
   R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -20,6 +21,7 @@ env:
   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
   NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
   DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+  GITHUB_TOKEN: ${{ github.token }}
 jobs:
   plan:
     runs-on: ubuntu-latest

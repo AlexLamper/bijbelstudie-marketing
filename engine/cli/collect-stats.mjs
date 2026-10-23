@@ -4,6 +4,7 @@ import { db, close, STATUS } from '../db.mjs';
 import { metaConfigured, instagramInsights, instagramAccount, instagramComments, businessDiscovery } from '../publish/meta.mjs';
 import { youtubeConfigured, youtubeStats } from '../publish/youtube.mjs';
 import { MongoClient } from 'mongodb';
+import { remove, storageConfigured } from '../storage/index.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../paths.mjs';
@@ -55,6 +56,17 @@ if (process.env.PLATFORM_MONGODB_URI) {
     const [total, yesterday] = await Promise.all([users.estimatedDocumentCount(), users.countDocuments({ createdAt: { $gte: yStart, $lt: start } })]);
     await d.collection('metrics').updateOne({ _id: today }, { $set: { users: { total, newYesterday: yesterday } } }, { upsert: true });
   } finally { await c.close(); }
+}
+// Keep storage small (Vercel Blob free tier): drop media of items published > 60 days ago or rejected > 14 days ago.
+if (storageConfigured()) {
+  const old = await items.find({ media: { $exists: true }, $or: [
+    { status: { $in: [STATUS.PUBLISHED, STATUS.PARTIAL] }, publishedAt: { $lt: new Date(Date.now() - 60 * 864e5) } },
+    { status: STATUS.REJECTED, updatedAt: { $lt: new Date(Date.now() - 14 * 864e5) } }] }).toArray();
+  for (const it of old) {
+    try { await remove([it.media.url, it.media.coverUrl]); await items.updateOne({ _id: it._id }, { $unset: { media: '' }, $set: { mediaRemovedAt: new Date() } }); }
+    catch (e) { console.error(`cleanup ${it._id}: ${e.message}`); }
+  }
+  if (old.length) console.log(`removed media of ${old.length} old items`);
 }
 console.log(`stats for ${live.length} live items`);
 await close();

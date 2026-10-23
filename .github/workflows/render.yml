@@ -1,15 +1,19 @@
-# Render whatever is queued (also started by hand after fixing a failed render).
+# Import + render: runs when specs land in content/queue (e.g. written by Claude in chat),
+# when started from another workflow, or by hand after fixing a failed render.
 name: Render
 on:
+  push: { branches: [main], paths: ['content/queue/**'] }
   repository_dispatch: { types: [render] }
   workflow_dispatch: {}
 concurrency: { group: render, cancel-in-progress: false }
+permissions: { contents: write, issues: write }
 jobs:
   render:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -22,10 +26,19 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
       DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund --omit=dev
+      - name: Import queued specs
+        run: node engine/cli/import-queue.mjs
+      - name: Keep a record in git
+        run: |
+          git config user.name "BijbelStudie engine"; git config user.email "studio@bijbelstudie.io"
+          git add -A content/queue content/imported
+          git diff --cached --quiet || (git commit -m "import: $(date -u +%F)" && git push)
       - run: npx playwright install --with-deps chromium
-      - run: node engine/cli/render-pending.mjs
+      - name: Render and notify
+        run: node engine/cli/render-pending.mjs

@@ -1,7 +1,7 @@
 // Renders every queued item, uploads it to R2 and puts it up for review.
 // When nothing is left in the queue for a week, Alex gets one email: "week ready to review".
 import { renderSpec, launch } from '../render/render.mjs';
-import { upload } from '../storage/r2.mjs';
+import { upload } from '../storage/index.mjs';
 import { db, close, STATUS } from '../db.mjs';
 import { notify } from '../notify.mjs';
 
