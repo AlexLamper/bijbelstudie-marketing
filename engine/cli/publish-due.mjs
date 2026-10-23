@@ -52,7 +52,9 @@ for (const it of due) {
     const before = it.results[pl];
     try {
       it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };
-      if (it.results[pl].needsManual) problems.push(`${it._id}: TikTok heeft de app nog niet goedgekeurd - de video staat privé. Zet hem zelf op openbaar in TikTok.`);
+      if (it.results[pl].needsManual) problems.push(pl === 'youtube'
+        ? `${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`
+        : `${it._id}: TikTok heeft de app nog niet goedgekeurd - de video staat privé. Zet hem zelf op openbaar in TikTok.`);
     } catch (e) {
       const tries = (before?.tries || 0) + 1;
       it.results[pl] = { error: e.message, tries, at: new Date() };

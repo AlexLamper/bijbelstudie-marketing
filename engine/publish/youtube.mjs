@@ -26,7 +26,9 @@ export async function publishYouTube(item) {
   if (!init.ok) throw new Error(`YouTube init ${init.status}: ${await init.text()}`);
   const up = await fetch(init.headers.get('location'), { method: 'PUT', headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(size) }, body: readFileSync(item.media.file) });
   const j = await up.json(); if (!up.ok) throw new Error(`YouTube upload ${up.status}: ${JSON.stringify(j.error || j)}`);
-  return { id: j.id, url: `https://youtube.com/shorts/${j.id}`, privacy: j.status?.privacyStatus };
+  const privacy = j.status?.privacyStatus;
+  // YouTube can keep an upload private (e.g. account settings or an API-project restriction): flag it
+  return { id: j.id, url: `https://youtube.com/shorts/${j.id}`, privacy, needsManual: !!privacy && privacy !== 'public' };
 }
 
 export async function youtubeStats(ids) {

@@ -27,6 +27,7 @@ Daily reel mix per week: 3 `reel-explainer`, 2 `reel-demo`, 2 `reel-verse`.
 - **Feed test (weeks 1-3):** reels count as `feedType: "video-first"`; spot posts `"spotlight"`; statements `"statement"`. From week 4 shift the 4 test slots toward the winner (e.g. 3 winner + 1 other), and keep exploring a little.
 - **Voice test:** alternate `voice` male/female across explainers; across two weeks both get the same number. From week 4 favour the winner (2:1).
 - **Hooks:** set `experiment.hook` to the hook type. Rotate through all types; repeat winners with a variation (change one thing).
+- **Post times (decided by data):** weeks 1-2 keep the fixed slots. From week 3 compare views and saves per slot in `performance.json` (use `slot`): try one alternative per type each week (verse 06:30 or 08:00, reels 12:30 or 21:00, feed posts 18:00) on one day only, set `experiment.note: "tijd-test HH:MM"`, and move the default slot when an alternative wins two weeks in a row. Report it under **Volgende week**.
 - **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" (caption, or a spotlight on `15-profiel`).
 
 ## Daily verse rules
