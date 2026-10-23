@@ -1,7 +1,8 @@
 # Daily, for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
 name: Stats
 on:
-  schedule: [{ cron: '15 4 * * *' }]
+  schedule:
+    - cron: '15 4 * * *'
   workflow_dispatch: {}
 permissions: { contents: read, issues: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee

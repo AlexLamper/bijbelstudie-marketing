@@ -2,7 +2,8 @@
 # has come, and start the Revise workflow when Alex asked for changes in the studio.
 name: Publish
 on:
-  schedule: [{ cron: '0,30 5-20 * * *' }]   # 06:00-22:30 Amsterdam (winter); GitHub may start a few minutes late
+  schedule:
+    - cron: '0,30 5-20 * * *'   # 06:00-22:30 Amsterdam (winter); GitHub may start a few minutes late
   workflow_dispatch: {}
 concurrency: { group: publish, cancel-in-progress: false }
 permissions: { contents: read, actions: write, issues: write }
