@@ -57,12 +57,16 @@
   },
   "experimentPriors": {
     "format": {
+      "reel-3d": [
+        4,
+        1
+      ],
       "reel-story": [
         3,
         1
       ],
       "reel-kinetic": [
-        3,
+        2,
         1
       ]
     }

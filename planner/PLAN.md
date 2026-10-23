@@ -21,6 +21,7 @@ but write as if it will go out exactly as written.
     experiments, not by you), targets for look/voice/music/subtitles/hook/topic, and the voice budget.
 12. `P/content/context/experiments.json` - the scoreboard behind it: per trait value its fair score and chance to be best.
 13. `P/content/context/voices.json` - the voice keys you may use and the music moods that exist.
+    For 3D reels also `engine/render/3d/catalog.json` - the looks, sets, spots, cameras and actions that exist.
 14. `P/content/used-verses.json` - verses that went out. Never reuse one.
 15. `P/content/context/history.json` - everything planned or posted in the last year (newest first): per item its
     `subject`, `hook` and every verse it shows. Nothing you plan may repeat it (see "No repeats" in `P/plan.md`);

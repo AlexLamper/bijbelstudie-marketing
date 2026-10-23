@@ -10,7 +10,7 @@
 // 3. Per trait value a Beta(1 + sum of scores, 1 + sum of (1 - score)) belief; Thompson sampling gives
 //    the chance that each value is the best. Next week's slots: a fixed share for exploring (spread
 //    evenly, so new things keep getting tried) + the rest in proportion to that chance.
-import { HOOKS, TOPICS, STYLES, MOODS, CAPTIONS, VOICE_STYLES, REEL_KINDS, VOICE_REQUIRED, RENDERABLE, isVideo } from './spec.mjs';
+import { HOOKS, TOPICS, STYLES, STYLES3D, MOODS, CAPTIONS, VOICE_STYLES, REEL_KINDS, VOICE_REQUIRED, RENDERABLE, isVideo } from './spec.mjs';
 
 export const POST_KINDS = ['post-spotlight', 'post-statement', 'carousel'];
 export const DEFAULT_STYLE = { 'reel-explainer': 'light', 'reel-demo': 'light', 'reel-verse': 'photo', 'reel-kinetic': 'dark', 'reel-quiz': 'light', 'reel-list': 'light', 'reel-story': 'dark', carousel: 'light' };
@@ -22,7 +22,8 @@ const localTime = (iso, tz = 'Europe/Amsterdam') => new Intl.DateTimeFormat('nl-
 export const TRAITS = {
   format: { label: 'Formaat', of: s => s.kind },
   style: { label: 'Look', of: s => (isVideo(s.kind) || s.kind === 'carousel') ? (s.style || DEFAULT_STYLE[s.kind]) : null },
-  voice: { label: 'Stem', of: s => isVideo(s.kind) ? (hasVoice(s) ? s.voice : 'geen') : null },
+  voice: { label: 'Stem', of: s => isVideo(s.kind) ? (s.kind === 'reel-3d' && s.shots?.some(x => x.by) ? 'dialoog' : hasVoice(s) ? s.voice : 'geen') : null },
+  style3d: { label: 'Look 3D', of: s => s.kind === 'reel-3d' ? (s.style3d || 'lowpoly') : null },
   voiceStyle: { label: 'Stemstijl', of: s => hasVoice(s) ? (s.voiceStyle || 'rustig') : null },
   music: { label: 'Muziek', of: s => isVideo(s.kind) ? (s.music || 'none') : null },
   captions: { label: 'Ondertitels', of: s => hasVoice(s) && s.kind !== 'reel-quiz' && s.kind !== 'reel-kinetic' && s.kind !== 'reel-verse' ? (s.captions || 'block') : null },
@@ -35,6 +36,7 @@ export const traitsOf = (spec, item) => Object.fromEntries(Object.entries(TRAITS
 
 /** The text a voiced item speaks (for the voice budget). */
 export function spokenText(s) {
+  if (s.kind === 'reel-3d') return (s.shots || []).map(x => x.say || x.line || '').join(' ').trim();
   if (!hasVoice(s)) return '';
   switch (s.kind) {
     case 'reel-explainer': return [s.hook, ...s.lines.map(l => l.say)].join(' ');
@@ -136,7 +138,7 @@ export function capAllocation(alloc, rows, cap) {
 export function catalogue({ voices = ['male', 'female'], moods = [] } = {}) {
   return {
     format: REEL_KINDS.filter(k => RENDERABLE.includes(k)), postFormat: POST_KINDS.filter(k => RENDERABLE.includes(k)),
-    style: STYLES, voice: [...voices, 'geen'], voiceStyle: VOICE_STYLES,
+    style: STYLES, style3d: STYLES3D, voice: [...voices, 'dialoog', 'geen'], voiceStyle: VOICE_STYLES,
     music: ['none', ...MOODS.filter(m => m !== 'none' && moods.includes(m))], captions: CAPTIONS,
     hook: HOOKS, topic: TOPICS,
   };
@@ -153,11 +155,11 @@ export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPos
     feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: allocate(board.postFormat, feedPosts, .35) },
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)
     targets: {
-      style: allocate(board.style, reels, .4), music: allocate(board.music, reels, .4),
+      style: allocate(board.style, reels, .4), style3d: board.style3d ? allocate(board.style3d, Math.round(reels * .4), .6) : {}, music: allocate(board.music, reels, .4),
       voice: allocate(board.voice, voiced, .4), voiceStyle: allocate(board.voiceStyle, Math.round(reels * .6), .4),
       captions: allocate(board.captions, Math.round(reels * .35), .4), hook: allocate(board.hook, reels + feedPosts, .5), topic: allocate(board.topic, reels + feedPosts, .5),
     },
-    rule: 'Formats per group are hard (within 1), the number of feed posts too. Targets are soft (voiceStyle and captions are estimates for the voiced reels that have them). Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).',
+    rule: 'Formats per group are hard (within 1), the number of feed posts too. Targets are soft (voiceStyle, captions and style3d are estimates for the reels that have them). Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).',
   };
 }
 export { hasVoice, VOICE_REQUIRED };

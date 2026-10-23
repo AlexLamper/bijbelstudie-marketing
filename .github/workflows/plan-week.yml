@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
-permissions: { contents: write, issues: write, id-token: write }
+permissions: { contents: write, issues: write, id-token: write, actions: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
   projects:
@@ -72,9 +72,9 @@ jobs:
           c=projects/$PROJECT/content
           git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "plan $PROJECT: $(TZ=Europe/Amsterdam date +%G-W%V)" && git pull --rebase --autostash -q && git push)
-      - name: Render and notify
+      - name: Render (the Render workflow, three jobs side by side)
         if: steps.ctx.outputs.skip != 'true'
-        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
-        run: node engine/cli/render-pending.mjs 2>&1 | tee -a run.log
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: gh api -X POST "repos/$GITHUB_REPOSITORY/actions/workflows/render.yml/dispatches" -f ref=main -f "inputs[project]=$PROJECT"
       - if: failure()
         uses: ./.github/actions/report-failure

@@ -23,7 +23,7 @@ export function versesOf(s) {
   const out = [];
   if (s.ref) out.push({ ref: s.ref, main: true });
   if (s.verseRef) out.push({ ref: s.verseRef, main: false });
-  for (const k of ['lines', 'items', 'scenes', 'slides']) for (const x of s[k] || []) if (x.verse) out.push({ ref: x.verse, main: false });
+  for (const k of ['lines', 'items', 'scenes', 'slides', 'shots']) for (const x of s[k] || []) if (x.verse) out.push({ ref: x.verse, main: false });
   return out;
 }
 /** The first line a viewer reads or hears (null for verse items: their verse is checked instead). */

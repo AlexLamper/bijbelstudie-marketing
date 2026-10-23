@@ -12,16 +12,15 @@ concurrency: { group: render, cancel-in-progress: false }
 permissions: { contents: write, issues: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
-  render:
+  import:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     env:
       PROJECT: ${{ inputs.project || github.event.client_payload.project }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-engine
-        with: { render: 'true' }
       - name: Import queued specs
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/each.mjs engine/cli/import-queue.mjs 2>&1 | tee -a run.log
@@ -34,6 +33,21 @@ jobs:
         if: ${{ inputs.requeue }}
         env: { SECRETS: '${{ toJSON(secrets) }}', REQUEUE: '${{ inputs.requeue }}' }
         run: node engine/cli/each.mjs engine/cli/requeue.mjs "$REQUEUE" 2>&1 | tee -a run.log
+      - if: failure()
+        uses: ./.github/actions/report-failure
+  # Three render jobs side by side (3D reels take several minutes each); each claims items one at a time.
+  render:
+    needs: import
+    runs-on: ubuntu-latest
+    timeout-minutes: 160
+    strategy: { fail-fast: false, matrix: { shard: [1, 2, 3] } }
+    env:
+      PROJECT: ${{ inputs.project || github.event.client_payload.project }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }
       - name: Render and notify
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/each.mjs engine/cli/render-pending.mjs 2>&1 | tee -a run.log

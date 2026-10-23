@@ -41,7 +41,7 @@ for (const f of files) {
     const repeats = repeatProblems(raw, [...(history || []), ...batchRows.filter(r => earlier(r, raw))], posted, { requireSubject: samples || (!!target && !revising.has(s.id)) });
     if (repeats.length) throw new Error(repeats.join(' | '));
     // every verse shown anywhere in the item (lines, items, scenes, slides, quiz)
-    const shown = [s.verse, s.verseData, ...['lines', 'items', 'scenes', 'slides'].flatMap(k => (s[k] || []).map(x => x.verseData))].filter(Boolean);
+    const shown = [s.verse, s.verseData, ...['lines', 'items', 'scenes', 'slides', 'shots'].flatMap(k => (s[k] || []).map(x => x.verseData))].filter(Boolean);
     for (const v of shown) {
       if (HEADING.test(v.text)) throw new Error(`${v.ref} starts with a heading or acrostic letter ("${v.text.slice(0, 24)}...") - pick another verse`);
       if (v !== s.verse && v.text.length > 230) throw new Error(`${v.ref} is ${v.text.length} chars - too long to read in a reel or slide; pick a verse under 230 chars`);
@@ -86,7 +86,7 @@ if (allocation && planned.length) {
   const feed = planned.filter(x => ['post-spotlight', 'post-statement', 'carousel'].includes(x.kind));
   compare('feed posts format', count(feed), allocation.feedPosts.format, true);
   if (feed.length !== allocation.feedPosts.slots) fails.push(`${feed.length} feed posts planned, allocation.json wants ${allocation.feedPosts.slots}`);
-  for (const [trait, want] of Object.entries(allocation.targets || {})) if (!['voiceStyle', 'captions'].includes(trait)) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, false);
+  for (const [trait, want] of Object.entries(allocation.targets || {})) if (!['voiceStyle', 'captions', 'style3d'].includes(trait)) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, false);
   if (allocation.voiceBudget) {
     const chars = planned.reduce((n, x) => n + spokenText(x).length, 0);
     if (chars > allocation.voiceBudget.charsThisWeek) fails.push(`voiced text is ${chars} characters, the voice budget this week is ${allocation.voiceBudget.charsThisWeek} - shorten lines or use formats without voice`);
