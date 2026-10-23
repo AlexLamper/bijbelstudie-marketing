@@ -40,6 +40,14 @@
       "source": "ElevenLabs Music",
       "prompt": "Light, playful upbeat instrumental for a quiz video. Pizzicato strings, marimba and soft claps, around 110 BPM, fun but not loud, no vocals, even dynamics, suitable to speak over.",
       "at": "2026-10-23"
+    },
+    {
+      "file": "cinematic-1.mp3",
+      "mood": "cinematic",
+      "seconds": 45,
+      "source": "ElevenLabs Music",
+      "prompt": "Gentle cinematic instrumental. Low strings and piano with slow, soft swells, around 80 BPM, emotional but restrained, no big drums, no vocals, suitable to speak over.",
+      "at": "2026-10-23"
     }
   ]
 }
