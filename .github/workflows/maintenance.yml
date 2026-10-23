@@ -1,0 +1,24 @@
+# By hand: one-off engine jobs that change data (each is idempotent).
+#   set-subjects - subjects from projects/<id>/content/subjects.json into older items (no-repeat check)
+name: Maintenance
+on:
+  workflow_dispatch:
+    inputs:
+      task: { description: 'Job', required: true, type: choice, options: [set-subjects] }
+      project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
+permissions: { contents: read, issues: write }
+defaults: { run: { shell: bash } }
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SECRETS: ${{ toJSON(secrets) }}
+      PROJECT: ${{ inputs.project }}
+      TASK: ${{ inputs.task }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-engine
+      - run: node engine/cli/each.mjs "engine/cli/$TASK.mjs" 2>&1 | tee -a run.log
+      - if: failure()
+        uses: ./.github/actions/report-failure
