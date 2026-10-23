@@ -72,7 +72,7 @@ function mixAudio({ clips = [], starts, music, duration, work }) {
     const vol = clips.length ? 0.32 : 0.75;
     f.push(`[${m}:a]aresample=44100,atrim=0:${duration.toFixed(2)},asetpts=N/SR/TB,volume=${vol},afade=t=in:d=0.8,afade=t=out:st=${Math.max(0, duration - 1.8).toFixed(2)}:d=1.8[music]`);
   }
-  if (clips.length && music) f.push('[voice]asplit=2[v1][v2]', '[music][v2]sidechaincompress=threshold=0.025:ratio=12:attack=20:release=400[duck]', '[v1][duck]amix=inputs=2:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=11[out]');
+  if (clips.length && music) f.push('[voice]asplit=2[v1][v2]', '[music][v2]sidechaincompress=threshold=0.025:ratio=12:attack=20:release=400[duck]', '[v1][duck]amix=inputs=2:normalize=0:duration=longest,loudnorm=I=-14:TP=-1.5:LRA=11[out]');
   else if (clips.length) f.push('[voice]loudnorm=I=-14:TP=-1.5:LRA=11[out]');
   else f.push('[music]loudnorm=I=-16:TP=-1.5:LRA=11[out]');
   const file = join(work, 'sound.m4a');
