@@ -126,25 +126,38 @@ export const ReelList = z.object({
   })).min(3).max(7),
 });
 
-// Narrated story with animated scenes: a map with a route, a timeline, a big line, a verse or a photo.
+// Narrated story with animated scenes: a map with a route, a timeline, a big line, a verse, a photo,
+// a counting number (stat), a family line (tree), two sides (compare) or a Hebrew/Greek word (word).
 export const ReelStory = z.object({
   ...base, ...reel, kind: z.literal('reel-story'),
   voice,
   hook: shortLine,
   scenes: z.array(z.object({
     say: said(4, 220),
-    show: z.enum(['map', 'timeline', 'text', 'verse', 'photo']),
+    show: z.enum(['map', 'timeline', 'text', 'verse', 'photo', 'stat', 'tree', 'compare', 'word']),
     places: z.array(place).min(1).max(7).optional(),     // map: in route order; one place = a pin
     events: z.array(z.object({ year: z.string().max(14), label: z.string().max(40) })).min(2).max(6).optional(), // timeline
     focus: z.number().int().min(0).max(5).optional(),    // timeline: which event to highlight
-    text: z.string().max(110).optional(),                // text: the line on screen (else the spoken line)
-    verse: ref.optional(),                               // verse: exact text from data/
+    text: z.string().max(110).optional(),                // text: the line on screen (else the spoken line); stat: small line; compare: heading
+    verse: ref.optional(),                               // verse: exact text from data/; word: shown small under the word
     photo: photo.optional(),                             // photo: background number
+    // stat: counts up to value, keeping any prefix/suffix ("66", "1500+", "3x"); label under the number
+    stat: z.object({ value: said(1, 12).refine(v => /\d/.test(v), 'stat.value needs a number, like "66" or "1500+"'), label: said(2, 60) }).optional(),
+    tree: z.array(z.object({ name: said(1, 24), note: said(1, 40).optional() })).min(2).max(6).optional(), // tree: a lineage, top to bottom
+    compare: z.object({                                  // compare: two cards side by side, points appear one by one
+      left: z.object({ title: said(1, 24), points: z.array(said(2, 40)).min(1).max(3) }),
+      right: z.object({ title: said(1, 24), points: z.array(said(2, 40)).min(1).max(3) }),
+    }).optional(),
+    // word: an original-language word in its own script (Hebrew right to left), transliteration and meaning
+    word: z.object({ original: z.string().min(1).max(24), lang: z.enum(['hebreeuws', 'grieks']), translit: said(1, 30), meaning: said(2, 80) }).optional(),
   }).superRefine((s, c) => {
     if (s.show === 'map' && !s.places) c.addIssue({ code: 'custom', message: 'a map scene needs places', path: ['places'] });
     if (s.show === 'timeline' && !s.events) c.addIssue({ code: 'custom', message: 'a timeline scene needs events', path: ['events'] });
     if (s.show === 'verse' && !s.verse) c.addIssue({ code: 'custom', message: 'a verse scene needs verse', path: ['verse'] });
     if (s.show === 'photo' && !s.photo) c.addIssue({ code: 'custom', message: 'a photo scene needs photo', path: ['photo'] });
+    for (const k of ['stat', 'tree', 'compare', 'word']) if (s.show === k && !s[k]) c.addIssue({ code: 'custom', message: `a ${k} scene needs ${k}`, path: [k] });
+    if (s.word && !(s.word.lang === 'hebreeuws' ? /^[\p{Script=Hebrew}\s]+$/u : /^[\p{Script=Greek}\p{M}\s]+$/u).test(s.word.original))
+      c.addIssue({ code: 'custom', message: `word.original must be the ${s.word.lang === 'hebreeuws' ? 'Hebrew' : 'Greek'} word in its own script only`, path: ['word', 'original'] });
   })).min(3).max(8),
 });
 

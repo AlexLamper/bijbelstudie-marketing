@@ -30,8 +30,13 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
 - **reel-explainer** - voice over hook + 3-9 lines, verse cards and app screens. See Reel rules.
 - **reel-story** - a narrated story with animated scenes: `map` for journeys and places (keys from
   `engine/render/data/places.json`, in route order), `timeline` for a sequence with years (only broadly
-  accepted dates; write "ca. 1000 v.Chr." when approximate), `text`, `verse`, `photo`. 5-7 scenes, one
-  per spoken line. Great for persons, journeys, periods and "how did we get this book".
+  accepted dates; write "ca. 1000 v.Chr." when approximate), `text`, `verse`, `photo`, `stat` (a number
+  that counts up: `value` like "12" or "1500+" and a `label`; `text` = small source line; say the number
+  in the line), `tree` (a family line of 2-6 `name`s with short `note`s, each appears when its name is
+  spoken), `compare` (two cards, `left`/`right` with a `title` and 1-3 short `points`; `text` = optional
+  heading) and `word` (a Hebrew or Greek word in its own script with `translit` and a broadly accepted
+  `meaning`, optional `verse`; say the word in the line). 5-7 scenes, one per spoken line. Great for
+  persons, journeys, periods and "how did we get this book".
 - **reel-kinetic** - big words appearing line by line. 2-8 lines of max ~8 words, one thought per line,
   `emphasis` = the one word that carries it. Works with and without voice (test both) and with music.
 - **reel-quiz** - a question Bible readers can answer, 3-4 plausible options, the answer straight from

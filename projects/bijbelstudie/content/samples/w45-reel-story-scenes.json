@@ -1,0 +1,74 @@
+{
+  "id": "w45-reel-story-scenes",
+  "kind": "reel-story",
+  "week": "2026-W45",
+  "slot": "2026-11-08T19:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Van Ur tot twaalf stammen: Abraham, Izak en Jakob in een minuut. Met kaart, stamboom en het Hebreeuwse woord shalom.",
+  "hashtags": [
+    "#abraham",
+    "#genesis",
+    "#bijbelstudie",
+    "#bijbel"
+  ],
+  "voice": "male",
+  "style": "dark",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Eén man uit Ur werd de stamvader van twaalf stammen.",
+  "scenes": [
+    {
+      "say": "Abraham woonde in Ur. Met zijn vader trok hij naar Haran, en daarna verder naar Kanaän, tot bij Sichem.",
+      "show": "map",
+      "places": ["ur", "haran", "sichem"]
+    },
+    {
+      "say": "God beloofde hem een groot volk. Maar Abraham was honderd jaar oud toen zijn zoon Izak werd geboren.",
+      "show": "stat",
+      "stat": { "value": "100", "label": "jaar was Abraham toen Izak werd geboren" },
+      "text": "Genesis 21:5"
+    },
+    {
+      "say": "Van Abraham kwam Izak, van Izak kwam Jakob, en Jakob kreeg twaalf zonen.",
+      "show": "tree",
+      "tree": [
+        { "name": "Abraham", "note": "trok weg uit Ur" },
+        { "name": "Izak", "note": "de beloofde zoon" },
+        { "name": "Jakob", "note": "kreeg de naam Israël" },
+        { "name": "Twaalf zonen", "note": "de twaalf stammen van Israël" }
+      ]
+    },
+    {
+      "say": "Abraham trok weg uit Haran. Jakob vluchtte er later juist naartoe, weg van zijn broer Ezau.",
+      "show": "compare",
+      "compare": {
+        "left": { "title": "Abraham", "points": ["Trok weg uit Haran", "Vader van Izak", "Kreeg de naam Abraham"] },
+        "right": { "title": "Jakob", "points": ["Vluchtte naar Haran", "Vader van twaalf zonen", "Kreeg de naam Israël"] }
+      }
+    },
+    {
+      "say": "God beloofde Abraham dat hij met vrede tot zijn vaderen zou gaan. In het Hebreeuws staat daar shalom: vrede en heelheid.",
+      "show": "word",
+      "word": { "original": "שָׁלוֹם", "lang": "hebreeuws", "translit": "shalom", "meaning": "vrede, heelheid, welzijn" },
+      "verse": "Genesis 15:15"
+    },
+    {
+      "say": "Lees Genesis 12 met uitleg en de grondtekst ernaast, in BijbelStudie.",
+      "show": "text",
+      "text": "Lees Genesis 12 met de grondtekst ernaast."
+    }
+  ],
+  "basedOn": "Genesis 11:31-12:6 (Ur, Haran, Sichem), 12:2, 17:5 (Abram wordt Abraham), 21:5 (100 jaar), 25:26, 27:43, 32:28, 35:22-26, 49:28 (Jakob, Haran, Israël, twaalf zonen en stammen), 15:15 (met vrede: beshalom; shalom = vrede, heelheid, welzijn).",
+  "subject": "Abraham, Izak en Jakob",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}

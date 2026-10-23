@@ -1,5 +1,6 @@
 // Narrated story reel (reel-story): a spoken hook, then 3-8 scenes that each show a map with a route,
-// a timeline, a big line, a verse or a photo, with burned-in subtitles and the end card.
+// a timeline, a big line, a verse, a photo, a counting number (stat), a family line (tree), two sides
+// (compare) or a Hebrew/Greek word (word), with burned-in subtitles and the end card.
 // Looks: dark (default), light, photo. Loaded by stage.html after base.js; uses its helpers.
 // render(t) is a pure function of t: frames can be rendered in any order (the cover is taken at 2.4 s).
 (() => {
@@ -105,9 +106,80 @@
     });
   }
 
+  /* ---------- fonts the stat and word scenes need: loaded only when a reel uses them. The faces are added
+     to document.fonts while setup() builds the reel, so its `await document.fonts.ready` waits for them. */
+  const FONT_DIR = '../../assets/fonts/';                              // relative to stage.html
+  const LATIN = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
+  const LATIN_EXT = 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
+  const FACES = {
+    stat: [['Story Number', 'Inter-ExtraBold-Latin.woff2', { weight: '800', unicodeRange: LATIN }]],
+    word: [
+      ['Story Hebrew', 'NotoSerifHebrew-SemiBold.woff2', { weight: '600' }],
+      ['Story Greek', 'NotoSerif-Greek-SemiBold.woff2', { weight: '600', unicodeRange: 'U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF' }],
+      ['Story Greek', 'NotoSerif-GreekExt-SemiBold.woff2', { weight: '600', unicodeRange: 'U+1F00-1FFF' }],
+      ['Story Italic', 'Lora-MediumItalic-Latin.woff2', { weight: '500', style: 'italic', unicodeRange: LATIN }],
+      ['Story Italic', 'Lora-MediumItalic-LatinExt.woff2', { weight: '500', style: 'italic', unicodeRange: LATIN_EXT }],
+    ],
+  };
+  const fonts = { asked: new Set(), error: null };
+  function needFonts(scene) {
+    if (fonts.asked.has(scene)) return; fonts.asked.add(scene);
+    for (const [family, file, desc] of FACES[scene]) {
+      const face = new FontFace(family, `url("${FONT_DIR}${file}")`, desc);
+      document.fonts.add(face);
+      face.load().catch(() => { fonts.error = new Error(`reel-story: font ${file} did not load (assets/fonts/)`); });
+    }
+  }
+
+  /** When each shown item is spoken: the first later spoken word that matches one of its words (4+ letters),
+   *  else its share of [a, b] kept between the known neighbours; never before a, at least gap apart, all by limit. */
+  const STOP = new Set(['naar', 'werd', 'zijn', 'haar', 'heeft', 'hebben', 'over', 'voor', 'door', 'deze', 'maar', 'want', 'toen', 'daar', 'waar', 'wordt', 'worden',
+    'tegen', 'onder', 'veel', 'later', 'alle', 'heel', 'hele', 'eerst', 'samen', 'juist', 'staat', 'komt', 'kwam', 'wat', 'jouw', 'zich']);
+  function cueTimes(items, seg, a, b, gap = .45, limit = Infinity) {
+    const spoken = wordTimes(seg).map(w => ({ n: norm(w.w), a: w.a })); let j = 0;
+    const hit = items.map(txt => {
+      const keys = String(txt).split(/\s+/).map(norm).filter(k => k.length >= 4 && !STOP.has(k));
+      for (let q = j; q < spoken.length; q++) {
+        const n = spoken[q].n;
+        if (keys.some(k => n === k || (n.startsWith(k) && n.length - k.length <= 2))) { j = q + 1; return spoken[q].a - .05; }
+      }
+      return null;
+    });
+    const n = items.length;
+    const res = hit.map((v, i) => {
+      if (v != null) return Math.max(a, v);
+      let t = n === 1 ? a : lerp(a, b, i / (n - 1));
+      const prev = hit.slice(0, i).findLastIndex(x => x != null), next = hit.findIndex((x, k) => k > i && x != null);
+      if (prev >= 0) t = Math.max(t, hit[prev] + gap * (i - prev));
+      if (next >= 0) t = Math.min(t, hit[next] - gap * (next - i));
+      return Math.max(a, t);
+    });
+    for (let i = 1; i < n; i++) res[i] = Math.max(res[i], res[i - 1] + gap);
+    const last = res[n - 1];
+    if (last > limit && n > 1) { const f = Math.max(0, limit - res[0]) / (last - res[0]); return res.map(x => res[0] + (x - res[0]) * f); }
+    return res;
+  }
+
+  /** How a whole number can be spoken in Dutch ("honderd", "vijftienhonderd", "tweeëntwintig"); [] when not a whole number. */
+  const NL = ['nul', 'een', 'twee', 'drie', 'vier', 'vijf', 'zes', 'zeven', 'acht', 'negen', 'tien', 'elf', 'twaalf', 'dertien', 'veertien', 'vijftien', 'zestien', 'zeventien', 'achttien', 'negentien'];
+  const NL_TENS = ['', '', 'twintig', 'dertig', 'veertig', 'vijftig', 'zestig', 'zeventig', 'tachtig', 'negentig'];
+  function dutch(n) {
+    if (n < 20) return NL[n];
+    if (n < 100) { const u = n % 10, t = NL_TENS[Math.floor(n / 10)]; return u ? `${NL[u]}${u === 2 || u === 3 ? 'ën' : 'en'}${t}` : t; }
+    if (n < 1000) { const h = Math.floor(n / 100), r = n % 100; return `${h > 1 ? NL[h] : ''}honderd${r ? dutch(r) : ''}`; }
+    const k = Math.floor(n / 1000), r = n % 1000; return `${k > 1 ? dutch(k) : ''}duizend${r ? dutch(r) : ''}`;
+  }
+  const dutchNumber = n => {
+    if (!Number.isInteger(n) || n < 0 || n >= 1e6) return [];
+    const ways = [dutch(n)];
+    if (n > 1000 && n < 10000 && n % 100 === 0 && n % 1000) ways.push(`${dutch(n / 100)}honderd`);   // 1500: vijftienhonderd
+    return ways;
+  };
+
   T['reel-story'] = (spec, timing) => {
     const L = ground(spec.style || 'dark', spec); const P = palette(L);
-    const segs = layout(T['reel-story'].units(spec), timing).map((s, i) => ({ ...s, ...(i ? spec.scenes[i - 1] : { show: 'hook' }), i }));
+    // text = the spoken line (subtitles and word timing use it), shown = the scene's own `text` field
+    const segs = layout(T['reel-story'].units(spec), timing).map((s, i) => { const sc = i ? spec.scenes[i - 1] : { show: 'hook' }; return { ...s, ...sc, text: s.text, shown: sc.text, i }; });
     const talkEnd = endOf(segs) + .25;
     const duration = talkEnd + .4 + END;
     const endStart = duration - END;
@@ -296,10 +368,10 @@
         } };
       }
       if (s.show === 'text') {
-        const line = s.text || s.say;
+        const line = s.shown || s.say;
         const words = line.split(/\s+/).filter(Boolean);
         const spoken = new Set(String(s.say).split(/\s+/).map(norm));
-        if (!s.text || words.filter(w => spoken.has(norm(w))).length >= words.length * .7) s.noCap = true;   // the words are on screen
+        if (!s.shown || words.filter(w => spoken.has(norm(w))).length >= words.length * .7) s.noCap = true;   // the words are on screen
         const box = el('div', '', v); css(box, { position: 'absolute', left: '100px', width: '820px', top: '290px', height: '1070px', display: 'flex', flexDirection: 'column', justifyContent: 'center' });
         const bar = el('div', '', box); bar.style.cssText = 'width:96px;height:8px;border-radius:4px;background:var(--accent);margin-bottom:48px';
         const p = el('div', 'serif', box); p.style.cssText = `font-weight:600;font-size:${fit(line, [[24, 96], [44, 86], [70, 78], [999, 68]], 820)}px;line-height:1.16;letter-spacing:-1px;color:${L.ink}`;
@@ -326,6 +398,240 @@
           const x = out(prog(t, s.start - FADE + .1, s.start + .45)); set(tx, x, (1 - x) * 16);
         } };
       }
+      // cards on the stat/compare/word scenes: opaque on the plain looks (a map fading out behind does not show through)
+      const cardBg = L.look === 'photo' ? 'rgba(6,14,18,.56)' : L.dark ? 'color-mix(in srgb, #fff 7%, var(--panel))' : 'var(--accent-faint)';
+      const cardEdge = L.look === 'light' ? 'color-mix(in srgb, var(--accent) 22%, transparent)' : 'rgba(255,255,255,.10)';
+      const fade = (e, t, a, d = .4, dy = 18) => { const q = out(prog(t, a, a + d)); set(e, q, (1 - q) * dy); return q; };
+      const flash = (t, a, base) => { const c = prog(t, a + .25, a + 1.05); return c < 1 ? `color-mix(in srgb, ${ACC} ${Math.round((1 - c) * 100)}%, ${base})` : base; };
+      if (L.look === 'photo' && ['stat', 'tree', 'word'].includes(s.show)) v.style.textShadow = '0 2px 18px rgba(0,0,0,.5)';   // free text over a busy photo
+
+      if (s.show === 'stat') {
+        // a big number counts up from 0 (prefix/suffix kept), a ring (short numbers) or a bar fills with it
+        needFonts('stat');
+        const val = String(s.stat.value).trim();
+        const m = val.match(/^(.*?)(\d[\d.,]*\d|\d)(.*)$/) || ['', '', '', val];
+        const [, pre, num, suf] = m;
+        const grouped = /^\d{1,3}(\.\d{3})+(,\d+)?$/.test(num), decSep = grouped || num.includes(',') ? ',' : '.';   // Dutch: 1.500 / 2,5
+        const [ip, fp = ''] = (grouped ? num.replace(/\./g, '') : num).split(decSep);
+        const target = Number(ip.replace(/\D/g, '') + (fp ? '.' + fp.replace(/\D/g, '') : '')) || 0;
+        const fmt = x => { const [a, b] = x.toFixed(fp.length).split('.'); return (grouped ? a.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : a) + (b ? decSep + b : ''); };
+        const box = el('div', '', v); css(box, { position: 'absolute', left: '160px', width: '760px', top: '290px', height: '1080px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' });
+        const fig = el('div', '', box); css(fig, { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' });
+        const R = 300, C = R + 24, CIRC = 2 * Math.PI * R;
+        const ring = svgEl('svg', { width: 2 * C, height: 2 * C, viewBox: `0 0 ${2 * C} ${2 * C}` }, fig); ring.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;display:none';
+        svgEl('circle', { cx: C, cy: C, r: R }, ring).style.fill = `color-mix(in srgb, var(--accent) ${L.dark ? 9 : 6}%, transparent)`;
+        svgEl('circle', { cx: C, cy: C, r: R, fill: 'none' }, ring).style.cssText = `stroke:${L.line};stroke-width:6`;
+        const burst = svgEl('circle', { cx: C, cy: C, r: R, fill: 'none' }, ring); burst.style.cssText = `stroke:${ACC};stroke-width:4;opacity:0`;
+        const arc = svgEl('circle', { cx: C, cy: C, r: R, fill: 'none', transform: `rotate(-90 ${C} ${C})`, 'stroke-linecap': 'round', 'stroke-dasharray': `${CIRC} ${CIRC}` }, ring);
+        arc.style.cssText = `stroke:${ACC};stroke-width:12`;
+        const head = el('div', '', fig); css(head, { position: 'absolute', left: 0, top: 0, width: '26px', height: '26px', borderRadius: '50%', background: '#fff', opacity: 0, display: 'none',
+          boxShadow: '0 0 0 7px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 30px 8px color-mix(in srgb, var(--accent) 70%, transparent)' });
+        const numRow = el('div', '', fig); css(numRow, { position: 'relative', display: 'flex', alignItems: 'baseline', justifyContent: 'center', whiteSpace: 'nowrap',
+          fontFamily: '"Story Number", var(--font-sans), Inter, sans-serif', fontWeight: 800, lineHeight: 1, letterSpacing: '-.045em', fontVariantNumeric: 'tabular-nums', color: ACC });
+        const side = txt => { const e = el('span', '', numRow, esc(txt)); css(e, { fontSize: '.6em', letterSpacing: '-.02em', marginLeft: '.04em', marginRight: '.04em' }); return e; };
+        if (pre) side(pre);
+        const digits = el('span', '', numRow, esc(num)); css(digits, { display: 'inline-block', textAlign: suf ? 'right' : pre ? 'left' : 'center' });   // the count hugs its "+" or "x"
+        if (suf) side(suf);
+        const bar = el('div', '', box); css(bar, { position: 'relative', width: '520px', height: '10px', borderRadius: '5px', background: L.line, marginTop: '46px', overflow: 'hidden', display: 'none' });
+        const barFill = el('div', '', bar); css(barFill, { position: 'absolute', left: 0, top: 0, bottom: 0, width: '0px', borderRadius: '5px', background: ACC });
+        const label = el('div', '', box, esc(s.stat.label));
+        label.style.cssText = `margin-top:48px;max-width:760px;font-weight:700;font-size:${fit(s.stat.label, [[24, 60], [40, 54], [999, 48]], 760)}px;line-height:1.15;letter-spacing:-.8px;color:${L.ink};text-wrap:balance`;
+        const small = s.shown ? el('div', '', box, esc(s.shown)) : null;
+        if (small) small.style.cssText = `margin-top:22px;max-width:700px;font-weight:500;font-size:${fit(s.shown, [[50, 38], [999, 34]], 700)}px;line-height:1.35;color:${L.muted};text-wrap:balance`;
+        let mode = null;
+        const lay = () => {   // measured once the fonts are in: size the number, fix the digits' width (prefix/suffix stay put while it counts)
+          numRow.style.fontSize = '300px'; const w = numRow.offsetWidth;
+          mode = w <= 600 ? 'ring' : 'bar';
+          numRow.style.fontSize = Math.floor(300 * Math.min(1, (mode === 'ring' ? 490 : 740) / w)) + 'px';
+          digits.style.width = digits.getBoundingClientRect().width + 'px';
+          if (mode === 'ring') { ring.style.display = 'block'; head.style.display = 'block'; css(fig, { width: 2 * C + 'px', height: 2 * C + 'px' }); label.style.marginTop = '34px'; }
+          else bar.style.display = 'block';
+        };
+        // the count starts with the scene and, when the number is spoken ("100" or "honderd"), slows to land on that word
+        const said = fp ? [] : [ip, ...(target > 1 ? dutchNumber(target) : [])].map(norm);   // not "een": that is also the article
+        const hit = wordTimes(s).find(w => said.includes(norm(w.w)));
+        const c0 = s.start + .1, c1 = hit ? Math.min(c0 + 3.2, Math.max(c0 + .9, hit.a + .15)) : c0 + Math.min(1.1, Math.max(.6, s.dur * .45));
+        return { v, draw: t => {
+          if (!mode) lay();
+          const k = 1 - Math.pow(1 - prog(t, c0, c1), 4);
+          digits.textContent = k >= 1 ? num : fmt(target * k);
+          const ap = out(prog(t, s.start - .3, s.start + .15));
+          const pulse = .035 * Math.sin(Math.PI * prog(t, c1 - .05, c1 + .45));
+          set(numRow, ap, (1 - ap) * 24, .94 + .06 * ap + pulse);
+          if (mode === 'ring') {
+            ring.style.opacity = ap; ring.style.transform = `scale(${.94 + .06 * ap})`;
+            arc.setAttribute('stroke-dashoffset', r1(CIRC * (1 - k))); arc.style.opacity = k > 0 ? 1 : 0;
+            const ang = -Math.PI / 2 + 2 * Math.PI * k;
+            head.style.opacity = k > 0 ? Math.min(1, k * 10) * (1 - prog(t, c1, c1 + .35)) : 0;
+            head.style.transform = `translate(${r1(C + R * Math.cos(ang) - 13)}px, ${r1(C + R * Math.sin(ang) - 13)}px)`;
+            const b = prog(t, c1 - .05, c1 + .9);
+            burst.style.opacity = b > 0 && b < 1 ? .55 * (1 - out(b)) : 0; burst.setAttribute('r', r1(R * (1 + .12 * out(b))));
+          } else { bar.style.opacity = ap; barFill.style.width = r1(520 * k) + 'px'; }
+          fade(label, t, c1 - .45, .5, 22);
+          if (small) fade(small, t, c1 - .15, .45, 16);
+        } };
+      }
+
+      if (s.show === 'tree') {
+        // a family line, top to bottom in a gentle zig-zag: each person appears when their name is spoken, the line grows to them
+        const n = s.tree.length;
+        const gap = Math.min(n > 4 ? 200 : 250, 920 / (n - 1)), y0 = 815 - gap * (n - 1) / 2, D = n > 4 ? 58 : 64;
+        const nodes = s.tree.map((it, j) => ({ ...it, x: j % 2 ? 340 : 200, y: y0 + j * gap }));
+        const svg = svgEl('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, v); svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible';
+        const links = nodes.slice(1).map((b, j) => {
+          const a = nodes[j]; const d = `M${a.x} ${a.y}C${a.x} ${r1(a.y + gap * .62)} ${b.x} ${r1(b.y - gap * .62)} ${b.x} ${b.y}`;
+          const glow = svgEl('path', { d, fill: 'none', 'stroke-linecap': 'round' }, svg); glow.style.cssText = `stroke:${ACC};stroke-width:18;opacity:.16`;
+          const path = svgEl('path', { d, fill: 'none', 'stroke-linecap': 'round' }, svg); path.style.cssText = `stroke:${ACC};stroke-width:6`;
+          const len = path.getTotalLength(); for (const p of [glow, path]) p.style.strokeDasharray = `${len} ${len}`;
+          const hd = el('div', 'abs', v); css(hd, { left: 0, top: 0, width: '22px', height: '22px', borderRadius: '50%', background: '#fff', opacity: 0,
+            boxShadow: '0 0 0 6px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 26px 6px color-mix(in srgb, var(--accent) 70%, transparent)' });
+          return { glow, path, len, hd };
+        });
+        const people = nodes.map(nd => {
+          const ring = el('div', 'abs', v); css(ring, { left: nd.x - D / 2 + 'px', top: nd.y - D / 2 + 'px', width: D + 'px', height: D + 'px', borderRadius: '50%', boxSizing: 'border-box', border: `4px solid ${ACC}`, opacity: 0 });
+          const dot = el('div', 'abs', v); css(dot, { left: nd.x - D / 2 + 'px', top: nd.y - D / 2 + 'px', width: D + 'px', height: D + 'px', borderRadius: '50%', boxSizing: 'border-box',
+            background: P.ground, border: `6px solid ${ACC}`, display: 'grid', placeItems: 'center', boxShadow: '0 4px 16px rgba(0,0,0,.25)' });
+          css(el('div', '', dot), { width: '20px', height: '20px', borderRadius: '50%', background: 'var(--accent)' });
+          const left = nd.x + D / 2 + 30, width = SAFE.right - left;
+          const fs = fit(nd.name, [[10, 76], [16, 66], [24, 56]], width);
+          const tx = el('div', 'abs', v); css(tx, { left: left + 'px', top: r1(nd.y - fs * .56) + 'px', width: width + 'px' });
+          const nm = el('div', '', tx, esc(nd.name)); nm.style.cssText = `font-weight:700;font-size:${fs}px;line-height:1.12;letter-spacing:-1.2px;color:${L.ink}`;
+          const nt = nd.note ? el('div', '', tx, esc(nd.note)) : null;
+          if (nt) nt.style.cssText = `margin-top:6px;font-weight:500;font-size:${n > 4 ? 34 : 36}px;line-height:1.25;color:${L.muted}`;
+          return { ring, dot, tx, nm, nt };
+        });
+        const pops = cueTimes(s.tree.map(x => x.name), s, s.start + .15, s.start + s.dur * .8, .55, Math.max(s.start + .5, until(s.i) - .7));
+        pops[0] = Math.min(pops[0], s.start + .5);
+        return { v, draw: t => {
+          links.forEach((l, j) => {
+            const t1 = pops[j + 1] - .02, t0 = Math.max(pops[j] + .1, t1 - .75);
+            const u = inout(prog(t, t0, t1));
+            l.path.style.strokeDashoffset = l.glow.style.strokeDashoffset = r1(l.len * (1 - u));
+            l.path.style.opacity = u > 0 ? 1 : 0; l.glow.style.opacity = u > 0 ? .16 : 0;   // a round cap would show as a dot
+            l.hd.style.opacity = u > 0 && u < 1 ? Math.min(1, u * 8, (1 - u) * 10) : 0;
+            if (u > 0 && u < 1) { const p = l.path.getPointAtLength(l.len * u); l.hd.style.transform = `translate(${r1(p.x - 11)}px, ${r1(p.y - 11)}px)`; }
+          });
+          people.forEach((pe, j) => {
+            const pt = pops[j]; const pp = prog(t, pt - .05, pt + .4);
+            pe.dot.style.opacity = Math.min(1, pp * 3); pe.dot.style.transform = `scale(${backOut(pp)})`;
+            const b = prog(t, pt, pt + .9); pe.ring.style.opacity = b > 0 && b < 1 ? .7 * (1 - out(b)) : 0; pe.ring.style.transform = `scale(${1 + 1.5 * out(b)})`;
+            const q = out(prog(t, pt + .02, pt + .42)); set(pe.tx, q, 0, 1, (1 - q) * 28);
+            pe.nm.style.color = flash(t, pt, L.ink);
+            if (pe.nt) fade(pe.nt, t, pt + .2, .4, 10);
+          });
+        } };
+      }
+
+      if (s.show === 'compare') {
+        // two cards side by side with a thin "vs" divider; the points appear one by one, left and right in turn
+        const box = el('div', '', v); css(box, { position: 'absolute', left: '96px', width: '888px', top: '290px', height: '1080px', display: 'flex', flexDirection: 'column', justifyContent: 'center' });
+        const head = s.shown ? el('div', 'serif', box, esc(s.shown)) : null;
+        if (head) head.style.cssText = `margin-bottom:52px;max-width:824px;font-weight:600;font-size:${fit(s.shown, [[30, 66], [60, 58], [999, 50]], 824)}px;line-height:1.12;letter-spacing:-.8px;color:${L.ink};text-wrap:balance`;
+        const row = el('div', '', box); css(row, { position: 'relative', display: 'flex', gap: '48px', alignItems: 'stretch' });
+        const longest = Math.max(...['left', 'right'].flatMap(k => s.compare[k].points.map(p => p.length)));
+        const pfs = longest <= 18 ? 42 : longest <= 28 ? 40 : 36;
+        const sides = ['left', 'right'].map((k, si) => {
+          const d = s.compare[k];
+          const card = el('div', '', row);   // the right card's text stays left of x=920 (padding-right), clear of the app buttons
+          card.style.cssText = `flex:none;width:420px;box-sizing:border-box;background:${cardBg};border:2px solid ${cardEdge};border-radius:30px;padding:46px ${si ? 62 : 40}px 52px 40px`;
+          const ti = el('div', '', card, esc(d.title)); ti.style.cssText = `font-weight:700;font-size:${fit(d.title, [[9, 64], [14, 54], [24, 46]], 314)}px;line-height:1.08;letter-spacing:-1.2px;color:${L.ink}`;
+          const bar = el('div', '', card); bar.style.cssText = `margin:26px 0 38px;width:0;height:6px;border-radius:3px;background:${ACC}`;
+          const pts = d.points.map((p, j) => {
+            const r = el('div', '', card); r.style.cssText = `display:flex;gap:16px;align-items:flex-start;margin-top:${j ? 30 : 0}px`;
+            const mk = el('div', '', r); mk.style.cssText = `flex:none;width:12px;height:12px;border-radius:50%;margin-top:${r1((pfs * 1.28 - 12) / 2)}px;background:${ACC}`;
+            const tx = el('div', '', r, esc(p)); tx.style.cssText = `font-weight:500;font-size:${pfs}px;line-height:1.28;color:${L.body}`;
+            return { r, mk, tx, text: p };
+          });
+          return { card, bar, pts };
+        });
+        const divider = el('div', '', row); css(divider, { position: 'absolute', left: '443px', top: '24px', bottom: '24px', width: '2px', background: `linear-gradient(180deg, transparent, ${L.line} 18%, ${L.line} 82%, transparent)` });
+        const vs = el('div', '', row, 'vs'); css(vs, { position: 'absolute', left: '400px', top: '50%', width: '88px', height: '88px', marginTop: '-44px', borderRadius: '50%', display: 'grid', placeItems: 'center',
+          background: 'var(--accent)', color: '#fff', fontWeight: 800, fontSize: '34px', letterSpacing: '-.5px', lineHeight: 1,
+          boxShadow: L.look === 'photo' ? '0 10px 30px rgba(0,0,0,.35)' : `0 0 0 10px ${P.ground}, 0 10px 30px rgba(0,0,0,.22)` });
+        const seq = []; const [lp, rp] = sides.map(sd => sd.pts);
+        for (let j = 0; j < Math.max(lp.length, rp.length); j++) { if (lp[j]) seq.push(lp[j]); if (rp[j]) seq.push(rp[j]); }
+        const a = s.start + .75, lim = Math.max(a + .3, until(s.i) - .8);
+        const times = cueTimes(seq.map(p => p.text), s, a, Math.min(lim, Math.max(a + .5 * (seq.length - 1), s.start + s.dur * .8)), .4, lim);
+        return { v, draw: t => {
+          if (head) fade(head, t, s.start - .3, .45, 16);
+          sides.forEach((sd, si) => {
+            const q = out(prog(t, s.start - .3 + si * .12, s.start + .35 + si * .12));
+            set(sd.card, q, 0, 1, (1 - q) * (si ? 80 : -80));
+            sd.bar.style.width = r1(72 * out(prog(t, s.start + .15 + si * .12, s.start + .65 + si * .12))) + 'px';
+          });
+          const dq = inout(prog(t, s.start + .05, s.start + .6)); divider.style.opacity = dq; divider.style.transform = `scaleY(${dq})`;
+          const vq = prog(t, s.start + .2, s.start + .62); vs.style.opacity = Math.min(1, vq * 3); vs.style.transform = `scale(${backOut(vq)})`;
+          seq.forEach((p, j) => {
+            const q = out(prog(t, times[j] - .05, times[j] + .38)); set(p.r, q, (1 - q) * 18);
+            p.mk.style.transform = `scale(${backOut(prog(t, times[j], times[j] + .35))})`;
+            p.tx.style.color = flash(t, times[j], L.body);
+          });
+        } };
+      }
+
+      if (s.show === 'word') {
+        // an original-language word: big serif in its own script (Hebrew right to left), revealed by a soft wipe
+        // in reading direction, then the transliteration (italic), the meaning and, small, the verse
+        needFonts('word');
+        const wd = s.word; const heb = wd.lang === 'hebreeuws';
+        const orig = heb ? wd.original.trim() : wd.original.trim().normalize('NFC');
+        const box = el('div', '', v); css(box, { position: 'absolute', left: '160px', width: '760px', top: '290px', height: '1080px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' });
+        const top = el('div', '', box); css(top, { display: 'flex', flexDirection: 'column', alignItems: 'center' });   // eyebrow + word: centred alone, rising when the rest comes
+        const ey = el('div', '', top); css(ey, { display: 'flex', alignItems: 'center', gap: '22px', fontWeight: 700, fontSize: '28px', letterSpacing: '5px', color: L.accentText });
+        const ruleL = el('div', '', ey); el('div', '', ey, heb ? 'HEBREEUWS' : 'GRIEKS'); const ruleR = el('div', '', ey);
+        for (const r of [ruleL, ruleR]) r.style.cssText = `width:0;height:3px;border-radius:2px;background:${ACC}`;
+        const wrap = el('div', '', top); css(wrap, { position: 'relative', marginTop: '22px' });
+        const glow = el('div', '', wrap); css(glow, { position: 'absolute', left: '50%', top: '50%', width: '920px', height: '560px', marginLeft: '-460px', marginTop: '-280px', borderRadius: '50%', opacity: 0,
+          background: `radial-gradient(closest-side, color-mix(in srgb, var(--accent) ${L.dark ? 30 : 15}%, transparent), transparent)` });
+        const word = el('div', '', wrap, esc(orig)); word.dir = heb ? 'rtl' : 'ltr'; word.lang = heb ? 'he' : 'grc';
+        css(word, { position: 'relative', display: 'inline-block', padding: '.1em .3em', fontFamily: heb ? '"Story Hebrew", serif' : '"Story Greek", serif', fontWeight: 600, lineHeight: 1.3, whiteSpace: 'nowrap', color: L.ink });
+        const tr = el('div', '', box, esc(wd.translit)); css(tr, { fontFamily: '"Story Italic", var(--font-serif), Lora, serif', fontStyle: 'italic', fontWeight: 500,
+          fontSize: fit(wd.translit, [[14, 66], [22, 58], [30, 50]], 760) + 'px', lineHeight: 1.2, color: L.accentText });
+        const rule = el('div', '', box); css(rule, { marginTop: '40px', width: '0px', height: '4px', borderRadius: '2px', background: ACC, opacity: .7 });
+        const mean = el('div', '', box, esc(wd.meaning)); css(mean, { marginTop: '36px', maxWidth: '760px', fontWeight: 600, fontSize: fit(wd.meaning, [[26, 60], [48, 52], [999, 46]], 760) + 'px',
+          lineHeight: 1.2, letterSpacing: '-.6px', color: L.ink, textWrap: 'balance' });
+        let card = null;
+        if (s.verseData) {
+          card = el('div', '', box); card.style.cssText = `margin-top:52px;width:760px;box-sizing:border-box;text-align:left;background:${cardBg};border-radius:24px;padding:28px 36px 32px;border-left:6px solid var(--accent)`;
+          el('div', '', card, vref(s.verseData.ref)).style.cssText = `font-weight:700;font-size:24px;letter-spacing:3px;color:${L.accentText}`;
+          el('div', 'serif', card, esc(s.verseData.text)).style.cssText = `margin-top:12px;font-size:${fit(s.verseData.text, [[90, 36], [160, 32], [999, 29]], 680)}px;line-height:1.4;color:${L.body}`;
+        }
+        let laid = false, dy = 0;
+        const lay = () => {   // measured once the fonts are in: as big as fits; how far the word sits below its final place while alone
+          if (!document.fonts.check(`600 100px "Story ${heb ? 'Hebrew' : 'Greek'}"`, orig)) throw new Error(`reel-story: the ${wd.lang} font is not loaded`);
+          laid = true; const base = card ? (heb ? 230 : 190) : (heb ? 280 : 230);
+          word.style.fontSize = base + 'px'; const w = word.getBoundingClientRect().width - .6 * base;
+          word.style.fontSize = Math.floor(base * Math.min(1, 700 / Math.max(1, w))) + 'px';
+          dy = Math.max(0, box.clientHeight / 2 - (top.offsetTop + top.offsetHeight / 2));
+        };
+        // the transliteration lands when the narrator says the word ("sjalom" counts for "shalom"), the meaning on its first
+        // word spoken after that; without those, they follow the reveal
+        const r0 = s.start - .15, r1w = s.start + 1.0;
+        const sounds = x => norm(x).replace(/sj/g, 'sh');
+        const spoken = wordTimes(s).map(x => ({ n: sounds(x.w), a: x.a }));
+        const near = (n, k) => k.length >= 3 && (n === k || ((n.startsWith(k) || n.endsWith(k)) && n.length - k.length <= 2));
+        const ti = spoken.findIndex(x => near(x.n, sounds(wd.translit.split(/\s+/)[0])));
+        const keys = wd.meaning.split(/\s+/).map(sounds).filter(k => k.length >= 4 && !STOP.has(k));
+        const mi = spoken.findIndex((x, q) => q > ti && keys.some(k => near(x.n, k)));
+        const latest = Math.max(r1w + .2, until(s.i) - 1.8);   // the verse card still gets time to be read
+        const tt = Math.min(latest - .5, Math.max(r1w - .3, ti >= 0 ? spoken[ti].a - .1 : 0));
+        const mt = Math.min(latest, Math.max(tt + .55, mi >= 0 ? spoken[mi].a - .05 : tt + .9));
+        const wipe = heb ? 'to left' : 'to right';
+        return { v, draw: t => {
+          if (!laid) lay();
+          top.style.transform = `translateY(${r1(dy * (1 - inout(prog(t, tt - .45, tt + .3))))}px)`;
+          const eq = fade(ey, t, s.start - .3, .45, 12); ruleL.style.width = ruleR.style.width = r1(56 * eq) + 'px';
+          const p = inout(prog(t, r0, r1w)); const e = -30 + 160 * p;
+          word.style.webkitMaskImage = word.style.maskImage = p < 1 ? `linear-gradient(${wipe}, #000 ${r1(e)}%, transparent ${r1(e + 30)}%)` : 'none';
+          const wq = out(prog(t, r0, r1w + .3)); set(word, 1, (1 - wq) * 18, 1.04 - .04 * wq);
+          glow.style.opacity = out(prog(t, s.start, r1w + .4)) * (.85 + .15 * Math.sin((t - s.start) * 1.6));
+          fade(tr, t, tt, .5, 16);
+          rule.style.width = r1(120 * inout(prog(t, tt + .2, tt + .75))) + 'px';
+          fade(mean, t, mt, .45, 18);
+          if (card) fade(card, t, mt + .3, .45, 24);
+        } };
+      }
+
       // photo (also the fallback when a verse is missing): full-bleed, slow Ken Burns, subtitles carry the words
       const ph = img(photoSrc(s.photo || hashNo(spec.id + s.i, ctx.photoCount || 365)), 'abs full photo', v);
       el('div', 'abs full scrim', v);
@@ -338,6 +644,7 @@
     const end = endCard(spec);
 
     return { width: W, height: H, duration, starts: segs.map(s => s.start), render(t) {
+      if (fonts.error) throw fonts.error;   // never render the Hebrew/Greek word as boxes
       if (L.bg) L.bg.style.transform = `scale(${1 + .06 * (t / duration)})`;
       // scene layers
       segs.forEach((s, i) => {
