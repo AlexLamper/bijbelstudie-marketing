@@ -109,7 +109,7 @@ T['reel-explainer'] = (spec, timing) => {
   const subs = subtitles(segs, spec.captions || 'block');
   const end = endCard(spec);
   return { width: W, height: H, duration, starts: segs.map(s => s.start), render(t) {
-    if (L.bg) L.bg.style.transform = `scale(${1 + .06 * (t / duration)})`;
+    drift(L, t, duration);
     segs.forEach((s, i) => {
       const next = segs[i + 1]; const until = next ? next.start : talkEnd + .4;
       const q = out(prog(t, s.start - .25, s.start + .2)) * (1 - inout(prog(t, until - .25, until)));

@@ -7,6 +7,7 @@ import { Card, PageHeader } from '@/components/ui';
 import { AppForm, ConnectActions, PagePicker, CopyField, SecretRow, CompetitorsForm } from './SettingsClient';
 import { listSecrets, readSecret } from '@/lib/secrets';
 import VoicePicker from './VoicePicker';
+import { testSet } from '@/lib/elevenlabs';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Instellingen' };
@@ -42,6 +43,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
   const hasEleven = !!(await readSecret(project, 'ELEVENLABS_API_KEY'));
   const competitors: string[] = (await db.collection('settings').findOne({ _id: 'competitors' as any }))?.instagram || [];
   const [maleVoice, femaleVoice] = hasEleven ? await Promise.all([readSecret(project, 'ELEVENLABS_VOICE_MALE'), readSecret(project, 'ELEVENLABS_VOICE_FEMALE')]) : [null, null];
+  const voiceTestSet = hasEleven ? (await testSet(project)).map(({ key, id, name, gender }) => ({ key, id, name, gender })) : [];
   const hasKey = (name: string) => !!key(name)?.inStudio || secrets.includes(name);
   const h = await headers();
   const origin = process.env.STUDIO_URL || `${h.get('x-forwarded-proto') || 'https'}://${h.get('host')}`;
@@ -152,7 +154,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
       {hasEleven && (<>
         <h2 id="stemmen" className="mt-10 scroll-mt-20 text-lg font-bold">Stemmen</h2>
         <p className="mt-1 text-sm text-ink-muted">Kies een mannen- en een vrouwenstem voor de uitleg-reels (de planner wisselt ze af en meet welke beter werkt). Nederlandse stemmen uit de ElevenLabs-bibliotheek; &quot;Test in het Nederlands&quot; kost ongeveer 120 tekens van je tegoed.</p>
-        <Card className="mt-4 p-5"><VoicePicker project={project} male={maleVoice || undefined} female={femaleVoice || undefined} /></Card>
+        <Card className="mt-4 p-5"><VoicePicker project={project} male={maleVoice || undefined} female={femaleVoice || undefined} testSet={voiceTestSet} /></Card>
       </>)}
 
       <h2 className="mt-10 text-lg font-bold">Leren van anderen</h2>

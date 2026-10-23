@@ -28,7 +28,7 @@ const PLATFORMS = P.platforms;
 
 // ---- experiment traits: every item says what it tests (see engine/experiments.mjs and P/plan.md)
 export const HOOKS = ['pijnpunt', 'waardebelofte', 'inzicht', 'verrassing', 'waar-begin-je', 'grondtekst', 'opluchting', 'vraag', 'herkenning'];
-export const TOPICS = ['boek', 'persoon', 'context', 'woord', 'thema', 'vers', 'app', 'praktisch', 'quiz'];
+export const TOPICS = ['boek', 'persoon', 'context', 'woord', 'thema', 'vers', 'app', 'praktisch'];
 export const STYLES = ['light', 'dark', 'photo'];
 export const MOODS = ['none', 'calm', 'hopeful', 'reflective', 'cinematic', 'warm', 'upbeat'];
 export const CAPTIONS = ['karaoke', 'block', 'none'];

@@ -1,0 +1,24 @@
+# By hand: render sample specs with real voices and music and print public links, to review a
+# format before the planner uses it.
+name: Samples
+on:
+  workflow_dispatch:
+    inputs:
+      filter: { description: 'Only samples whose file name contains this (empty = all)', required: false, default: '' }
+      project: { description: 'Project', required: false, default: 'bijbelstudie' }
+permissions: { contents: read, issues: write }
+defaults: { run: { shell: bash } }
+jobs:
+  samples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env: { PROJECT: '${{ inputs.project }}' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }
+      - name: Render with voice and music, upload
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/render-samples.mjs "${{ inputs.filter }}" --upload 2>&1 | tee -a run.log
+      - if: failure()
+        uses: ./.github/actions/report-failure

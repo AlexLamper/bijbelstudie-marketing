@@ -3,7 +3,8 @@
 import '../env.mjs';
 import { db, close, STATUS, heartbeat } from '../db.mjs';
 import { applyConnections } from '../connections.mjs';
-import { metaConfigured, instagramInsights, instagramAccount, instagramComments, businessDiscovery } from '../publish/meta.mjs';
+import { metaConfigured, instagramInsights, facebookInsights, instagramAccount, instagramComments, businessDiscovery } from '../publish/meta.mjs';
+import { tiktokConfigured, tiktokStats } from '../publish/tiktok.mjs';
 import { youtubeConfigured, youtubeStats } from '../publish/youtube.mjs';
 import { MongoClient } from 'mongodb';
 import { remove, storageConfigured } from '../storage/index.mjs';
@@ -22,6 +23,7 @@ if (metaConfigured()) {
     const ig = it.results?.instagram?.id; if (!ig) continue;
     try {
       const m = await instagramInsights(ig, it.kind.startsWith('reel-'));
+      const fb = it.results?.facebook; if (fb?.id && process.env.FB_PAGE_ID) { try { const f = await facebookInsights(fb, it.kind.startsWith('reel-')); if (f.views != null) await items.updateOne({ _id: it._id }, { $set: { 'metrics.facebook': { ...f, at: new Date() } } }); } catch (e) { console.error(`${it._id} facebook: ${e.message}`); } }
       await items.updateOne({ _id: it._id }, { $set: { 'metrics.instagram': { ...m, at: new Date() } } });
       for (const c of await instagramComments(ig)) {
         await d.collection('comments').updateOne({ _id: c.id }, { $setOnInsert: { ...c, itemId: it._id, platform: 'instagram', status: 'new', createdAt: new Date() } }, { upsert: true });
@@ -49,6 +51,17 @@ if (youtubeConfigured()) {
     try {
       const stats = await youtubeStats(ids.slice(i, i + 50));
       for (const it of live) if (stats[it.results?.youtube?.id]) await items.updateOne({ _id: it._id }, { $set: { 'metrics.youtube': { ...stats[it.results.youtube.id], at: new Date() } } });
+    } catch (e) { console.error(e.message); }
+  }
+}
+
+// TikTok: only public videos have an id we can query (needs the video.list scope - Instellingen > TikTok > Opnieuw)
+if (tiktokConfigured()) {
+  const withId = live.filter(it => it.results?.tiktok?.id && !it.results.tiktok.needsManual && /^\d+$/.test(String(it.results.tiktok.id)));
+  if (withId.length) {
+    try {
+      const stats = await tiktokStats(withId.map(it => String(it.results.tiktok.id)));
+      for (const it of withId) { const m = stats[String(it.results.tiktok.id)]; if (m) await items.updateOne({ _id: it._id }, { $set: { 'metrics.tiktok': { ...m, at: new Date() } } }); }
     } catch (e) { console.error(e.message); }
   }
 }
@@ -84,6 +97,9 @@ if (soon.length) {
     soon.some(i => i.status === STATUS.CHANGES) ? 'Een paar wachten op aanpassingen door Claude.' : 'Keur ze goed in de studio (of "Alles goedkeuren").'],
     studioLink(`/week/${first.week}`), { replaces: 'posts wachten nog' });
 }
+// Experiments: fair score per item and platform, per trait value, for the studio and the planner.
+try { const { updateBoard } = await import('../library.mjs'); const b = await updateBoard(d); console.log(`experiments: ${b.trials} trials from ${b.items} items`); }
+catch (e) { console.error(`experiments: ${e.message}`); }
 console.log(`[${project().id}] stats for ${live.length} live items, ${soon.length} waiting for approval`);
 await heartbeat('stats', { live: live.length, waitingApproval: soon.length });
 await close();

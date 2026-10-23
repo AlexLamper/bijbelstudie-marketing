@@ -1,0 +1,45 @@
+{
+  "id": "w45-reel-kinetic-tue",
+  "kind": "reel-kinetic",
+  "week": "2026-W45",
+  "slot": "2026-11-03T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Je hoeft de Bijbel niet in een keer te snappen. Begin klein. Lees met uitleg in BijbelStudie - gratis.",
+  "hashtags": [
+    "#bijbel",
+    "#bijbellezen",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "opluchting",
+    "topic": "praktisch"
+  },
+  "basedOn": "Veel beginners haken af omdat ze denken dat ze alles meteen moeten begrijpen.",
+  "style": "dark",
+  "music": "hopeful",
+  "hook": "Je hoeft niet alles te snappen.",
+  "lines": [
+    {
+      "text": "Begin met een hoofdstuk.",
+      "emphasis": "een"
+    },
+    {
+      "text": "Lees het langzaam. Twee keer.",
+      "emphasis": "langzaam"
+    },
+    {
+      "text": "Vraag je af: wat staat hier eigenlijk?",
+      "emphasis": "eigenlijk"
+    },
+    {
+      "text": "Elke dag een stukje verder.",
+      "verse": "Spreuken 4:18"
+    }
+  ],
+  "endCard": {
+    "headline": "Lees met uitleg erbij."
+  }
+}

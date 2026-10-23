@@ -53,7 +53,7 @@
   .cap span { background: color-mix(in srgb, var(--panel) 88%, transparent); color: #fff; font-weight: 700; font-size: 50px; line-height: 1.2; padding: 16px 26px; border-radius: 18px; text-align: center; letter-spacing: -.3px; }
   /* karaoke subtitles: big outlined words, the spoken word on a teal pill */
   .cap.karaoke span { background: none; padding: 0; font-weight: 800; font-size: 66px; line-height: 1.25; letter-spacing: -.5px; color: #fff;
-    -webkit-text-stroke: 12px rgba(10,16,20,.92); paint-order: stroke fill; }
+    -webkit-text-stroke: 7px rgba(10,16,20,.9); paint-order: stroke fill; text-shadow: 0 6px 22px rgba(0,0,0,.35); }
   .cap.karaoke i { font-style: normal; display: inline-block; padding: 0 10px; border-radius: 14px; transition: none; }
   .cap.karaoke i.on { background: var(--accent); -webkit-text-stroke: 0; transform: scale(1.06); }
   .cap.karaoke i.done { color: #fff; }
@@ -191,7 +191,14 @@ function ground(look, spec, photoNo) {
   stage.style.background = look === 'light' ? 'var(--surface)' : look === 'dark' ? 'var(--panel)' : '#000';
   let bg = null;
   if (look === 'photo') { bg = img(photoSrc(photoNo || hashNo(spec.id, ctx.photoCount || 365)), 'abs full photo'); el('div', 'abs full scrim'); }
-  return { ...L, look, bg, logo: L.dark ? ctx.logos.iconOnDark : ctx.logos.full };
+  let glow = null;   // dark look: a soft teal light drifting behind the content
+  if (look === 'dark') { glow = el('div', 'abs'); css(glow, { left: '-300px', top: '-200px', width: '1400px', height: '1400px', borderRadius: '50%', background: 'radial-gradient(closest-side, color-mix(in srgb, var(--accent) 26%, transparent), transparent)' }); }
+  return { ...L, look, bg, glow, logo: L.dark ? ctx.logos.iconOnDark : ctx.logos.full };
+}
+/** Slow background motion for a look: Ken Burns on photos, drifting glow on dark. */
+function drift(L, t, duration) {
+  if (L.bg) L.bg.style.transform = `scale(${1 + .07 * (t / duration)})`;
+  if (L.glow) { const k = t / Math.max(1, duration); L.glow.style.transform = `translate(${-80 + 260 * k}px, ${60 + 520 * Math.sin(Math.PI * k)}px)`; }
 }
 /** Small logo lockup for a corner of a slide or reel (respects the dark/light logo rule). */
 function lockup(parent, L, h = 52) {
@@ -205,6 +212,7 @@ function lockup(parent, L, h = 52) {
 const T = {};
 </script>
 <script src="templates/base.js"></script>
+<script src="templates/formats.js"></script>
 <script>
 /* ---------- entry ---------- */
 let current;

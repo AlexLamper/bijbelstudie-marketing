@@ -7,27 +7,65 @@ Paths here (`brand/`, `content/`) are inside this project folder, `projects/bijb
 
 - **Wat werkte** - top 3 items with numbers and why you think they worked
 - **Wat niet** - bottom 3 and the likely reason
-- **Feedtest** - per feedType (video-first, spotlight, statement): average views, saves, shares
-- **Stem-test** - male vs female explainer voice, same metrics
+- **Experimenten** - from `experiments.json`: per trait the leader and the laggard with n and score (say when n is still too small to tell)
 - **Groei** - followers and new BijbelStudie signups, compared to the week before
 - **Volgende week** - what you change and why (one line per change)
 
-## Fixed weekly recipe (until the data says otherwise)
+## Weekly recipe
 
 | What | How many | Slot | Platforms |
 |---|---|---|---|
 | `verse-still` daily verse | 7 (every day) | 07:00 | instagram, facebook |
-| Daily reel | 7 (every day) | 19:30 | instagram, facebook, tiktok, youtube |
-| Feed test posts (`post-spotlight`, `post-statement`) | 4 | 12:00 Tue, Thu, Sat, Sun | instagram, facebook |
+| Main reel | 7 (1 a day) | 19:30 | instagram, facebook, tiktok, youtube |
+| Extra test reels | 14 (2 a day) | 12:30 and 17:00 | tiktok, youtube |
+| Feed posts | 4 | 12:00 Tue, Thu, Sat, Sun | instagram, facebook |
 
-Daily reel mix per week: 3 `reel-explainer`, 2 `reel-demo`, 2 `reel-verse`.
+Which formats fill the reel and feed slots comes from `allocation.json` (`mainReels.format`,
+`extraReels.format`, `feedPosts.format`). Main reels get what works best (the account's face on
+Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<format short>-<day>`,
+with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
+
+## Formats
+
+- **reel-explainer** - voice over hook + 3-9 lines, verse cards and app screens. See Reel rules.
+- **reel-story** - a narrated story with animated scenes: `map` for journeys and places (keys from
+  `engine/render/data/places.json`, in route order), `timeline` for a sequence with years (only broadly
+  accepted dates; write "ca. 1000 v.Chr." when approximate), `text`, `verse`, `photo`. 5-7 scenes, one
+  per spoken line. Great for persons, journeys, periods and "how did we get this book".
+- **reel-kinetic** - big words appearing line by line. 2-8 lines of max ~8 words, one thought per line,
+  `emphasis` = the one word that carries it. Works with and without voice (test both) and with music.
+- **reel-quiz** - a question Bible readers can answer, 3-4 plausible options, the answer straight from
+  the Bible text, `explain` in one or two sentences with `verse`. Caption invites answers in the comments.
+  Facts only; no trick questions about translations or denominations.
+- **reel-list** - "N dingen die je niet wist over ..." with 3-6 items, each a fact from the text with
+  `verse`. Use `say` for the spoken version when it differs from the short title.
+- **reel-verse** - like the daily verse; may be read aloud (`voice`) - test both.
+- **reel-demo** - hook + 2-5 app screens with one benefit each.
+- **carousel** - 5-8 slides for Instagram/Facebook: `cover` (the hook), then `point`/`text`/`verse`/
+  `screen` slides; give saveable value ("bewaar dit"); the CTA slide is added automatically.
+- **post-spotlight** / **post-statement** - see Feed posts.
+
+## Traits (what each item tests)
+
+- `voice`: a key from `voices.json` (`male`/`female` = the default voices, others = the test set);
+  leave it out for no voice (only where the format allows; explainers and stories always speak).
+- `voiceStyle`: `rustig` (steady narrator) or `levendig` (expressive). `captions`: `karaoke` (word by
+  word), `block` or `none` - for voiced explainers, lists and stories.
+- `music`: a mood from `voices.json` `musicMoods` (only those exist), else leave it out.
+- `style`: `light`, `dark` or `photo` (reels and carousels).
+- `experiment.hook` and `experiment.topic` on every item (`topic`: boek, persoon, context, woord,
+  thema, vers, app, praktisch).
+- When you repeat a winner, change one thing (another verse, another hook line) - not everything.
+- Verses shown in reels and slides: under 230 characters; never one that starts with a heading.
 
 ## Experiments (set `experiment` on every item)
 
-- **Feed test (weeks 1-3):** reels count as `feedType: "video-first"`; spot posts `"spotlight"`; statements `"statement"`. From week 4 shift the 4 test slots toward the winner (e.g. 3 winner + 1 other), and keep exploring a little.
-- **Voice test:** alternate `voice` male/female across explainers; across two weeks both get the same number. From week 4 favour the winner (2:1).
-- **Hooks:** set `experiment.hook` to the hook type. Rotate through all types; repeat winners with a variation (change one thing).
-- **Post times (decided by data):** weeks 1-2 keep the fixed slots. From week 3 compare views and saves per slot in `performance.json` (use `slot`): try one alternative per type each week (verse 06:30 or 08:00, reels 12:30 or 21:00, feed posts 18:00) on one day only, set `experiment.note: "tijd-test HH:MM"`, and move the default slot when an alternative wins two weeks in a row. Report it under **Volgende week**.
+- **Formats, looks, voices, music, subtitles, hooks, topics:** divided by `allocation.json` (Thompson
+  sampling on fair scores, see `engine/experiments.mjs`). You follow it; you do not pick winners yourself.
+- **Feed posts:** `experiment.feedType` = `spotlight`, `statement` or `carousel`.
+- **Post times (decided by data):** keep the fixed slots. From week 3 compare views and saves per slot in
+  `performance.json` (use `slot`): try one alternative per type each week on one day only, set
+  `experiment.note: "tijd-test HH:MM"`, and move the default slot when an alternative wins two weeks in a row.
 - **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" (caption, or a spotlight on `15-profiel`).
 
 ## Daily verse rules

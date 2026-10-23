@@ -15,7 +15,21 @@ export const statusLabel = (s: string) => STATUS[s]?.label ?? s;
 
 export const KIND: Record<string, string> = {
   'verse-still': 'Vers van de dag', 'reel-verse': 'Reel - vers', 'reel-demo': 'Reel - app demo',
-  'reel-explainer': 'Reel - uitleg', 'post-spotlight': 'Post - functie', 'post-statement': 'Post - statement',
+  'reel-explainer': 'Reel - uitleg', 'reel-kinetic': 'Reel - bewegende tekst', 'reel-quiz': 'Reel - quiz',
+  'reel-list': 'Reel - lijstje', 'reel-story': 'Reel - verhaal met kaart', 'post-spotlight': 'Post - functie',
+  'post-statement': 'Post - statement', carousel: 'Carrousel',
 };
+
+// Experiment traits (engine/experiments.mjs) and their values, in Dutch.
+export const TRAIT: Record<string, string> = {
+  format: 'Formaat', postFormat: 'Feedpost', style: 'Look', voice: 'Stem', voiceStyle: 'Stemstijl', music: 'Muziek',
+  captions: 'Ondertitels', hook: 'Hook', topic: 'Onderwerp', length: 'Lengte', time: 'Tijdstip',
+};
+const VALUE: Record<string, string> = {
+  light: 'licht', dark: 'donker', photo: 'foto', none: 'geen', geen: 'geen stem', male: 'man (standaard)', female: 'vrouw (standaard)',
+  calm: 'rustig', hopeful: 'hoopvol', reflective: 'bezinnend', cinematic: 'filmisch', warm: 'warm', upbeat: 'vrolijk',
+  karaoke: 'woord voor woord', block: 'blokjes', rustig: 'rustig', levendig: 'levendig',
+};
+export const traitValue = (trait: string, v: string) => (trait === 'format' || trait === 'postFormat') ? (KIND[v] || v) : (VALUE[v] || v);
 
 export const PLATFORM: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', youtube: 'YouTube' };
