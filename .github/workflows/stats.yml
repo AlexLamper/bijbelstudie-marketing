@@ -1,8 +1,7 @@
-# Daily (schedule saved by AlexLamper), for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
+# Daily, for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
 name: Stats
+# Started daily by the studio's timer (Vercel Cron, /api/cron/stats), not by GitHub's schedule (no doubles).
 on:
-  schedule:
-    - cron: '15 4 * * *'   # daily 05:15 (winter) / 06:15 (summer) Amsterdam
   workflow_dispatch: {}
 permissions: { contents: read, issues: write }
 defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee

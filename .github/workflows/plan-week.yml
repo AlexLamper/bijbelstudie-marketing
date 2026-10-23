@@ -1,9 +1,9 @@
 # Every Friday (schedule saved by AlexLamper), per enabled project (one after the other): Claude plans next week (report + specs +
 # comment replies), the engine validates, imports and renders everything, and Alex gets one message.
 name: Plan week
+# Started on Friday by the studio's timer (Vercel Cron, /api/cron/plan); GitHub's own schedule is not
+# used here so the planner can never run twice. By hand: Actions > Plan week > Run workflow.
 on:
-  schedule:
-    - cron: '23 14 * * 5'   # Friday 15:23 (winter) / 16:23 (summer) Amsterdam; schedules run as the GitHub user who last changed this line
   workflow_dispatch:
     inputs:
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
@@ -32,15 +32,19 @@ jobs:
       - uses: ./.github/actions/setup-engine
         with: { render: 'true' }
       - name: Export context for the planner
+        id: ctx
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
       - name: Planner token (GitHub secret, or pasted in the studio)
+        if: steps.ctx.outputs.skip != 'true'
         id: token
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/studio-secret.mjs CLAUDE_CODE_OAUTH_TOKEN
       - name: Today
+        if: steps.ctx.outputs.skip != 'true'
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
       - name: Claude plans the week
+        if: steps.ctx.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ steps.token.outputs.value }}
@@ -53,17 +57,21 @@ jobs:
             --model claude-sonnet-5-5 --max-turns 260
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
+        if: steps.ctx.outputs.skip != 'true'
         run: node engine/cli/validate.mjs 2>&1 | tee -a run.log
       - name: Import into the studio
+        if: steps.ctx.outputs.skip != 'true'
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
+        if: steps.ctx.outputs.skip != 'true'
         run: |
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           c=projects/$PROJECT/content
           git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "plan $PROJECT: $(TZ=Europe/Amsterdam date +%G-W%V)" && git pull --rebase --autostash -q && git push)
       - name: Render and notify
+        if: steps.ctx.outputs.skip != 'true'
         env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
         run: node engine/cli/render-pending.mjs 2>&1 | tee -a run.log
       - if: failure()
