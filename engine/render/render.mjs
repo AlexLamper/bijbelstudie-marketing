@@ -175,6 +175,7 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
     const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
     const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
     await page.goto(STAGE);
+    if (process.env.PERF3D) await page.evaluate(o => { window.__3dopts = o; }, JSON.parse(process.env.PERF3D));
     const units = isVideo(spec.kind) ? await page.evaluate(s => window.units(s), spec) : null;
     const voice = await voiceClips(spec, units, work);
     const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()])
@@ -195,11 +196,24 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
       await page.screenshot({ path: f, type: 'jpeg', quality: 92 });
       result.files.media = f;
     } else {
-      const fps = info.fps || FPS, frames = Math.round(info.duration * fps);
-      for (let i = 0; i < frames; i++) {
-        await page.evaluate(t => window.render(t), i / fps);
-        await page.screenshot({ path: join(work, `f${String(i).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 92 });
+      const fps = info.fps || FPS, frames = Math.min(Math.round(info.duration * fps), Number(process.env.BENCH_FRAMES) || Infinity);
+      // 3D reels: several pages render frames side by side (frames are independent: render(t) is pure), which
+      // keeps the CPU busy while another page is encoding its screenshot. RENDER_PAGES overrides (1 = off).
+      const nPages = Math.max(1, Number(process.env.RENDER_PAGES) || 1);   // measured: on 2 cores more pages is slower
+      const pages = [page];
+      for (let k = 1; k < nPages; k++) {
+        const p2 = await browser.newPage({ viewport: { width: info.width, height: info.height }, deviceScaleFactor: 1 });
+        await p2.goto(STAGE); await p2.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()]); pages.push(p2);
       }
+      const t0 = Date.now();
+      await Promise.all(pages.map(async (pg, k) => {
+        for (let i = k; i < frames; i += pages.length) {
+          await pg.evaluate(t => window.render(t), i / fps);
+          await pg.screenshot({ path: join(work, `f${String(i).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 92 });
+        }
+      }));
+      if (process.env.BENCH_FRAMES) console.log(`bench: ${frames} frames on ${pages.length} page(s): ${((Date.now() - t0) / frames).toFixed(0)} ms/frame`);
+      for (const pg of pages.slice(1)) await pg.close();
       const music = musicFor(spec.music, spec.id);
       if (spec.music && spec.music !== 'none' && !music) result.notes.push(`Nog geen muziek voor "${spec.music}" in de bibliotheek - gemaakt zonder muziek`);
       const sound = mixAudio({ clips: voice?.clips, starts: info.starts, music, duration: info.duration, work });

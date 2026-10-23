@@ -185,8 +185,8 @@ T['reel-3d'] = (spec, timing) => {
       const st = pick(sA, on.a.id); const close = type === 'close' || type === 'phone';
       const points = pts([on.a.id], close ? .24 : .28, close ? .3 : .8);
       const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
-      const fov = close ? 30 : type === 'low' ? 42 : 36;
-      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: type === 'low' ? -.6 : type === 'top' ? 2.6 : close ? .02 : .15, fov, minD: close ? 1.75 : 1.9, others: states.filter(x => x.a.id !== on.a.id) });
+      const fov = close ? 34 : type === 'low' ? 42 : 36;
+      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: type === 'low' ? -.6 : type === 'top' ? 2.6 : close ? .02 : .15, fov, minD: close ? 1.95 : 2.1, others: states.filter(x => x.a.id !== on.a.id) });
       P = { focus, cam: sol.cam, fov, dir: sol.dir, d: sol.d };
     }
     if (window.__debug3d) console.log('plan', s.i, type, on?.a.id, JSON.stringify({ cam: P.cam.toArray().map(x => +x.toFixed(2)), focus: P.focus.toArray().map(x => +x.toFixed(2)), yaws: sA.map(x => [x.a.id, +x.yaw.toFixed(2), +x.x.toFixed(2), +x.z.toFixed(2)]) }));

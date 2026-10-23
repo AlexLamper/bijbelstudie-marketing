@@ -120,7 +120,7 @@ export const G = {
   torus: (r, tube, arc = Math.PI * 2, rs = 12, ts = 32) => cached(`t${r},${tube},${arc},${rs},${ts}`, () => new THREE.TorusGeometry(r, tube, blocky() ? 4 : segs(rs, 4), blocky() ? 8 : segs(ts, 8), arc)),
   plane: (w, h, sx = 1, sy = 1) => cached(`p${w},${h},${sx},${sy}`, () => new THREE.PlaneGeometry(w, h, sx, sy)),
   /** Part of a sphere: theta from the top (0) down to thetaLen. */
-  cap: (r, thetaLen, thetaStart = 0, w = 32, h = 16) => cached(`a${r},${thetaLen},${thetaStart},${w},${h}`, () => new THREE.SphereGeometry(r, blocky() ? 4 : segs(w, 8), blocky() ? 2 : segs(h, 4), Math.PI / 4, Math.PI * 2, thetaStart, thetaLen)),
+  cap: (r, thetaLen, thetaStart = 0, w = 32, h = 16, phiLen = Math.PI * 2) => cached(`a${r},${thetaLen},${thetaStart},${w},${h},${phiLen}`, () => new THREE.SphereGeometry(r, blocky() ? 4 : segs(w, 8), blocky() ? 2 : segs(h, 4), phiLen < 6 ? Math.PI / 2 - phiLen / 2 : Math.PI / 4, phiLen, thetaStart, thetaLen)),
   /** Lathe from [[radius, y], ...] bottom to top. */
   lathe: (pts, seg = 28) => cached(`l${JSON.stringify(pts)},${seg}`, () => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), blocky() ? 4 : segs(seg, 7), Math.PI / 4)),
 };

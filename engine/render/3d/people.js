@@ -107,7 +107,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   // beard
   if (L.beard) {
     const bm = mat(L.beard[1], { rough: .95 });
-    head.add(scl(at(mesh(G.cap(headR * 1.02, Math.PI * .36, Math.PI * .6, 32, 12), bm), 0, -.0, .012), 1.03, 1.05, 1.02));
+    head.add(scl(at(mesh(G.cap(headR * 1.02, Math.PI * .3, Math.PI * .64, 32, 12, Math.PI * 1.15), mat(L.beard[1], { rough: .95, side: THREE.DoubleSide })), 0, -.0, .012), 1.03, 1.05, 1.02));   // chin beard, front only
     head.add(rot(scl(at(mesh(G.capsule(.014, .075, 4, 8), bm, { cast: false }), 0, -.064, headR * .97), 1.3, 1, 1), 0, 0, Math.PI / 2));   // moustache
     if (L.beard[0] === 'lang') head.add(rot(scl(at(mesh(G.cone(.12, .26, 20), bm), 0, -.25, .06), 1, 1, .7), Math.PI, 0, 0));
     F.mouth.position.z = headR * 1.02;
