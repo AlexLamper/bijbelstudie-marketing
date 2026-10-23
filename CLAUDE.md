@@ -1,34 +1,38 @@
-# BijbelStudie marketing engine
+# Marketing engine (BijbelStudie, BijbelQuiz, ...)
 
-Marketing automation for BijbelStudie (bijbelstudie.io + iOS/Android app). Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. See `README.md` for the flow and `SETUP.md` for accounts.
+Marketing automation for Alex's products. Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. One engine and one studio serve every project in `projects/`. See `README.md` for the flow and `SETUP.md` for accounts.
 
-Website code: AlexLamper/BijbelStudie (Next.js 15, MongoDB, Stripe, Resend, Vercel). App code: AlexLamper/bijbelstudie-app (Flutter, RevenueCat).
+Projects:
+- `bijbelstudie` (on) - bijbelstudie.io + iOS/Android app. Website code: AlexLamper/BijbelStudie (Next.js 15, MongoDB, Stripe, Resend, Vercel). App code: AlexLamper/bijbelstudie-app (Flutter, RevenueCat).
+- `bijbelquiz` (off, scaffolded) - bijbelquiz.com + app. Code: AlexLamper/bijbelquiz, AlexLamper/bijbelquiz-app. Its `brand/` is a draft to verify.
 
-## Read first, every session
+## Read first, for the project you work on (`P/` = `projects/<id>/`)
 
-1. `brand/product.md` - what BijbelStudie is and does. Never claim anything that is not in it.
-2. `brand/voice-and-rules.md` - audience, voice, hooks and the hard rules.
-3. `brand/visual.md` - colours, type, logo and CTA rules; the full design system is the "BijbelStudie" Design System artifact on claude.ai.
-4. `engine/spec.mjs` - the spec contract. `planner/PLAN.md` - the weekly recipe and experiments.
+1. `P/project.json` - name, database, colours, logos, end card, platforms.
+2. `P/brand/product.md` - what the product is and does. Never claim anything that is not in it.
+3. `P/brand/voice-and-rules.md` - audience, voice, hooks and the hard rules.
+4. `P/brand/visual.md` - logo/CTA rules and which screenshot shows what. BijbelStudie's full design system is the "BijbelStudie" Design System artifact on claude.ai.
+5. `engine/spec.mjs` - the spec contract. `planner/PLAN.md` (steps) + `P/plan.md` (that project's recipe and experiments).
 
 ## Hard rules
 
 - Nothing is published without Alex's approval: only items with status `approved` are ever touched by `publish-due`.
-- Verse words always come from `data/statenvertaling/` (engine/verses.mjs), never typed by a model. A verse that went out is never reused (Mongo `verses`, exported to `content/used-verses.json`).
-- Config lives in `.env.engine` (private repo, Alex chose this; never make the repo public), GitHub Actions secrets (override it; `CLAUDE_CODE_OAUTH_TOKEN` only there), Vercel env vars (studio) and Mongo `tokens` (rotating OAuth tokens).
+- Verse words always come from `data/statenvertaling/` (engine/verses.mjs), never typed by a model. A verse that went out is never reused (Mongo `verses` per project, exported to `P/content/used-verses.json`).
+- Secrets never go in git. They live in GitHub Actions secrets (reach the engine as `SECRETS` JSON; `CLAUDE_CODE_OAUTH_TOKEN` only there), Vercel env vars (studio), Mongo `tokens` (rotating OAuth tokens) and, for local runs only, `.env.engine` (gitignored). `engine.config` is committed and holds only non-secret settings.
+- Account secrets are per project: a project with an `envPrefix` only uses `<PREFIX>KEY` for accounts and never falls back to another project's (engine/project.mjs `ACCOUNT_KEYS`).
 - Dutch for everything a user sees; code, comments and identifiers in English. Plain hyphen "-", never a long dash.
-- CTA like big apps: logo + name, one benefit, one button ("Download gratis"), official store badges, "Ook op bijbelstudie.io". Never "Zoek ... in de App Store", never "link in bio".
-- Dark grounds use the outlined mark (`logo-icon-dark.svg`) + `logo-wordmark-white.svg`; never an inverted logo.
+- CTA like big apps: logo + name, one benefit, one button ("Download gratis"), official store badges, "Ook op <website>". Never "Zoek ... in de App Store", never "link in bio".
+- BijbelStudie: dark grounds use the outlined mark (`logo-icon-dark.svg`) + `logo-wordmark-white.svg`; never an inverted logo.
 
 ## Layout
 
-- `brand/` knowledge, `assets/` (fonts, logos, badges, 20 screenshots of 21 Oct 2026, 365 daytext photos), `data/statenvertaling/`
-- `engine/` env (.env.engine loader), spec, verses, render (`render/stage.html` templates + `render.mjs`), tts, storage (Vercel Blob via the studio; R2 optional), publish (Meta, YouTube, TikTok, Upload-Post), notify (Resend), db, `cli/` jobs
-- `planner/` PLAN.md (weekly) and REVISE.md (after review comments)
-- `content/` samples, queue (planner output), imported (record), used-verses.json, competitors.json
-- `app/`, `lib/`, `middleware.ts` - the studio (Next.js 15 + Tailwind 4 + MongoDB driver)
-- `.github/workflows/` plan-week, revise, render, publish, stats, ci
+- `projects/<id>/` per product: `project.json`, `brand/`, `plan.md`, `assets/` (logos, screenshots, photos), `content/` (samples, queue = planner output, imported = record, used-verses.json, competitors.json). `projects/_template/` is copied by `npm run new-project`.
+- Shared: `assets/` (fonts, store badges), `data/statenvertaling/`, `planner/` (PLAN.md weekly steps, REVISE.md after review comments).
+- `engine/` project (which project, paths, env prefix), env (config loader), spec, verses, render (`render/stage.html` templates themed from project.json + `render.mjs`), tts, storage (Vercel Blob via the studio; R2 optional), publish (Meta, YouTube, TikTok, Upload-Post), notify, db (one database per project), `cli/` jobs. `cli/each.mjs` runs a job for every enabled project.
+- Which project a script uses: `PROJECT` env, else a path argument inside `projects/<id>/`, else `DEFAULT_PROJECT` (engine.config).
+- Studio: `app/` (`/` overview, `/<project>/...` pages, `/api/<project>/...`, `/api/engine/*` for the engine), `components/` (ui.tsx buttons/cards - use them so every control has pointer, hover, focus and disabled states), `lib/` (projects.ts reads `projects.generated.json`, written by `scripts/sync-projects.mjs`).
+- `.github/workflows/` plan-week (matrix per project), revise (one project), render, publish, stats, ci; shared steps in `.github/actions/`.
 
 ## Check before you commit
 
-`for f in $(find engine -name '*.mjs'); do node --check $f; done && node engine/cli/validate.mjs content/samples` and render one sample with `node engine/render/render.mjs content/samples/w45-verse-mon.json`.
+`npm run check` (syntax + every project's samples valid), `node scripts/sync-projects.mjs` after changing any `project.json` or logo, and render one sample: `node engine/render/render.mjs projects/bijbelstudie/content/samples/w45-verse-mon.json`.

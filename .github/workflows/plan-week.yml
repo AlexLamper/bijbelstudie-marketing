@@ -1,39 +1,37 @@
-# Every Friday: Claude plans next week (report + specs + comment replies), the engine
-# validates, imports and renders everything, and Alex gets one email to review it.
+# Every Friday, per enabled project (one after the other): Claude plans next week (report + specs +
+# comment replies), the engine validates, imports and renders everything, and Alex gets one message.
 name: Plan week
 on:
   schedule: [{ cron: '0 15 * * 5' }]   # Friday 16:00 (winter) / 17:00 (summer) Amsterdam
-  workflow_dispatch: {}
-concurrency: { group: planner, cancel-in-progress: false }
+  workflow_dispatch:
+    inputs:
+      project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
 permissions: { contents: write, issues: write }
-env:
-  MONGODB_URI: ${{ secrets.MONGODB_URI }}
-  ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
-  BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  R2_BUCKET: ${{ secrets.R2_BUCKET }}
-  R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
-  GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
-  ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-  ELEVENLABS_VOICE_MALE: ${{ secrets.ELEVENLABS_VOICE_MALE }}
-  ELEVENLABS_VOICE_FEMALE: ${{ secrets.ELEVENLABS_VOICE_FEMALE }}
-  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-  NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
-  DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
-  GITHUB_TOKEN: ${{ github.token }}
+defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
-  plan:
+  projects:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    outputs: { list: '${{ steps.p.outputs.list }}' }
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm ci --no-audit --no-fund
+      - id: p
+        env: { ONLY: '${{ inputs.project }}' }
+        run: echo "list=$(node engine/cli/projects.mjs --json ${ONLY:+--only "$ONLY"})" >> "$GITHUB_OUTPUT"
+  plan:
+    needs: projects
+    if: needs.projects.outputs.list != '[]'
+    strategy: { matrix: { project: '${{ fromJSON(needs.projects.outputs.list) }}' }, fail-fast: false, max-parallel: 1 }
+    concurrency: { group: 'planner-${{ matrix.project }}', cancel-in-progress: false }
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PROJECT: ${{ matrix.project }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }
       - name: Export context for the planner
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
       - name: Today
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
@@ -42,32 +40,25 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Today is ${{ env.TODAY }}. Read planner/PLAN.md and follow it exactly: report on last week,
-            plan next ISO week, draft comment replies, and run the validator until it passes.
+            Today is ${{ env.TODAY }}. Project: ${{ matrix.project }} (folder projects/${{ matrix.project }}/).
+            Read planner/PLAN.md and follow it exactly: report on last week, plan next ISO week,
+            draft comment replies, and run the validator until it passes.
           claude_args: >-
             --model claude-sonnet-5-5 --max-turns 120
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
-        shell: bash
         run: node engine/cli/validate.mjs 2>&1 | tee -a run.log
       - name: Import into the studio
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         run: |
-          git config user.name "BijbelStudie engine"; git config user.email "studio@bijbelstudie.io"
-          git add content/imported content/used-verses.json content/queue/_errors.json 2>/dev/null || true
-          git diff --cached --quiet || (git commit -m "plan: $(TZ=Europe/Amsterdam date +%G-W%V)" && git push)
-      - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-      - run: npx playwright install --with-deps chromium
+          git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
+          c=projects/$PROJECT/content
+          git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "plan $PROJECT: $(TZ=Europe/Amsterdam date +%G-W%V)" && git pull --rebase --autostash -q && git push)
       - name: Render and notify
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
         run: node engine/cli/render-pending.mjs 2>&1 | tee -a run.log
-      - name: Report failure
-        if: failure()
-        shell: bash
-        env: { GH_TOKEN: '${{ github.token }}' }
-        run: |
-          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
-          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md
+      - if: failure()
+        uses: ./.github/actions/report-failure

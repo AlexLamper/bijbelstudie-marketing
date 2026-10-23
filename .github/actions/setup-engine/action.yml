@@ -1,0 +1,15 @@
+name: Set up the engine
+description: Node 22 + dependencies; with render true also ffmpeg and Chromium for rendering.
+inputs:
+  render: { description: 'Install ffmpeg and Chromium', default: 'false' }
+  dev: { description: 'Also install devDependencies', default: 'false' }
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with: { node-version: 22, cache: npm }
+    - shell: bash
+      run: npm ci --no-audit --no-fund ${{ inputs.dev == 'true' && ' ' || '--omit=dev' }}
+    - if: inputs.render == 'true'
+      shell: bash
+      run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null && npx playwright install --with-deps chromium

@@ -1,4 +1,4 @@
-// Imports what the planner (Claude) wrote into content/queue/ :
+// Imports what the planner (Claude) wrote into projects/<id>/content/queue/ :
 //   *.json        item specs  -> items (status queued)
 //   report-*.md   weekly report -> reports
 //   replies.json  drafted comment replies -> comments
@@ -7,13 +7,14 @@
 import '../env.mjs';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from '../paths.mjs';
+import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
 import { isUsed } from '../verses.mjs';
 import { db, close, STATUS } from '../db.mjs';
 
-const Q = join(ROOT, 'content', 'queue');
-const DONE = join(ROOT, 'content', 'imported');
+const P = project();
+const Q = P.paths.queue;
+const DONE = P.paths.imported;
 mkdirSync(DONE, { recursive: true });
 const d = await db();
 const used = (await d.collection('verses').find().toArray()).map(v => v.ref);
@@ -45,6 +46,7 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
     renameSync(p, join(DONE, `${Date.now()}-${f}`));
   } catch (e) { errors.push({ file: f, error: e.message }); }
 }
+mkdirSync(Q, { recursive: true });
 writeFileSync(join(Q, '_errors.json'), JSON.stringify(errors, null, 2));
-console.log(`imported ${n} items, ${errors.length} errors`); errors.forEach(e => console.log(` - ${e.file}: ${e.error}`));
+console.log(`[${P.id}] imported ${n} items, ${errors.length} errors`); errors.forEach(e => console.log(` - ${e.file}: ${e.error}`));
 await close();

@@ -1,13 +1,17 @@
-// The planner's self-check (no database needed): validates every spec in content/queue/,
+// The planner's self-check (no database needed): validates every spec in the project's content/queue/
+// (or `samples`, or any folder given),
 // pulls the exact verse text, and flags reused or duplicate verses and slot clashes.
 // Exit code 1 while anything is wrong, so the planner keeps fixing until it is clean.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from '../paths.mjs';
+import '../env.mjs';
+import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
 import { isUsed } from '../verses.mjs';
 
-const dir = process.argv[2] || join(ROOT, 'content', 'queue');
+const P = project();
+const arg = process.argv[2];
+const dir = !arg ? P.paths.queue : arg === 'samples' ? P.paths.samples : arg;
 const files = existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') : [];
 const seenRefs = []; const slots = new Map(); let bad = 0;
 for (const f of files) {
@@ -15,7 +19,7 @@ for (const f of files) {
     const s = await prepare(JSON.parse(readFileSync(join(dir, f), 'utf8')));
     if (`${s.id}.json` !== f) throw new Error(`file name must be ${s.id}.json`);
     if (s.ref) {
-      if (isUsed(s.ref)) throw new Error(`${s.ref} was already posted (content/used-verses.json)`);
+      if (isUsed(s.ref)) throw new Error(`${s.ref} was already posted (projects/${P.id}/content/used-verses.json)`);
       if (seenRefs.includes(s.verse.ref)) throw new Error(`${s.ref} is used twice in this batch`);
       seenRefs.push(s.verse.ref);
       if (s.verse.text.length > 260) throw new Error(`${s.ref} is ${s.verse.text.length} chars - pick a verse under 260`);
@@ -27,5 +31,5 @@ for (const f of files) {
     console.log(`ok   ${f}${s.verse ? `  [${s.verse.ref}: ${s.verse.text.slice(0, 60)}...]` : ''}`);
   } catch (e) { bad++; console.log(`FAIL ${f}: ${e.message.replace(/\s+/g, ' ').slice(0, 600)}`); }
 }
-console.log(`\n${files.length - bad}/${files.length} valid`);
+console.log(`\n[${P.id}] ${files.length - bad}/${files.length} valid`);
 process.exit(bad ? 1 : 0);

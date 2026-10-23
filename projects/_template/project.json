@@ -1,0 +1,33 @@
+{
+  "name": "{{name}}",
+  "tagline": "",
+  "order": 99,
+  "enabled": false,
+  "db": "{{db}}",
+  "envPrefix": "{{envPrefix}}",
+  "web": "{{web}}",
+  "language": "nl",
+  "timezone": "Europe/Amsterdam",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "theme": {
+    "accent": "{{accent}}", "accentDark": "{{accentDark}}", "accentSoft": "{{accentSoft}}", "accentFaint": "{{accentFaint}}",
+    "cta": "{{cta}}", "panel": "{{panel}}",
+    "ink": "#111827", "inkBody": "#374151", "inkMuted": "#6b7280",
+    "background": "#f3f4f6", "surface": "#ffffff", "line": "#e5e7eb",
+    "fontSans": "Inter", "fontSerif": "Lora"
+  },
+  "logos": {
+    "full": "logos/logo-full.svg",
+    "iconOnDark": "logos/logo-icon-dark.svg",
+    "wordmarkOnDark": "logos/logo-wordmark-white.svg"
+  },
+  "endCard": {
+    "headline": "{{headline}}",
+    "sub": "",
+    "buttons": ["Download gratis", "Begin gratis"],
+    "stores": ["app-store", "play-store"],
+    "web": "Ook op {{web}}"
+  },
+  "verse": { "translation": "SV", "eyebrow": "VERS VAN DE DAG" },
+  "notify": { "from": "{{name}} Studio <studio@{{web}}>" }
+}

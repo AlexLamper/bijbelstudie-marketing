@@ -1,12 +1,15 @@
 import { MongoClient, Db } from 'mongodb';
+import { getProject } from './projects';
 
-// One client per server instance (survives hot reloads in dev).
+// One client per server instance (survives hot reloads in dev); one database per project.
 const g = globalThis as unknown as { _mongo?: Promise<MongoClient> };
 
-export async function getDb(): Promise<Db> {
+export async function getDb(projectId: string): Promise<Db> {
+  const p = getProject(projectId);
+  if (!p) throw new Error(`Unknown project "${projectId}"`);
   if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not set');
-  g._mongo ??= new MongoClient(process.env.MONGODB_URI).connect();
-  return (await g._mongo).db(process.env.MONGODB_DB || 'bijbelstudie_marketing');
+  g._mongo ??= new MongoClient(process.env.MONGODB_URI).connect().catch(e => { g._mongo = undefined; throw e; });
+  return (await g._mongo).db(p.db);
 }
 
 export type Item = {
@@ -14,16 +17,6 @@ export type Item = {
   spec: any; media?: { url: string; coverUrl?: string; duration?: number };
   results?: Record<string, any>; metrics?: Record<string, any>;
   reviewComments?: { text: string; at: Date }[]; error?: string; renderNotes?: string[];
-};
-
-export const STATUS_LABEL: Record<string, string> = {
-  queued: 'In de wachtrij', rendering: 'Wordt gemaakt', review: 'Wacht op jou', changes: 'Wordt aangepast',
-  approved: 'Goedgekeurd', rejected: 'Afgewezen', published: 'Gepubliceerd', partial: 'Deels gepubliceerd', failed: 'Mislukt',
-};
-
-export const KIND_LABEL: Record<string, string> = {
-  'verse-still': 'Vers van de dag', 'reel-verse': 'Reel - vers', 'reel-demo': 'Reel - app demo',
-  'reel-explainer': 'Reel - uitleg', 'post-spotlight': 'Post - functie', 'post-statement': 'Post - statement',
 };
 
 /** ISO week like 2026-W45 for a date. */

@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
+import { engineAuthorized } from '@/lib/engine-auth';
+import { DEFAULT_PROJECT, PROJECTS, getProject } from '@/lib/projects';
 
 export const dynamic = 'force-dynamic';
 
 // Health check for the engine: database reachable, item counts per status, recent problems.
-// GET /api/engine/status?key=ENGINE_KEY
+// GET /api/engine/status?key=ENGINE_KEY[&project=<id>]  (default: the first enabled project)
 export async function GET(req: Request) {
-  const key = new URL(req.url).searchParams.get('key');
-  if (!process.env.ENGINE_KEY || key !== process.env.ENGINE_KEY) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const out: any = { at: new Date().toISOString(), blob: !!process.env.BLOB_READ_WRITE_TOKEN };
+  if (!engineAuthorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const project = new URL(req.url).searchParams.get('project') || DEFAULT_PROJECT;
+  if (!getProject(project)) return NextResponse.json({ error: 'unknown project', projects: PROJECTS.map(p => p.id) }, { status: 404 });
+  const out: any = { at: new Date().toISOString(), project, projects: PROJECTS.map(p => p.id), blob: !!process.env.BLOB_READ_WRITE_TOKEN };
   try {
-    const db = await getDb();
+    const db = await getDb(project);
     await db.command({ ping: 1 });
     out.mongo = 'ok';
     out.byStatus = Object.fromEntries((await db.collection('items').aggregate([{ $group: { _id: '$status', n: { $sum: 1 } } }]).toArray()).map(r => [r._id, r.n]));

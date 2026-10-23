@@ -3,6 +3,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from './paths.mjs';
+import { project } from './project.mjs';
 
 const DIR = join(ROOT, 'data', 'statenvertaling');
 
@@ -49,9 +50,10 @@ export function getVerse(ref) {
 }
 
 // ---- used-verse ledger: a verse that went out is never used again ----
-const LEDGER = join(ROOT, 'content', 'used-verses.json');
+// per project: projects/<id>/content/used-verses.json (exported from Mongo before every planner run)
 export function usedVerses() {
-  return JSON.parse(readFileSync(LEDGER, 'utf8')).verses.map(v => v.ref);
+  const f = project().paths.usedVerses;
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')).verses.map(v => v.ref) : [];
 }
 const key = ref => { const r = parseRef(ref); return `${fold(folderFor(r.book) || r.book)} ${r.chapter}:${r.from}-${r.to}`; };
 export function isUsed(ref, extra = []) {

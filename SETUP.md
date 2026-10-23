@@ -5,12 +5,13 @@
 | Part | Status |
 |---|---|
 | Repo `AlexLamper/bijbelstudie-marketing` | Engine, studio, planner, workflows pushed |
-| Database | MongoDB Atlas, project BijbelStudie-Marketing, cluster `marketing`, database `bijbelstudie_marketing` |
+| Database | MongoDB Atlas, project BijbelStudie-Marketing, cluster `marketing`; one database per project (`bijbelstudie_marketing`, later `bijbelquiz_marketing`) |
 | Studio | Vercel project `bijbelstudie-studio` -> https://bijbelstudie-studio.vercel.app (password in Vercel env `STUDIO_PASSWORD`) |
 | Media storage | Vercel Blob store `bijbelstudie-media` (fra1), attached to the studio; the engine uploads through the studio with `ENGINE_KEY` |
-| Engine config | `.env.engine` in this private repo (database, studio URL, engine key). A GitHub Actions secret with the same name overrides it |
+| Secrets | GitHub Actions secrets `MONGODB_URI` and `ENGINE_KEY` (engine), Vercel env vars (studio). Nothing secret is in git; `engine.config` holds only the studio URL and default project. To run the engine on your own machine, put secrets in `.env.engine` (gitignored) |
 | Notifications | GitHub issues with label `studio` (GitHub emails you). Optional later: Resend |
 | First content | Week 44 (26 Oct - 1 Nov): 18 items, written by Claude in chat, rendered by the Render workflow |
+| Projects | BijbelStudie (on). BijbelQuiz scaffolded in `projects/bijbelquiz/` (off until its brand files, screenshots and accounts are in) |
 
 ## Still needs you (in this order)
 
@@ -18,7 +19,7 @@
 
 On your computer: `npm i -g @anthropic-ai/claude-code`, then `claude setup-token`, log in.
 Put the token in GitHub: repo -> Settings -> Secrets and variables -> Actions -> New repository secret -> name `CLAUDE_CODE_OAUTH_TOKEN`.
-(This one stays out of `.env.engine`: it gives access to your Claude account.)
+(It gives access to your Claude account, so it only ever lives in GitHub secrets.)
 
 ### 2. Instagram + Facebook (15 min) - needed before anything is posted
 
@@ -28,7 +29,7 @@ Your Instagram is a Business account; it must be linked to a Facebook Page.
 3. Graph API Explorer -> this app -> "Get Page Access Token" with: `instagram_basic, instagram_content_publish, instagram_manage_insights, instagram_manage_comments, pages_show_list, pages_read_engagement, pages_manage_posts, business_management`.
 4. Access Token Debugger -> Extend. Then `GET /me/accounts` with that token -> copy your Page's `id` and `access_token`.
 5. `GET /{page-id}?fields=instagram_business_account` -> copy the Instagram id.
-6. Send the three values to Claude (or add them to `.env.engine` as `META_PAGE_TOKEN`, `FB_PAGE_ID`, `IG_USER_ID`).
+6. Add them as GitHub Actions secrets `META_PAGE_TOKEN`, `FB_PAGE_ID`, `IG_USER_ID` (for another project with its prefix, e.g. `BIJBELQUIZ_IG_USER_ID`).
 
 ### 3. Voice (5 min) - when you want the explainers spoken
 
@@ -52,12 +53,21 @@ ElevenLabs Starter (~$6/month): pick a calm Dutch-capable male and female voice 
 
 - `PLATFORM_MONGODB_URI` + `PLATFORM_MONGODB_DB`: a read-only user on the BijbelStudie platform database, for "new users per day" in the stats.
 - `RESEND_API_KEY` + `NOTIFY_TO`: email instead of GitHub issues.
-- `content/competitors.json`: Instagram usernames to learn from.
+- `projects/<id>/content/competitors.json`: Instagram usernames to learn from.
+
+## Secrets per project
+
+All GitHub Actions secrets reach the engine automatically (no workflow edits). Shared secrets have no
+prefix: `MONGODB_URI`, `ENGINE_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, voices, app credentials. Account secrets
+(where things get posted, whose users get counted) belong to one project. BijbelStudie uses them
+without a prefix. Every other project uses its `envPrefix` from `project.json`, e.g. `BIJBELQUIZ_META_PAGE_TOKEN`,
+`BIJBELQUIZ_IG_USER_ID`, `BIJBELQUIZ_FB_PAGE_ID`, `BIJBELQUIZ_YT_REFRESH_TOKEN`, `BIJBELQUIZ_TIKTOK_REFRESH_TOKEN`,
+`BIJBELQUIZ_PLATFORM_MONGODB_URI`. A project never falls back to another project's accounts.
 
 ## How it runs
 
-- **Friday** 16:00: Plan week (Claude) -> import -> render -> you get "Week .. staat klaar".
+- **Friday** 16:00: Plan week (Claude, one project after the other) -> import -> render -> you get "<Project>: week .. staat klaar".
 - **Studio**: approve, "Aanpassen" with a comment, or remove. "Aanpassingen naar Claude" -> revised within 30 min.
-- **Every 30 min** (06:00-22:30): approved items whose time has come are posted.
+- **Every 30 min** (06:00-22:30): approved items of every enabled project whose time has come are posted.
 - **Daily** 05:15: stats, comments, cleanup of old media.
 - **Anything fails** -> a GitHub issue with the log.

@@ -3,13 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/sync-projects.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/sync-projects.mjs",
     "build": "next build",
     "start": "next start",
+    "projects": "node engine/cli/projects.mjs",
+    "new-project": "node scripts/new-project.mjs",
     "validate": "node engine/cli/validate.mjs",
     "render": "node engine/render/render.mjs",
-    "samples": "node engine/render/render.mjs content/samples/*.json",
-    "check": "for f in $(find engine -name '*.mjs'); do node --check $f || exit 1; done && node engine/cli/validate.mjs content/samples"
+    "samples": "node engine/cli/each.mjs engine/cli/render-samples.mjs",
+    "check": "for f in $(find engine scripts -name '*.mjs'); do node --check $f || exit 1; done && node engine/cli/each.mjs engine/cli/validate.mjs samples"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",

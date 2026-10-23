@@ -1,13 +1,14 @@
-// Before the planner runs: write everything it should know into content/context/ -
+// Before the planner runs: write everything it should know into projects/<id>/content/context/ -
 // last weeks' results per item, Alex's review comments, competitor patterns, comments
 // waiting for a reply, items marked "changes", and the used-verse ledger.
 import '../env.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from '../paths.mjs';
+import { project } from '../project.mjs';
 import { db, close, STATUS } from '../db.mjs';
 
-const OUTD = join(ROOT, 'content', 'context'); mkdirSync(OUTD, { recursive: true });
+const P = project();
+const OUTD = P.paths.context; mkdirSync(OUTD, { recursive: true });
 const d = await db();
 const weeksBack = new Date(Date.now() - 42 * 864e5);
 const items = await d.collection('items').find({ createdAt: { $gte: weeksBack } }).sort({ slot: 1 }).toArray();
@@ -31,7 +32,11 @@ const metrics = await d.collection('metrics').find().sort({ _id: -1 }).limit(42)
 writeFileSync(join(OUTD, 'account-metrics.json'), JSON.stringify(metrics, null, 2));
 
 const verses = await d.collection('verses').find().toArray();
-const ledger = { note: 'Verses already posted on social. Never reuse one.', verses: [{ ref: 'Spreuken 3:5' }, ...verses.map(v => ({ ref: v.ref, date: v.at }))] };
-writeFileSync(join(ROOT, 'content', 'used-verses.json'), JSON.stringify(ledger, null, 2));
-console.log(`context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
+// keep refs that are only in the file (e.g. verses posted before the engine existed)
+const { existsSync, readFileSync } = await import('node:fs');
+const before = existsSync(P.paths.usedVerses) ? JSON.parse(readFileSync(P.paths.usedVerses, 'utf8')).verses : [];
+const inDb = new Set(verses.map(v => v.ref));
+const ledger = { note: 'Verses already posted on social. Never reuse one.', verses: [...before.filter(v => !inDb.has(v.ref) && !v.date), ...verses.map(v => ({ ref: v.ref, date: v.at }))] };
+writeFileSync(P.paths.usedVerses, JSON.stringify(ledger, null, 2));
+console.log(`[${P.id}] context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
 await close();

@@ -1,50 +1,23 @@
-# Every 30 minutes during the day: publish APPROVED items whose time has come,
-# and start the Revise workflow when Alex asked for changes in the studio.
+# Every 30 minutes during the day, for every enabled project: publish APPROVED items whose time
+# has come, and start the Revise workflow when Alex asked for changes in the studio.
 name: Publish
 on:
   schedule: [{ cron: '0,30 5-20 * * *' }]   # 06:00-22:30 Amsterdam (winter); GitHub may start a few minutes late
   workflow_dispatch: {}
 concurrency: { group: publish, cancel-in-progress: false }
 permissions: { contents: read, actions: write, issues: write }
+defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      MONGODB_URI: ${{ secrets.MONGODB_URI }}
-      ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
-      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
-      IG_USER_ID: ${{ secrets.IG_USER_ID }}
-      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
-      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
-      TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
-      TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
-      TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
-      UPLOADPOST_API_KEY: ${{ secrets.UPLOADPOST_API_KEY }}
-      UPLOADPOST_USER: ${{ secrets.UPLOADPOST_USER }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
-      DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+      SECRETS: ${{ toJSON(secrets) }}
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm ci --no-audit --no-fund --omit=dev
-      - shell: bash
-        run: node engine/cli/publish-due.mjs 2>&1 | tee -a run.log
-      - id: revise
-        shell: bash
-        run: node engine/cli/revise-check.mjs 2>&1 | tee -a run.log
-      - if: steps.revise.outputs.revise == 'true'
-        run: gh workflow run revise.yml --repo ${{ github.repository }}
-        env: { GH_TOKEN: '${{ github.token }}' }
-      - name: Report failure
-        if: failure()
-        shell: bash
-        env: { GH_TOKEN: '${{ github.token }}' }
-        run: |
-          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
-          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md
+      - uses: ./.github/actions/setup-engine
+      - run: node engine/cli/each.mjs engine/cli/publish-due.mjs 2>&1 | tee -a run.log
+      - run: node engine/cli/each.mjs engine/cli/revise-check.mjs 2>&1 | tee -a run.log
+      - if: failure()
+        uses: ./.github/actions/report-failure

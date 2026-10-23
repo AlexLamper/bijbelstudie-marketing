@@ -1,39 +1,27 @@
-# Started from the studio ("Aanpassingen naar Claude"): Claude rewrites every item Alex
-# marked for changes, then they are validated, imported and rendered again.
+# Started from the studio ("Aanpassingen naar Claude") for one project: Claude rewrites every item
+# Alex marked for changes, then they are validated, imported and rendered again.
 name: Revise
 on:
-  repository_dispatch: { types: [revise] }
-  workflow_dispatch: {}
-concurrency: { group: planner, cancel-in-progress: false }
+  repository_dispatch: { types: [revise] }       # client_payload: { "project": "<id>" }
+  workflow_dispatch:
+    inputs:
+      project: { description: 'Project id (empty = default project)', required: false, default: '' }
 permissions: { contents: write, issues: write }
-env:
-  MONGODB_URI: ${{ secrets.MONGODB_URI }}
-  ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
-  BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  R2_BUCKET: ${{ secrets.R2_BUCKET }}
-  R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
-  GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
-  ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-  ELEVENLABS_VOICE_MALE: ${{ secrets.ELEVENLABS_VOICE_MALE }}
-  ELEVENLABS_VOICE_FEMALE: ${{ secrets.ELEVENLABS_VOICE_FEMALE }}
-  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-  NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
-  DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
-  GITHUB_TOKEN: ${{ github.token }}
+concurrency: { group: 'planner-${{ github.event.client_payload.project || inputs.project || ''default'' }}', cancel-in-progress: false }
+defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
   revise:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm ci --no-audit --no-fund
+      - name: Which project
+        env: { PROJECT: '${{ github.event.client_payload.project || inputs.project }}' }
+        run: echo "PROJECT=$(node engine/cli/projects.mjs --current)" >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }
       - name: Export context
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
       - name: Today
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
@@ -42,31 +30,24 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Today is ${{ env.TODAY }}. Read planner/REVISE.md and follow it exactly.
+            Today is ${{ env.TODAY }}. Project: ${{ env.PROJECT }} (folder projects/${{ env.PROJECT }}/).
+            Read planner/REVISE.md and follow it exactly.
           claude_args: >-
             --model claude-sonnet-5-5 --max-turns 60
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
-        shell: bash
         run: node engine/cli/validate.mjs 2>&1 | tee -a run.log
       - name: Import into the studio
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         run: |
-          git config user.name "BijbelStudie engine"; git config user.email "studio@bijbelstudie.io"
-          git add content/imported content/used-verses.json content/queue/_errors.json 2>/dev/null || true
-          git diff --cached --quiet || (git commit -m "revise: $(date -u +%F)" && git push)
-      - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-      - run: npx playwright install --with-deps chromium
+          git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
+          c=projects/$PROJECT/content
+          git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "revise $PROJECT: $(date -u +%F)" && git pull --rebase --autostash -q && git push)
       - name: Render and notify
-        shell: bash
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
         run: node engine/cli/render-pending.mjs 2>&1 | tee -a run.log
-      - name: Report failure
-        if: failure()
-        shell: bash
-        env: { GH_TOKEN: '${{ github.token }}' }
-        run: |
-          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
-          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md
+      - if: failure()
+        uses: ./.github/actions/report-failure

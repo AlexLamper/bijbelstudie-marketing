@@ -1,12 +1,14 @@
 @import "tailwindcss";
 
-/* BijbelStudie Design System tokens */
+/* Studio tokens. The accent/cta/panel colours are overwritten per project (see lib/projects.ts
+   projectStyle), so every project looks like itself while the studio stays one app. */
 @theme {
-  --color-teal: #0d9488;
-  --color-teal-dark: #0f766e;
-  --color-teal-soft: #ccfbf1;
-  --color-teal-faint: #f0fdfa;
+  --color-accent: #0d9488;
+  --color-accent-dark: #0f766e;
+  --color-accent-soft: #ccfbf1;
+  --color-accent-faint: #f0fdfa;
   --color-cta: #0d7a66;
+  --color-panel: #152229;
   --color-ink: #111827;
   --color-ink-body: #374151;
   --color-ink-muted: #6b7280;
@@ -14,13 +16,26 @@
   --color-line-strong: #d1d5db;
   --color-bg: #f3f4f6;
   --color-surface: #ffffff;
-  --color-panel: #152229;
-  --color-gold-badge: #7a5e08;
   --color-danger: #dc2626;
-  --color-warn: #ea580c;
+  --color-warn: #c2410c;
   --color-success: #047857;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-serif: "Lora", Georgia, serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-lora), "Lora", Georgia, serif;
+  --shadow-card: 0 1px 2px rgb(17 24 39 / 0.04), 0 1px 3px rgb(17 24 39 / 0.06);
+  --shadow-lift: 0 4px 6px -1px rgb(17 24 39 / 0.06), 0 12px 24px -6px rgb(17 24 39 / 0.12);
 }
 
-body { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+@layer base {
+  html { color-scheme: light; }
+  body { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+  /* Everything you can click shows a pointer (Tailwind 4 resets buttons to the default cursor). */
+  a[href], button, summary, select, label[for], [role="button"], [role="menuitem"], [role="tab"],
+  input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"], video { cursor: pointer; }
+  :disabled, [aria-disabled="true"] { cursor: not-allowed; }
+
+  /* One visible focus style for keyboard users. */
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 6px; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+}

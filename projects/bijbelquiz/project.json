@@ -1,0 +1,58 @@
+{
+  "name": "BijbelQuiz",
+  "tagline": "Bijbelquizzen, alleen of samen",
+  "order": 2,
+  "enabled": false,
+  "db": "bijbelquiz_marketing",
+  "envPrefix": "BIJBELQUIZ_",
+  "web": "bijbelquiz.com",
+  "language": "nl",
+  "timezone": "Europe/Amsterdam",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "theme": {
+    "accent": "#35548c",
+    "accentDark": "#29426d",
+    "accentSoft": "#d7dde8",
+    "accentFaint": "#f3f5f8",
+    "cta": "#2a4373",
+    "panel": "#192942",
+    "ink": "#111827",
+    "inkBody": "#374151",
+    "inkMuted": "#6b7280",
+    "background": "#f3f4f6",
+    "surface": "#ffffff",
+    "line": "#e5e7eb",
+    "fontSans": "Inter",
+    "fontSerif": "Lora"
+  },
+  "logos": {
+    "full": "logos/logo-full.svg",
+    "iconOnDark": "logos/logo-icon-dark.svg",
+    "wordmarkOnDark": "logos/logo-wordmark-white.svg"
+  },
+  "endCard": {
+    "headline": "Test je bijbelkennis.",
+    "sub": "",
+    "buttons": [
+      "Download gratis",
+      "Begin gratis"
+    ],
+    "stores": [
+      "app-store",
+      "play-store"
+    ],
+    "web": "Ook op bijbelquiz.com"
+  },
+  "verse": {
+    "translation": "SV",
+    "eyebrow": "VERS VAN DE DAG"
+  },
+  "notify": {
+    "from": "BijbelQuiz Studio <studio@bijbelquiz.com>"
+  }
+}

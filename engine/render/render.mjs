@@ -2,19 +2,40 @@
 // Runs headless Chromium frame by frame, then ffmpeg. Used locally and in GitHub Actions.
 import '../env.mjs';
 import { createRequire } from 'node:module';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
-import { prepare, isVideo } from '../spec.mjs';
+import { prepare, isVideo, PHOTO_DIR } from '../spec.mjs';
 import { OUT } from '../paths.mjs';
+import { project, assetPath } from '../project.mjs';
 import { synthesize, ttsConfigured } from '../tts/index.mjs';
 
 const require = createRequire(import.meta.url);
 const pw = (() => { try { return require('playwright'); } catch { return require('/opt/npm-tools/node_modules/playwright'); } })();
 const STAGE = pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), 'stage.html')).href;
 const FPS = 30;
+
+/** Everything project-specific the templates need: theme, logo/badge/photo/screenshot URLs, texts. */
+export function stageContext(p = project()) {
+  const url = f => f && pathToFileURL(f).href;
+  const need = (rel, what) => { const f = assetPath(rel, p); if (!f) throw new Error(`${p.name}: missing ${what} (projects/${p.id}/assets/${rel})`); return url(f); };
+  const shots = {};
+  if (existsSync(p.paths.screenshots)) for (const f of readdirSync(p.paths.screenshots).filter(f => f.endsWith('.png'))) {
+    const file = join(p.paths.screenshots, f); const b = readFileSync(file).subarray(16, 24);   // PNG IHDR: width, height
+    shots[f.slice(0, -4)] = { url: url(file), w: b.readUInt32BE(0), h: b.readUInt32BE(4) };
+  }
+  return {
+    theme: p.theme,
+    logos: { full: need(p.logos.full, 'logo for light grounds'), iconOnDark: need(p.logos.iconOnDark, 'logo icon for dark grounds'), wordmarkOnDark: need(p.logos.wordmarkOnDark, 'wordmark for dark grounds') },
+    badges: (p.endCard.stores || []).map(s => need(`badges/${s}.png`, `${s} badge`)),
+    fonts: (p.fonts || []).map(f => ({ ...f, url: need(f.file, `font ${f.file}`) })),
+    photoBase: url(PHOTO_DIR) + '/', shotBase: url(p.paths.screenshots) + '/', shots,
+    endCard: { headline: p.endCard.headline, sub: p.endCard.sub, button: p.endCard.buttons[0], web: p.endCard.web },
+    verse: p.verse,
+  };
+}
 
 const probe = f => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim());
 
@@ -39,7 +60,7 @@ async function voiceTrack(spec, work) {
   return { timing: clips.map(c => c.dur), file };
 }
 
-export async function renderSpec(raw, { outDir = OUT, browser: shared } = {}) {
+export async function renderSpec(raw, { outDir = join(OUT, project().id), browser: shared } = {}) {
   const spec = await prepare(raw);
   const dir = join(outDir, spec.id); mkdirSync(dir, { recursive: true });
   const work = mkdtempSync(join(process.env.TMPDIR || tmpdir(), `r-${spec.id}-`));
@@ -48,7 +69,7 @@ export async function renderSpec(raw, { outDir = OUT, browser: shared } = {}) {
     const voice = await voiceTrack(spec, work);
     const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
     await page.goto(STAGE);
-    const info = await page.evaluate(([s, t]) => window.setup(s, t), [spec, voice?.timing ?? null]);
+    const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()]);
     await page.setViewportSize({ width: info.width, height: info.height });
     const result = { id: spec.id, kind: spec.kind, files: {}, duration: info.duration, notes: [] };
 
@@ -86,9 +107,9 @@ export async function renderSpec(raw, { outDir = OUT, browser: shared } = {}) {
 
 export const launch = () => pw.chromium.launch();
 
-// CLI: node engine/render/render.mjs path/to/spec.json [more.json ...]
+// CLI: node engine/render/render.mjs projects/<id>/content/samples/x.json [more.json ...]
+// (the project comes from the path, or PROJECT)
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { readFileSync } = await import('node:fs');
   const browser = await launch();
   for (const f of process.argv.slice(2)) {
     const r = await renderSpec(JSON.parse(readFileSync(f, 'utf8')), { browser });

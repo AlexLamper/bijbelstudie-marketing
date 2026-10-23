@@ -1,35 +1,20 @@
-# Daily: metrics per item, followers, new BijbelStudie users, comments; competitors on Mondays.
+# Daily, for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
 name: Stats
 on:
   schedule: [{ cron: '15 4 * * *' }]
   workflow_dispatch: {}
 permissions: { contents: read, issues: write }
+defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
   stats:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      MONGODB_URI: ${{ secrets.MONGODB_URI }}
-      ENGINE_KEY: ${{ secrets.ENGINE_KEY }}
-      PLATFORM_MONGODB_URI: ${{ secrets.PLATFORM_MONGODB_URI }}
-      PLATFORM_MONGODB_DB: ${{ secrets.PLATFORM_MONGODB_DB }}
-      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
-      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-      IG_USER_ID: ${{ secrets.IG_USER_ID }}
-      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
-      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      SECRETS: ${{ toJSON(secrets) }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm ci --no-audit --no-fund --omit=dev
-      - shell: bash
-        run: node engine/cli/collect-stats.mjs 2>&1 | tee -a run.log
-      - name: Report failure
-        if: failure()
-        shell: bash
-        env: { GH_TOKEN: '${{ github.token }}' }
-        run: |
-          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
-          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md
+      - uses: ./.github/actions/setup-engine
+      - run: node engine/cli/each.mjs engine/cli/collect-stats.mjs 2>&1 | tee -a run.log
+      - if: failure()
+        uses: ./.github/actions/report-failure

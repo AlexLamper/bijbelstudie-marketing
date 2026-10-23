@@ -1,19 +1,24 @@
 // The contract between the brain (Claude) and the engine. Claude writes specs; the engine
 // validates, renders and publishes them. Anything not in a spec is decided by templates.
 import { z } from 'zod';
-import { readdirSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './paths.mjs';
+import { project, SHARED_ASSETS } from './project.mjs';
 
-export const SCREENSHOTS = readdirSync(join(ROOT, 'assets', 'screenshots')).map(f => f.replace(/\.png$/, ''));
-export const PHOTO_COUNT = readdirSync(join(ROOT, 'assets', 'photos')).length;
+// What exists for the current project: its screenshots, and photos (its own, else the shared set).
+const P = project();
+const list = (dir, ext) => existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith(ext)).sort() : [];
+export const SCREENSHOTS = list(P.paths.screenshots, '.png').map(f => f.replace(/\.png$/, ''));
+export const PHOTO_DIR = list(P.paths.photos, '.jpg').length ? P.paths.photos : join(SHARED_ASSETS, 'photos');
+export const PHOTO_COUNT = list(PHOTO_DIR, '.jpg').length;
 
 const ref = z.string().regex(/^.+\s\d+:\d+(-\d+)?$/, 'Bible reference like "Johannes 3:16"');
-const screenshot = z.string().refine(s => SCREENSHOTS.includes(s), s => ({ message: `Unknown screenshot "${s}". Use one of: ${SCREENSHOTS.join(', ')}` }));
-const photo = z.number().int().min(1).max(365);
+const screenshot = z.string().refine(s => SCREENSHOTS.includes(s), s => ({ message: SCREENSHOTS.length
+  ? `Unknown screenshot "${s}". Use one of: ${SCREENSHOTS.join(', ')}` : `${P.name} has no screenshots yet (projects/${P.id}/assets/screenshots/)` }));
+const photo = z.number().int().min(1).max(Math.max(1, PHOTO_COUNT)).refine(() => PHOTO_COUNT > 0, `${P.name} has no photos yet (projects/${P.id}/assets/photos/)`);
 const shortLine = z.string().min(2).max(90);
 const noLongDash = s => !/[\u2013\u2014]/.test(s);
-const PLATFORMS = ['instagram', 'facebook', 'tiktok', 'youtube'];
+const PLATFORMS = P.platforms;
 
 const base = {
   id: z.string().regex(/^[a-z0-9-]+$/),
@@ -31,10 +36,11 @@ const base = {
   basedOn: z.string().max(300),                          // the real fact, pain point or feature it rests on
 };
 
+// Left out = the project's default from project.json (endCard.headline / sub / first button).
 const endCard = z.object({
-  headline: shortLine.default('Begrijp wat je leest.'),
-  sub: z.string().max(80).default('Uitleg, context en grondtekst naast elk hoofdstuk.'),
-  button: z.enum(['Download gratis', 'Begin gratis']).default('Download gratis'),
+  headline: shortLine.optional(),
+  sub: z.string().max(80).optional(),
+  button: z.enum(P.endCard.buttons).optional(),
 }).default({});
 
 export const VerseStill = z.object({ ...base, kind: z.literal('verse-still'), ref, photo });
@@ -52,9 +58,9 @@ export const ReelExplainer = z.object({
   ...base, kind: z.literal('reel-explainer'),
   voice: z.enum(['male', 'female']),
   hook: shortLine,
-  // each line is spoken and shown as a caption; a line shows a verse (exact SV text) or a screen
+  // each line is spoken and shown as a caption; a line shows a verse (exact text from data/) or a screen
   lines: z.array(z.object({
-    say: z.string().min(4).max(220).refine(noLongDash),
+    say: z.string().min(4).max(220).refine(noLongDash, 'Use a plain hyphen, never a long dash'),
     verse: ref.optional(),
     screenshot: screenshot.optional(),
   })).min(3).max(9),

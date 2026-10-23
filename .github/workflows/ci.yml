@@ -1,20 +1,26 @@
-# On every push: engine syntax, sample specs valid, one sample renders, studio builds.
+# On every push: engine syntax, sample specs of every project valid, samples render, studio builds.
 name: CI
 on: { push: { branches: [main] }, pull_request: {} }
+defaults: { run: { shell: bash } }   # bash -eo pipefail: a failing script fails the step despite | tee
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm ci --no-audit --no-fund
-      - run: for f in $(find engine -name '*.mjs'); do node --check "$f"; done
-      - run: node engine/cli/validate.mjs content/samples
-      - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-      - run: npx playwright install --with-deps chromium
-      - run: node engine/render/render.mjs content/samples/w45-verse-mon.json content/samples/w45-reel-demo-wed.json
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true', dev: 'true' }
+      - run: for f in $(find engine scripts -name '*.mjs'); do node --check "$f"; done
+      - name: Sample specs of every enabled project
+        run: node engine/cli/each.mjs engine/cli/validate.mjs samples
+      - name: Studio project list is up to date (run node scripts/sync-projects.mjs)
+        run: node scripts/sync-projects.mjs && git diff --exit-code lib/projects.generated.json
+      - name: Render one still and one reel per enabled project
+        run: |
+          for p in $(node engine/cli/projects.mjs --json | tr -d '[]"' | tr ',' ' '); do
+            d=projects/$p/content/samples; [ -d "$d" ] || continue
+            still=$(grep -l '"kind": *"verse-still\|"kind": *"post-' $d/*.json | head -1 || true); reel=$(grep -l '"kind": *"reel-' $d/*.json | head -1 || true)
+            [ -n "$still$reel" ] && PROJECT=$p node engine/render/render.mjs $still $reel
+          done
       - run: npm run build
         env: { MONGODB_URI: 'mongodb://localhost:27017', STUDIO_PASSWORD: ci }

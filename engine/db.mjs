@@ -1,4 +1,5 @@
-// MongoDB access for the engine scripts (the dashboard has its own copy in app/lib/mongo.ts).
+// MongoDB access for the engine scripts (the studio has its own copy in lib/mongo.ts).
+// One cluster (MONGODB_URI), one database per project (project.json "db").
 // Collections:
 //   items     one row per post/reel: spec, status, media, per-platform results, metrics
 //   tokens    OAuth tokens that rotate (TikTok, YouTube) - never in git
@@ -8,6 +9,7 @@
 //   reports   weekly reports written by the planner
 //   comments  incoming comments + drafted replies
 import { MongoClient } from 'mongodb';
+import { project } from './project.mjs';
 
 let client;
 export async function db() {
@@ -16,7 +18,7 @@ export async function db() {
     process.exit(0);
   }
   client ??= await new MongoClient(process.env.MONGODB_URI).connect();
-  return client.db(process.env.MONGODB_DB || 'bijbelstudie_marketing');
+  return client.db(project().db);
 }
 export async function close() { await client?.close(); client = undefined; }
 

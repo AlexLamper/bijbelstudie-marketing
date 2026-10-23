@@ -1,0 +1,13 @@
+name: Report failure
+description: Open a GitHub issue (label "studio") with the last 60 lines of run.log, so Alex gets an email.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        WORKFLOW: ${{ github.workflow }}
+      run: |
+        { echo "Run: $RUN_URL"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
+        gh issue create --repo "$GITHUB_REPOSITORY" --title "$WORKFLOW faalde${PROJECT:+ - $PROJECT} ($(date -u +%F))" --label studio --body-file fail.md

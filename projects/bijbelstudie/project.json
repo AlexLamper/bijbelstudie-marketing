@@ -1,0 +1,33 @@
+{
+  "name": "BijbelStudie",
+  "tagline": "Begrijp wat je leest",
+  "order": 1,
+  "enabled": true,
+  "db": "bijbelstudie_marketing",
+  "envPrefix": "",
+  "web": "bijbelstudie.io",
+  "language": "nl",
+  "timezone": "Europe/Amsterdam",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "theme": {
+    "accent": "#0d9488", "accentDark": "#0f766e", "accentSoft": "#ccfbf1", "accentFaint": "#f0fdfa",
+    "cta": "#0d7a66", "panel": "#152229",
+    "ink": "#111827", "inkBody": "#374151", "inkMuted": "#6b7280",
+    "background": "#f3f4f6", "surface": "#ffffff", "line": "#e5e7eb",
+    "fontSans": "Inter", "fontSerif": "Lora"
+  },
+  "logos": {
+    "full": "logos/logo-full.svg",
+    "iconOnDark": "logos/logo-icon-dark.svg",
+    "wordmarkOnDark": "logos/logo-wordmark-white.svg"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "sub": "Uitleg, context en grondtekst naast elk hoofdstuk.",
+    "buttons": ["Download gratis", "Begin gratis"],
+    "stores": ["app-store", "play-store"],
+    "web": "Ook op bijbelstudie.io"
+  },
+  "verse": { "translation": "SV", "eyebrow": "VERS VAN DE DAG" },
+  "notify": { "from": "BijbelStudie Studio <studio@bijbelstudie.io>" }
+}

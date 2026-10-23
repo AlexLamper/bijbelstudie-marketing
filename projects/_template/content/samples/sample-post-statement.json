@@ -1,0 +1,12 @@
+{
+  "id": "sample-post-statement",
+  "kind": "post-statement",
+  "week": "2026-W45",
+  "slot": "2026-11-03T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "line": "{{headline}}",
+  "sub": "Gratis op {{web}}",
+  "caption": "Voorbeeldpost voor {{name}}. Vervang dit door echte content zodra brand/ is ingevuld.",
+  "hashtags": [],
+  "basedOn": "template sample"
+}

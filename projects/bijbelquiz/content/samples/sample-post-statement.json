@@ -1,0 +1,12 @@
+{
+  "id": "sample-post-statement",
+  "kind": "post-statement",
+  "week": "2026-W45",
+  "slot": "2026-11-03T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "line": "Test je bijbelkennis.",
+  "sub": "Gratis op bijbelquiz.com",
+  "caption": "Voorbeeldpost voor BijbelQuiz. Vervang dit door echte content zodra brand/ is ingevuld.",
+  "hashtags": [],
+  "basedOn": "template sample"
+}

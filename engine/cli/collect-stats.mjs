@@ -1,4 +1,4 @@
-// Daily: per-item metrics (Instagram, YouTube), account numbers, new BijbelStudie signups,
+// Daily, per project: per-item metrics (Instagram, YouTube), account numbers, new product signups,
 // new comments to draft replies for, and (weekly) competitor snapshots.
 import '../env.mjs';
 import { db, close, STATUS } from '../db.mjs';
@@ -8,7 +8,7 @@ import { MongoClient } from 'mongodb';
 import { remove, storageConfigured } from '../storage/index.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from '../paths.mjs';
+import { project } from '../project.mjs';
 
 const d = await db(); const items = d.collection('items');
 const since = new Date(Date.now() - 30 * 864e5);
@@ -28,8 +28,8 @@ if (metaConfigured()) {
   }
   try { const a = await instagramAccount(); await d.collection('metrics').updateOne({ _id: today }, { $set: { instagram: a } }, { upsert: true }); } catch (e) { console.error(e.message); }
 
-  // competitors: once a week (Monday), from content/competitors.json
-  const listFile = join(ROOT, 'content', 'competitors.json');
+  // competitors: once a week (Monday), from projects/<id>/content/competitors.json
+  const listFile = project().paths.competitors;
   if (new Date().getDay() === 1 && existsSync(listFile)) {
     for (const username of JSON.parse(readFileSync(listFile, 'utf8')).instagram) {
       try { const snap = await businessDiscovery(username); await d.collection('insights').insertOne({ username, at: new Date(), snap }); }
@@ -48,7 +48,7 @@ if (youtubeConfigured()) {
   }
 }
 
-// The goal metric: new free users. Read-only count from the BijbelStudie platform database.
+// The goal metric: new free users. Read-only count from the product's own database (PLATFORM_MONGODB_URI).
 if (process.env.PLATFORM_MONGODB_URI) {
   const c = await new MongoClient(process.env.PLATFORM_MONGODB_URI).connect();
   try {
@@ -69,5 +69,5 @@ if (storageConfigured()) {
   }
   if (old.length) console.log(`removed media of ${old.length} old items`);
 }
-console.log(`stats for ${live.length} live items`);
+console.log(`[${project().id}] stats for ${live.length} live items`);
 await close();
