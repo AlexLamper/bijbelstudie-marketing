@@ -278,7 +278,7 @@ T['reel-3d'] = (spec, timing) => {
       if (x.phone) { const v = x === s ? out(prog(t, x.start + .25, x.start + .75)) * (1 - prog(t, x.end - .25, x.end)) : 0; set(x.phone.node, v, (1 - v) * 260); const img = x.phone.node.querySelector('img'); img.style.transform = `translateY(${-140 * smooth(prog(t, x.start + 1.2, x.end - .3))}px)`; }
     });
     // cut fades when the world changes
-    let fd = 0; shots.forEach((x, j) => { if (j && x.world !== shots[j - 1].world) fd = Math.max(fd, 1 - Math.abs(t - x.start) / .18); });
+    let fd = 0; shots.forEach((x, j) => { if (j && x.world !== shots[j - 1].world && !(x.set === 'kaart' && shots[j - 1].set === 'kaart')) fd = Math.max(fd, 1 - Math.abs(t - x.start) / .18); });   // map to map: one journey, a plain cut
     fade.style.opacity = clamp(fd);
     cap(t);
     end(t, endStart);
