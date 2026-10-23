@@ -13,7 +13,12 @@ const back = (req: Request, project: string, provider: string, q: Record<string,
 
 async function json(r: Response, what: string) {
   const j = await r.json().catch(() => ({}));
-  if (!r.ok || j.error) throw new Error(`${what}: ${j.error?.message || j.error_description || j.error || r.status}`);
+  // TikTok always sends error: { code: 'ok' } on success; Meta/Google send error only on failure
+  const err = j.error && !(typeof j.error === 'object' && j.error.code === 'ok') ? j.error : null;
+  if (!r.ok || err) {
+    const msg = typeof err === 'string' ? (j.error_description || err) : err?.message || err?.code || j.error_description || JSON.stringify(err || j).slice(0, 200);
+    throw new Error(`${what}: ${msg || r.status}`);
+  }
   return j;
 }
 
