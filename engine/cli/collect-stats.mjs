@@ -71,6 +71,16 @@ if (storageConfigured()) {
   }
   if (old.length) console.log(`removed media of ${old.length} old items`);
 }
-console.log(`[${project().id}] stats for ${live.length} live items`);
-await heartbeat('stats', { live: live.length });
+// Reminder: posts planned for the next 36 hours that still wait for Alex's approval (once a day).
+const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] }, slot: { $gte: new Date(), $lte: new Date(Date.now() + 36 * 3600e3) } }).sort({ slot: 1 }).toArray();
+if (soon.length) {
+  const { notify, studioLink } = await import('../notify.mjs');
+  const first = soon[0]; const when = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: project().timezone }).format(first.slot);
+  await notify(`${soon.length} posts wachten nog op je akkoord`, [
+    `De eerste staat gepland voor ${when}. Niet goedgekeurd = niet geplaatst.`,
+    soon.some(i => i.status === STATUS.CHANGES) ? 'Een paar wachten op aanpassingen door Claude.' : 'Keur ze goed in de studio (of "Alles goedkeuren").'],
+    studioLink(`/week/${first.week}`), { replaces: 'posts wachten nog' });
+}
+console.log(`[${project().id}] stats for ${live.length} live items, ${soon.length} waiting for approval`);
+await heartbeat('stats', { live: live.length, waitingApproval: soon.length });
 await close();

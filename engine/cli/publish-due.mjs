@@ -83,7 +83,7 @@ if (waiting.size) {
   const first = await d.collection('settings').updateOne({ _id: key }, { $setOnInsert: { at: new Date() } }, { upsert: true });
   if (first.upsertedCount) await notify(`posts wachten op ${[...waiting].join(', ')}`, [
     `Goedgekeurde posts zijn klaar om te plaatsen, maar ${[...waiting].join(', ')} is nog niet gekoppeld.`,
-    'Koppel het op de pagina Instellingen; ze gaan dan bij de volgende run (binnen 30 minuten) alsnog online. Na 24 uur wachten wordt dat platform voor die post overgeslagen.'], studioLink('/settings'));
+    'Koppel het op de pagina Instellingen; ze gaan dan bij de volgende run (binnen 30 minuten) alsnog online. Na 24 uur wachten wordt dat platform voor die post overgeslagen.'], studioLink('/settings'), { replaces: 'posts wachten op' });
 }
 await heartbeat('publish', { due: due.length, waiting: waiting.size ? [...waiting].join('+') : 0, problems: problems.length, linked: Object.keys(linked).join('+') || '-' });
 await close();

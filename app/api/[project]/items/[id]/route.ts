@@ -8,6 +8,7 @@ const LONG_DASH = /[–—]/;
 // PATCH { action: approve | changes (+comment) | reject | reset }       review decisions
 // PATCH { action: 'edit', caption, hashtags }                            fix the text yourself, no Claude round trip
 // PATCH { action: 'now' }                                                post an approved item at the next run
+// PATCH { action: 'rerender' }                                           make the media again (e.g. after choosing voices)
 export async function PATCH(req: Request, { params }: { params: Promise<{ project: string; id: string }> }) {
   const { project, id } = await params;
   if (!getProject(project)) return NextResponse.json({ error: 'unknown project' }, { status: 404 });
@@ -29,6 +30,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ projec
     await db.collection('items').updateOne({ _id: id as any }, { $set: { 'spec.caption': caption, 'spec.hashtags': hashtags, updatedAt: at },
       $push: { history: { at, event: 'edit-caption' } } as any });
     return NextResponse.json({ ok: true });
+  }
+
+  if (action === 'rerender') {
+    await db.collection('items').updateOne({ _id: id as any }, { $set: { status: 'queued', renderAttempts: 0, updatedAt: at }, $unset: { error: '' },
+      $push: { history: { at, event: 'rerender' } } as any });
+    const { GITHUB_REPO, GITHUB_DISPATCH_TOKEN } = process.env;
+    if (GITHUB_REPO && GITHUB_DISPATCH_TOKEN) {
+      const r = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/dispatches`, { method: 'POST',
+        headers: { Authorization: `Bearer ${GITHUB_DISPATCH_TOKEN}`, Accept: 'application/vnd.github+json' }, body: JSON.stringify({ event_type: 'render', client_payload: { project } }) });
+      if (r.ok) return NextResponse.json({ ok: true, message: 'Wordt nu opnieuw gemaakt (een paar minuten).' });
+    }
+    return NextResponse.json({ ok: true, message: 'Wordt binnen 30 minuten opnieuw gemaakt.' });
   }
 
   if (action === 'now') {

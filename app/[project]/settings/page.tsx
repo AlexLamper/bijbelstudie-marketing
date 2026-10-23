@@ -5,7 +5,8 @@ import { open } from '@/lib/crypto';
 import { PROVIDERS, PLATFORM_PROVIDER, type ProviderId } from '@/lib/connections';
 import { Card, PageHeader } from '@/components/ui';
 import { AppForm, ConnectActions, PagePicker, CopyField, SecretRow } from './SettingsClient';
-import { listSecrets } from '@/lib/secrets';
+import { listSecrets, readSecret } from '@/lib/secrets';
+import VoicePicker from './VoicePicker';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Instellingen' };
@@ -38,6 +39,8 @@ export default async function Settings({ params, searchParams }: { params: Promi
   const cfg = runs.publish?.configured || latest?.configured || {};
   const secrets: string[] = latest?.secrets || [];
   const key = (name: string) => keys.find(k => k.name === name);
+  const hasEleven = !!(await readSecret(project, 'ELEVENLABS_API_KEY'));
+  const [maleVoice, femaleVoice] = hasEleven ? await Promise.all([readSecret(project, 'ELEVENLABS_VOICE_MALE'), readSecret(project, 'ELEVENLABS_VOICE_FEMALE')]) : [null, null];
   const hasKey = (name: string) => !!key(name)?.inStudio || secrets.includes(name);
   const h = await headers();
   const origin = process.env.STUDIO_URL || `${h.get('x-forwarded-proto') || 'https'}://${h.get('host')}`;
@@ -59,7 +62,8 @@ export default async function Settings({ params, searchParams }: { params: Promi
     { title: 'Weekplanner (Claude)', detail: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'Draait elke vrijdag.' : 'Plak je Claude-token onder Sleutels (op je computer: claude setup-token).', status: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'ok' : 'todo', href: '#sleutels' },
     ...providers.map(id => ({ title: PROVIDERS[id].name, detail: linked(id) ? `Gekoppeld: ${conn[id].account?.name}${id === 'tiktok' ? ' (privé tot TikTok de app goedkeurt)' : ''}` : (cfg[id === 'google' ? 'youtube' : id] ? 'Via GitHub-secrets ingesteld.' : conn[id]?.pending ? 'Kies hieronder de pagina.' : 'Nog niet gekoppeld.'),
       status: (linked(id) ? (conn[id].lastCheck?.ok === false ? 'warn' : 'ok') : cfg[id === 'google' ? 'youtube' : id] ? 'ok' : 'todo') as Status, href: `#${id}` })),
-    { title: 'Stem voor uitleg-reels', detail: cfg.tts ? `Stem via ${cfg.tts === 'elevenlabs' ? 'ElevenLabs' : 'Google'}.` : 'Nog geen stem: uitleg-reels hebben alleen ondertitels. ElevenLabs volgt later.', status: cfg.tts ? 'ok' : 'optional' },
+    { title: 'Stem voor uitleg-reels', detail: hasEleven ? (maleVoice && femaleVoice ? 'ElevenLabs met een mannen- en vrouwenstem.' : 'ElevenLabs staat klaar - kies hieronder bij Stemmen een man en een vrouw.') : cfg.tts ? `Stem via ${cfg.tts === 'elevenlabs' ? 'ElevenLabs' : 'Google'}.` : 'Nog geen stem: zet je ElevenLabs API key onder Sleutels.',
+      status: hasEleven ? (maleVoice && femaleVoice ? 'ok' : 'todo') : cfg.tts ? 'ok' : 'optional', href: hasEleven ? '#stemmen' : '#sleutels' },
     { title: 'Nieuwe gebruikers meten', detail: cfg.platformDb ? 'Aanmeldingen worden dagelijks geteld.' : `Optioneel: een alleen-lezen databasegebruiker voor ${p.name} (PLATFORM_MONGODB_URI).`, status: cfg.platformDb ? 'ok' : 'optional' },
   ];
   const open_ = checks.filter(c => c.status === 'todo').length;
@@ -142,6 +146,12 @@ export default async function Settings({ params, searchParams }: { params: Promi
       <Card className="mt-4 divide-y divide-line">
         {keys.map(k => <SecretRow key={k.name} project={project} s={{ name: k.name, label: k.label, help: k.help, secret: k.secret, optional: k.optional, scope: k.scope, inStudio: k.inStudio, inGitHub: secrets.includes(k.name) && !k.inStudio, hint: k.hint }} />)}
       </Card>
+
+      {hasEleven && (<>
+        <h2 id="stemmen" className="mt-10 scroll-mt-20 text-lg font-bold">Stemmen</h2>
+        <p className="mt-1 text-sm text-ink-muted">Kies een mannen- en een vrouwenstem voor de uitleg-reels (de planner wisselt ze af en meet welke beter werkt). Nederlandse stemmen uit de ElevenLabs-bibliotheek; &quot;Test in het Nederlands&quot; kost ongeveer 120 tekens van je tegoed.</p>
+        <Card className="mt-4 p-5"><VoicePicker project={project} male={maleVoice || undefined} female={femaleVoice || undefined} /></Card>
+      </>)}
 
       <h2 className="mt-10 text-lg font-bold">Laatste runs</h2>
       <Card className="mt-3 overflow-x-auto">

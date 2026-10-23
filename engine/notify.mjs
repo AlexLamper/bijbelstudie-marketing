@@ -20,7 +20,20 @@ async function viaResend(subject, lines, url) {
   if (!r.ok) throw new Error(`Resend ${r.status}: ${await r.text()}`);
 }
 
-async function viaGitHubIssue(subject, lines, url) {
+const gh = (path, init = {}) => fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}${path}`, {
+  ...init, headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', ...(init.headers || {}) } });
+
+/** Close open studio issues whose title starts with prefix (e.g. an older "week ready" message). */
+async function closeIssues(prefix) {
+  try {
+    const open = await (await gh('/issues?state=open&labels=studio&per_page=50')).json();
+    for (const i of Array.isArray(open) ? open : []) if (i.title.startsWith(prefix) && !i.pull_request)
+      await gh(`/issues/${i.number}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed', state_reason: 'completed' }) });
+  } catch (e) { console.error(`close issues: ${e.message}`); }
+}
+
+async function viaGitHubIssue(subject, lines, url, replaces) {
+  if (replaces) await closeIssues(replaces);
   const r = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/issues`, {
     method: 'POST', headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' },
     body: JSON.stringify({ title: subject, body: [...lines, url ? `\n**[Open de studio](${url})**` : ''].join('\n\n'), labels: ['studio'] }),
@@ -28,12 +41,13 @@ async function viaGitHubIssue(subject, lines, url) {
   if (!r.ok) throw new Error(`GitHub issue ${r.status}: ${await r.text()}`);
 }
 
-export async function notify(subject, lines, link) {
+/** replaces: a subject prefix (without the project name) whose older GitHub issues this one supersedes. */
+export async function notify(subject, lines, link, { replaces } = {}) {
   subject = `${project().name}: ${subject}`;
   const url = link || studioLink();
   try {
     if (env.RESEND_API_KEY && env.NOTIFY_TO) return await viaResend(subject, lines, url);
-    if (env.GITHUB_TOKEN && env.GITHUB_REPOSITORY) return await viaGitHubIssue(subject, lines, url);
+    if (env.GITHUB_TOKEN && env.GITHUB_REPOSITORY) return await viaGitHubIssue(subject, lines, url, replaces && `${project().name}: ${replaces}`);
     console.log(`[notify skipped] ${subject}`);
   } catch (e) { console.error(`notify failed: ${e.message}`); }
 }

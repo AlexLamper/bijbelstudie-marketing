@@ -43,11 +43,11 @@ const probe = f => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries
 async function voiceTrack(spec, work) {
   if (spec.kind !== 'reel-explainer') return null;
   const units = [spec.hook, ...spec.lines.map(l => l.say)];
-  if (!ttsConfigured()) return { timing: null, file: null, note: 'no TTS configured - silent render' };
+  if (!ttsConfigured()) return { timing: null, file: null, note: 'Nog geen stem ingesteld - gemaakt zonder stem (Instellingen > Sleutels/Stemmen, daarna Opnieuw renderen)' };
   const clips = [];
   for (const [i, text] of units.entries()) {
     const f = join(work, `v${i}.mp3`);
-    writeFileSync(f, await synthesize(text, spec.voice));
+    writeFileSync(f, await synthesize(text, spec.voice, { previous: units.slice(0, i).join(' ').slice(-400) || undefined, next: units[i + 1] }));
     clips.push({ f, dur: probe(f) });
   }
   // lay clips on the same clock the template uses: start .3s, .25s gap between units

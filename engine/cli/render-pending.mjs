@@ -35,7 +35,7 @@ for (const week of weeks) {
   const toReview = await items.countDocuments({ week, status: STATUS.REVIEW });
   if (toReview) await notify(`week ${week.split('-W')[1]} staat klaar (${toReview} items)`, [
     `${toReview} posts en reels wachten op je akkoord.`, 'Keur goed, wijs af of zet er een opmerking bij - de rest gaat vanzelf.'],
-    studioLink(`/week/${week}`));
+    studioLink(`/week/${week}`), { replaces: `week ${week.split('-W')[1]} ` });
 }
 console.log(`[${project().id}] rendered ${ok}/${queued.length}`);
 await heartbeat('render', { rendered: ok, of: queued.length });

@@ -82,9 +82,14 @@ export default function ItemCard({ project, item }: { project: string; item: any
             <p className="text-xs text-ink-muted">Platforms: {s.platforms.map((x: string) => PLATFORM[x] || x).join(', ')}{item.aiLabel ? ' - krijgt AI-label' : ''}</p>
             {s.basedOn && <p className="text-xs text-ink-muted">Gebaseerd op: {s.basedOn}</p>}
             {s.experiment && Object.keys(s.experiment).length > 0 && <p className="text-xs text-ink-muted">Test: {Object.entries(s.experiment).map(([k, v]) => `${k}=${v}`).join(', ')}</p>}
-            {item.renderNotes?.length > 0 && <p className="text-xs text-warn">{item.renderNotes.join('; ')}</p>}
+            {['review', 'changes', 'failed', 'rejected', 'approved'].includes(item.status) && (
+              <button type="button" disabled={busy} onClick={() => patch({ action: 'rerender' })} className="cursor-pointer rounded-md text-xs font-semibold text-accent-dark transition hover:text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-50">Opnieuw renderen</button>
+            )}
           </div>
         </details>
+        {item.renderNotes?.length > 0 && item.status !== 'queued' && item.status !== 'rendering' && (
+          <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs text-warn">{item.renderNotes.join('; ').replace(/no TTS configured - silent render/, 'Nog zonder stem')}</p>
+        )}
         {item.reviewComments?.length > 0 && (
           <div className="mt-3 space-y-1 rounded-lg bg-bg p-2.5 text-xs text-ink-body">
             {item.reviewComments.map((c: any, i: number) => <p key={i}><span className="font-semibold">Jij:</span> {c.text}</p>)}

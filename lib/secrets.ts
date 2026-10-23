@@ -1,5 +1,5 @@
 import { getDb, getSharedDb } from './mongo';
-import { seal } from './crypto';
+import { open, seal } from './crypto';
 
 // Keys Alex can paste in the studio instead of in GitHub's secret settings. Stored sealed in Mongo;
 // the engine loads them at the start of every job (engine/db.mjs), the planner workflow reads
@@ -15,6 +15,8 @@ export const SECRET_DEFS: SecretDef[] = [
     help: 'Stem voor uitleg-reels. elevenlabs.io > Profile > API keys.' },
   { name: 'ELEVENLABS_VOICE_MALE', label: 'ElevenLabs stem (man)', scope: 'shared', secret: false, optional: true, pattern: /^\w{10,40}$/, help: 'Voice ID uit de Voice Library.' },
   { name: 'ELEVENLABS_VOICE_FEMALE', label: 'ElevenLabs stem (vrouw)', scope: 'shared', secret: false, optional: true, pattern: /^\w{10,40}$/, help: 'Voice ID uit de Voice Library.' },
+  { name: 'ELEVENLABS_MODEL', label: 'ElevenLabs model', scope: 'shared', secret: false, optional: true, pattern: /^eleven_[a-z0-9_]+$/,
+    help: 'Leeg = eleven_multilingual_v2 (stabiel, goed Nederlands). Alternatief: eleven_v3 (expressiever).' },
   { name: 'GOOGLE_TTS_API_KEY', label: 'Google Text-to-Speech key', scope: 'shared', secret: true, optional: true,
     help: 'Gratis alternatief voor ElevenLabs (1 miljoen tekens per maand). Google Cloud > Credentials > API key met Text-to-Speech.' },
   { name: 'RESEND_API_KEY', label: 'Resend API key', scope: 'shared', secret: true, optional: true, help: 'Meldingen per e-mail in plaats van GitHub-issues.' },
@@ -54,4 +56,13 @@ export async function deleteSecret(project: string, name: string) {
   const def = secretDef(name);
   if (!def) throw new Error('Onbekende sleutel');
   await (await collection(def, project)).deleteOne({ _id: name as any });
+}
+
+/** A key's value for use inside the studio itself (env wins, else the sealed copy). Never send it to the browser. */
+export async function readSecret(project: string, name: string): Promise<string | null> {
+  if (process.env[name]) return process.env[name]!;
+  const def = secretDef(name); if (!def) return null;
+  const d = await (await collection(def, project)).findOne({ _id: name as any });
+  if (!d) return null;
+  try { return open<string>(d.value); } catch { return null; }
 }
