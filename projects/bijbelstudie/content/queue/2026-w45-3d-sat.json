@@ -1,0 +1,132 @@
+{
+  "id": "2026-w45-3d-sat",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-07T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "De jongste, buiten bij de schapen. Aan hem dacht niemand. 1 Samuël 16 en 17 in 3D.",
+  "hashtags": [
+    "#david",
+    "#samuel",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "music": "calm",
+  "captions": "karaoke",
+  "hook": "Aan hem dacht niemand.",
+  "basedOn": "1 Samuel 16:11 (SV): de kleinste weidt de schapen; 1 Samuel 17:34-35: een leeuw en een beer, David redt het schaap; Bethlehem (16:1, 16:4); Psalm 23 is 'een psalm van David' (opschrift).",
+  "subject": "David de herder",
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "persoon"
+  },
+  "style3d": "rond",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "david",
+      "look": "herder",
+      "name": "David",
+      "voice": "thomas"
+    }
+  ],
+  "shots": [
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "text": "Bij Bethlehem",
+      "actors": [
+        {
+          "id": "david",
+          "at": "kudde"
+        }
+      ],
+      "say": "De heuvels bij Bethlehem. De jongste zoon van Isaï past op de schapen."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "close",
+      "on": "david",
+      "actors": [
+        {
+          "id": "david",
+          "at": "kudde",
+          "mood": "blij"
+        }
+      ],
+      "say": "Als de profeet Samuël komt, denkt niemand aan hem."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "medium",
+      "on": "david",
+      "actors": [
+        {
+          "id": "david",
+          "at": "rots",
+          "base": "sit",
+          "do": "think"
+        }
+      ],
+      "by": "david",
+      "line": "Uw knecht weidde de schapen van zijn vader."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "follow",
+      "on": "david",
+      "actors": [
+        {
+          "id": "david",
+          "at": "pad",
+          "to": "heuvel"
+        }
+      ],
+      "say": "Er kwam een leeuw, en een beer. En David redde het schaap.",
+      "verse": "1 Samuël 17:34"
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "low",
+      "on": "david",
+      "actors": [
+        {
+          "id": "david",
+          "at": "heuvel",
+          "do": "look-up",
+          "mood": "blij"
+        }
+      ],
+      "say": "Later schrijft hij: de HEERE is mijn Herder."
+    },
+    {
+      "set": "heuvels",
+      "time": "nacht",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "david",
+          "at": "boom",
+          "base": "sit",
+          "do": "pray"
+        }
+      ],
+      "say": "Lees zijn verhaal in 1 Samuël zestien en zeventien. Met uitleg naast elk vers.",
+      "app": "03-commentaar"
+    }
+  ],
+  "voice": "female"
+}

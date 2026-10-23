@@ -1,0 +1,192 @@
+{
+  "id": "2026-w45-3d-tue",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-03T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Paulus als gevangene op weg naar Rome. Dan komt de storm. Dagen zonder zon of sterren - en toch zegt hij: houd moed. Handelingen 27 in een minuut.",
+  "hashtags": [
+    "#paulus",
+    "#handelingen",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "music": "cinematic",
+  "captions": "karaoke",
+  "hook": "Dagenlang storm. Niemand had nog hoop.",
+  "basedOn": "Handelingen 27 en 28:1 (SV): naar Rome (27:1), Kreta (27:7-13), stormwind Euroklydon (27:14), geen zon of sterren, hoop benomen (27:20), Paulus: goedsmoeds, geen leven verloren (27:22-25), schip vergaat, allen aan land (27:41-44), Melite (28:1).",
+  "subject": "Paulus' schipbreuk",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "style3d": "toon",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "paulus",
+      "look": "oude-man-bijbels",
+      "name": "Paulus",
+      "voice": "thomas"
+    },
+    {
+      "id": "zeeman",
+      "look": "zeeman",
+      "name": "Zeeman",
+      "voice": "niels"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "caesarea",
+        "kreta",
+        "malta",
+        "rome"
+      ],
+      "text": "Handelingen 27",
+      "say": "Paulus moet als gevangene naar Rome. Per schip, laat in het jaar."
+    },
+    {
+      "set": "zee",
+      "weather": "helder",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "reling",
+          "do": "idle"
+        },
+        {
+          "id": "zeeman",
+          "at": "achtersteven",
+          "do": "idle"
+        }
+      ],
+      "say": "Bij Kreta steekt een stormwind op. Ze noemen hem de Euroklydon.",
+      "verse": "Handelingen 27:14"
+    },
+    {
+      "set": "zee",
+      "weather": "storm",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "mast",
+          "mood": "nadenkend"
+        },
+        {
+          "id": "zeeman",
+          "at": "boeg",
+          "do": "fear",
+          "mood": "bang"
+        }
+      ],
+      "say": "Dagenlang geen zon en geen sterren. De bemanning geeft alle hoop op."
+    },
+    {
+      "set": "zee",
+      "weather": "storm",
+      "time": "avond",
+      "camera": "close",
+      "on": "zeeman",
+      "actors": [
+        {
+          "id": "zeeman",
+          "at": "boeg",
+          "do": "fear",
+          "mood": "bang"
+        },
+        {
+          "id": "paulus",
+          "at": "mast"
+        }
+      ],
+      "by": "zeeman",
+      "line": "We halen het niet. Dit schip vergaat!"
+    },
+    {
+      "set": "zee",
+      "weather": "storm",
+      "time": "avond",
+      "camera": "push-in",
+      "on": "paulus",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "mast",
+          "mood": "neutraal",
+          "face": "zeeman"
+        },
+        {
+          "id": "zeeman",
+          "at": "boeg",
+          "mood": "bang"
+        }
+      ],
+      "by": "paulus",
+      "line": "Houd moed. Niemand van jullie komt om. Alleen het schip.",
+      "verse": "Handelingen 27:22"
+    },
+    {
+      "set": "zee",
+      "weather": "storm",
+      "time": "avond",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "mast",
+          "do": "look-up"
+        },
+        {
+          "id": "zeeman",
+          "at": "boeg",
+          "mood": "verrast",
+          "face": "paulus"
+        }
+      ],
+      "by": "paulus",
+      "line": "Ik geloof God. Het gaat zoals Hij het mij gezegd heeft."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "kreta",
+        "malta"
+      ],
+      "text": "Malta (Melite)",
+      "say": "Het schip loopt vast en breekt. Maar op planken en wrakhout komt iedereen aan land."
+    },
+    {
+      "set": "zee",
+      "weather": "helder",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "boeg",
+          "do": "pray"
+        }
+      ],
+      "say": "Lees het hele verhaal in Handelingen 27. Met uitleg naast elk vers.",
+      "app": "03-commentaar"
+    }
+  ],
+  "voice": "noa"
+}

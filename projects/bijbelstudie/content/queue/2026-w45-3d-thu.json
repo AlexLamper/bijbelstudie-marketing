@@ -1,0 +1,160 @@
+{
+  "id": "2026-w45-3d-thu",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-05T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Vijfenzeventig jaar oud, en dan: ga. Abram trekt weg uit Haran, naar een land dat hij nog niet kent. Genesis 12 in 3D, met de route op de kaart.",
+  "hashtags": [
+    "#abraham",
+    "#genesis",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "75 jaar oud. En dan zegt God: ga.",
+  "basedOn": "Genesis 12:1-8 (SV): roeping in Haran (12:1), Abram 75 jaar (12:4), met Sarai en Lot en al hun have naar Kanaan (12:5), Sichem (12:6), Bethel (12:8), tenten (12:8; Hebreeen 11:9), niet wetende waar hij komen zou (Hebreeen 11:8). Studie 'Het geloof van Abraham' (8 lessen, product.md).",
+  "subject": "Abraham trekt weg uit Haran",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "style3d": "lowpoly",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "abram",
+      "look": "oude-man-bijbels",
+      "name": "Abram"
+    },
+    {
+      "id": "sarai",
+      "look": "vrouw-bijbels-2",
+      "name": "Sarai"
+    }
+  ],
+  "shots": [
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "text": "Haran",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "plein",
+          "do": "look-up"
+        },
+        {
+          "id": "sarai",
+          "at": "trap"
+        }
+      ],
+      "say": "Haran. Abram is vijfenzeventig jaar als God tegen hem zegt: ga.",
+      "verse": "Genesis 12:1"
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "close",
+      "on": "abram",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "plein",
+          "do": "look-up",
+          "mood": "nadenkend"
+        }
+      ],
+      "say": "Weg uit zijn land. Weg bij de familie. Naar een land dat God hem zal wijzen."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "plein",
+          "to": "poort"
+        },
+        {
+          "id": "sarai",
+          "at": "trap",
+          "to": "straat"
+        }
+      ],
+      "say": "Hij neemt Sarai mee, en Lot, en alles wat ze hebben."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "haran",
+        "sichem",
+        "bethel"
+      ],
+      "say": "Honderden kilometers, met tenten en kudden, naar het land Kanaän."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "tent"
+        },
+        {
+          "id": "sarai",
+          "at": "kampvuur",
+          "do": "idle"
+        }
+      ],
+      "say": "Ze wonen in tenten. Steeds onderweg."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "low",
+      "on": "abram",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "midden",
+          "do": "look-up",
+          "mood": "blij"
+        }
+      ],
+      "say": "Hij wist niet waar hij heen ging. Maar wel met Wie."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "midden",
+          "do": "pray"
+        },
+        {
+          "id": "sarai",
+          "at": "tent"
+        }
+      ],
+      "say": "Volg Abraham van Haran tot Kanaän in de studie Het geloof van Abraham.",
+      "app": "07-studies"
+    }
+  ],
+  "voice": "marianne"
+}

@@ -1,0 +1,147 @@
+{
+  "id": "2026-w45-3d-thu-a",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-05T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Drie wijzen uit het oosten, iedereen kent ze. Maar hoeveel staan er in Mattheüs 2? Tel maar mee.",
+  "hashtags": [
+    "#mattheus",
+    "#wistjedat",
+    "#bijbellezen",
+    "#bijbelstudie"
+  ],
+  "music": "upbeat",
+  "captions": "karaoke",
+  "hook": "Drie wijzen? Tel ze eens.",
+  "basedOn": "Mattheus 2:1 (SV): 'enige wijzen van het Oosten' - geen aantal; Mattheus 2:11: drie geschenken (goud, wierook, mirre). Uitleg naast elk hoofdstuk (03-commentaar).",
+  "subject": "De wijzen uit het oosten",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "vers"
+  },
+  "style3d": "rond",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "eva",
+      "look": "vrouw-modern-3",
+      "name": "Eva",
+      "voice": "noa"
+    },
+    {
+      "id": "sem",
+      "look": "man-modern-2",
+      "name": "Sem",
+      "voice": "niels"
+    }
+  ],
+  "shots": [
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "sem",
+          "at": "bank-links",
+          "mood": "blij"
+        },
+        {
+          "id": "eva",
+          "at": "bank-rechts",
+          "do": "read"
+        }
+      ],
+      "by": "sem",
+      "line": "De drie wijzen, toch? Dat weet iedereen."
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "close",
+      "on": "eva",
+      "actors": [
+        {
+          "id": "eva",
+          "at": "bank-rechts",
+          "do": "read",
+          "mood": "nadenkend"
+        },
+        {
+          "id": "sem",
+          "at": "bank-links"
+        }
+      ],
+      "by": "eva",
+      "line": "Er staat alleen: enige wijzen. Geen aantal.",
+      "verse": "Mattheüs 2:1"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "close",
+      "on": "sem",
+      "actors": [
+        {
+          "id": "sem",
+          "at": "bank-links",
+          "mood": "verward"
+        },
+        {
+          "id": "eva",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "sem",
+      "line": "Waar komt die drie dan vandaan?"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "medium",
+      "on": "eva",
+      "actors": [
+        {
+          "id": "eva",
+          "at": "bank-rechts",
+          "do": "read",
+          "mood": "blij"
+        },
+        {
+          "id": "sem",
+          "at": "bank-links"
+        }
+      ],
+      "by": "eva",
+      "line": "Van de geschenken. Goud, wierook en mirre. Drie dingen.",
+      "verse": "Mattheüs 2:11"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "sem",
+          "at": "bank-links",
+          "mood": "verrast"
+        },
+        {
+          "id": "eva",
+          "at": "bank-rechts",
+          "mood": "blij",
+          "face": "sem"
+        }
+      ],
+      "by": "sem",
+      "line": "Dus lees gewoon wat er echt staat."
+    }
+  ]
+}

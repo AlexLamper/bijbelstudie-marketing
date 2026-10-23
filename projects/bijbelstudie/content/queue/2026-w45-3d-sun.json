@@ -1,0 +1,172 @@
+{
+  "id": "2026-w45-3d-sun",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-08T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Hoe houd je dat vol, elke dag de Bijbel lezen? Oma heeft een simpel antwoord. Tekst van de dag, een hoofdstuk met uitleg, en een boom die meegroeit.",
+  "hashtags": [
+    "#bijbellezen",
+    "#tekstvandedag",
+    "#gewoonte",
+    "#bijbelstudie"
+  ],
+  "music": "warm",
+  "captions": "karaoke",
+  "hook": "Oma, hoe houd jij dat vol?",
+  "basedOn": "Functies (product.md): tekst van de dag met herinnering (screenshot 01-start), lezen met uitleg (03-commentaar), je boom groeit met elk bestudeerd hoofdstuk (13-boom-groeide).",
+  "subject": "Elke dag lezen met oma",
+  "experiment": {
+    "hook": "vraag",
+    "topic": "app"
+  },
+  "style3d": "blok",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "oma",
+      "look": "oudere-vrouw",
+      "name": "Oma",
+      "voice": "marianne"
+    },
+    {
+      "id": "joep",
+      "look": "man-modern",
+      "name": "Joep",
+      "voice": "male"
+    }
+  ],
+  "shots": [
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "oma",
+          "at": "stoel",
+          "do": "read",
+          "mood": "blij"
+        },
+        {
+          "id": "joep",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "joep",
+      "line": "Oma, hoe houd jij dat vol? Elke dag de Bijbel lezen?"
+    },
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "close",
+      "on": "oma",
+      "actors": [
+        {
+          "id": "oma",
+          "at": "stoel",
+          "do": "phone",
+          "mood": "blij"
+        },
+        {
+          "id": "joep",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "oma",
+      "line": "Elke ochtend krijg ik een tekst. Kijk maar.",
+      "screen": "01-start"
+    },
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "medium",
+      "on": "oma",
+      "actors": [
+        {
+          "id": "oma",
+          "at": "stoel",
+          "do": "show-phone",
+          "mood": "blij",
+          "face": "joep"
+        },
+        {
+          "id": "joep",
+          "at": "bank-rechts",
+          "mood": "verrast"
+        }
+      ],
+      "by": "oma",
+      "line": "En dan lees ik het hoofdstuk, met de uitleg erbij.",
+      "app": "03-commentaar"
+    },
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "close",
+      "on": "joep",
+      "actors": [
+        {
+          "id": "joep",
+          "at": "bank-rechts",
+          "mood": "verrast"
+        },
+        {
+          "id": "oma",
+          "at": "stoel"
+        }
+      ],
+      "by": "joep",
+      "line": "En waarom staat er een boom op?"
+    },
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "medium",
+      "on": "oma",
+      "actors": [
+        {
+          "id": "oma",
+          "at": "stoel",
+          "do": "show-phone",
+          "mood": "blij"
+        },
+        {
+          "id": "joep",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "oma",
+      "line": "Die groeit met elk hoofdstuk mee. Die van mij is al flink.",
+      "app": "13-boom-groeide"
+    },
+    {
+      "set": "woonkamer",
+      "time": "dag",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "joep",
+          "at": "bank-rechts",
+          "do": "phone",
+          "mood": "blij"
+        },
+        {
+          "id": "oma",
+          "at": "stoel",
+          "mood": "blij"
+        }
+      ],
+      "by": "joep",
+      "line": "Oké. Ik doe mee. Wie het eerst een grote boom heeft."
+    }
+  ]
+}

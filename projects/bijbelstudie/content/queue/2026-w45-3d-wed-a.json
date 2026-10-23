@@ -1,0 +1,130 @@
+{
+  "id": "2026-w45-3d-wed-a",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-04T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Jeruzalem in puin, de poorten verbrand. Nehemia zegt: kom, we bouwen. Weet je hoe lang het duurde? Nehemia 2 en 6.",
+  "hashtags": [
+    "#nehemia",
+    "#jeruzalem",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "music": "hopeful",
+  "captions": "karaoke",
+  "hook": "Hoe lang duurt het om een stadsmuur te bouwen?",
+  "basedOn": "Nehemia 2:17 (SV): Jeruzalem woest, poorten verbrand, 'laat ons Jeruzalems muur opbouwen'; Nehemia 6:15: de muur volbracht in twee en vijftig dagen.",
+  "subject": "Nehemia en de muur",
+  "experiment": {
+    "hook": "vraag",
+    "topic": "persoon"
+  },
+  "style3d": "toon",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "nehemia",
+      "look": "man-bijbels",
+      "name": "Nehemia",
+      "voice": "thomas"
+    },
+    {
+      "id": "bouwer",
+      "look": "man-bijbels-2",
+      "name": "Bouwer"
+    }
+  ],
+  "shots": [
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "text": "Jeruzalem",
+      "actors": [
+        {
+          "id": "nehemia",
+          "at": "poort",
+          "mood": "verdrietig"
+        }
+      ],
+      "say": "Jeruzalem ligt in puin. De poorten zijn verbrand."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "push-in",
+      "on": "nehemia",
+      "actors": [
+        {
+          "id": "nehemia",
+          "at": "plein",
+          "mood": "neutraal",
+          "face": "camera"
+        }
+      ],
+      "by": "nehemia",
+      "line": "Kom, laten we de muur van Jeruzalem opbouwen.",
+      "verse": "Nehemia 2:17"
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "nehemia",
+          "at": "muur",
+          "do": "point"
+        },
+        {
+          "id": "bouwer",
+          "at": "trap",
+          "do": "carry"
+        }
+      ],
+      "say": "Iedereen bouwt mee. Dag na dag."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "low",
+      "on": "nehemia",
+      "actors": [
+        {
+          "id": "nehemia",
+          "at": "muur",
+          "do": "cheer",
+          "mood": "blij"
+        }
+      ],
+      "say": "En de muur is af. In tweeënvijftig dagen.",
+      "verse": "Nehemia 6:15"
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "nehemia",
+          "at": "plein",
+          "do": "pray"
+        },
+        {
+          "id": "bouwer",
+          "at": "markt"
+        }
+      ],
+      "say": "Lees het in Nehemia twee tot zes, met uitleg naast elk hoofdstuk.",
+      "app": "03-commentaar"
+    }
+  ],
+  "voice": "female"
+}

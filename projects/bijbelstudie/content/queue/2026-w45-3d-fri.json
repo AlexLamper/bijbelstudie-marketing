@@ -1,0 +1,169 @@
+{
+  "id": "2026-w45-3d-fri",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-06T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Iedereen weet dat Eva een appel at. Toch? Lees Genesis 3:6 maar eens na. Soms staat er net iets anders dan je denkt.",
+  "hashtags": [
+    "#genesis",
+    "#bijbellezen",
+    "#wistjedat",
+    "#bijbelstudie"
+  ],
+  "music": "upbeat",
+  "captions": "karaoke",
+  "hook": "Eva at een appel... toch?",
+  "basedOn": "Genesis 3:6 (SV): 'zij nam van zijn vrucht en at' - de tekst noemt geen appel. Functie: Bijbel lezen in de app (screenshot 02-bijbel), uitleg naast elk hoofdstuk (03-commentaar).",
+  "subject": "De verboden vrucht",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "vers"
+  },
+  "style3d": "klei",
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "lisa",
+      "look": "vrouw-modern-2",
+      "name": "Lisa",
+      "voice": "noa"
+    },
+    {
+      "id": "tim",
+      "look": "man-modern-3",
+      "name": "Tim",
+      "voice": "niels"
+    }
+  ],
+  "shots": [
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "tim",
+          "at": "bank-rechts",
+          "mood": "blij"
+        },
+        {
+          "id": "lisa",
+          "at": "bank-links"
+        }
+      ],
+      "by": "tim",
+      "line": "Eva at die appel, en toen ging alles mis."
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "close",
+      "on": "lisa",
+      "actors": [
+        {
+          "id": "lisa",
+          "at": "bank-links",
+          "do": "think",
+          "mood": "nadenkend"
+        },
+        {
+          "id": "tim",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "lisa",
+      "line": "Wacht. Staat er eigenlijk een appel in de Bijbel?"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "medium",
+      "on": "tim",
+      "actors": [
+        {
+          "id": "tim",
+          "at": "bank-rechts",
+          "do": "phone",
+          "mood": "verward"
+        },
+        {
+          "id": "lisa",
+          "at": "bank-links"
+        }
+      ],
+      "by": "tim",
+      "line": "Eh... ik zoek het op. Genesis drie.",
+      "screen": "02-bijbel"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "phone",
+      "on": "tim",
+      "actors": [
+        {
+          "id": "tim",
+          "at": "bank-rechts",
+          "do": "phone"
+        },
+        {
+          "id": "lisa",
+          "at": "bank-links"
+        }
+      ],
+      "by": "tim",
+      "line": "Hier. Zij nam van zijn vrucht en at. Vrucht dus.",
+      "screen": "02-bijbel",
+      "verse": "Genesis 3:6"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "close",
+      "on": "lisa",
+      "actors": [
+        {
+          "id": "lisa",
+          "at": "bank-links",
+          "mood": "verrast"
+        },
+        {
+          "id": "tim",
+          "at": "bank-rechts"
+        }
+      ],
+      "by": "lisa",
+      "line": "Nergens een appel. Dat had ik nooit gezien!"
+    },
+    {
+      "set": "woonkamer",
+      "time": "avond",
+      "camera": "two-shot",
+      "actors": [
+        {
+          "id": "tim",
+          "at": "bank-rechts",
+          "do": "show-phone",
+          "mood": "blij"
+        },
+        {
+          "id": "lisa",
+          "at": "bank-links",
+          "mood": "blij"
+        }
+      ],
+      "by": "tim",
+      "line": "Lees zelf wat er staat. Met uitleg ernaast.",
+      "app": "03-commentaar"
+    }
+  ]
+}
