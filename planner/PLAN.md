@@ -45,6 +45,27 @@ voice, music, subtitles, hook and topic. Spread variants over the week and over 
 is tied to one format or one day (otherwise the experiment cannot tell them apart). Stay under the
 voice budget.
 
+## 3b. Quality bar (do this before answering comments)
+
+This content goes out under the BijbelStudie name to people who love the Bible. Good beats fast.
+
+1. **Draft, then edit.** Write the whole week first. Then read every item as a strict editor and rewrite
+   at least the weakest third. Read each spoken script out loud in your head: if a line sounds like a
+   textbook, rewrite it as a person talking.
+2. **Hooks.** The first line must stop a scrolling 20-35 year old Dutch Christian in under 2 seconds:
+   concrete and specific (a name, a number, a place, a tension), and the reel must pay it off. No vague
+   openers ("Wist je dat...?" only when what follows is truly surprising), no clickbait.
+3. **Facts.** Every Bible fact must be checkable in the text. Before you use a reference, open the
+   chapter in `data/statenvertaling/<Boek>/<Boek><hoofdstuk>.json` and read the verse - never quote or
+   cite from memory. Background (dates, places, customs) only when broadly accepted; approximate dates
+   get "ca.". No denominational disputes.
+4. **One idea per reel**, every line earns its place, and the ending lands (a thought to keep, then the
+   app naturally). Quizzes: the right answer must be unambiguous from the text, wrong options plausible.
+5. **Variety.** No two items in the week open the same way; spread books, persons, Old and New
+   Testament, and moods. Write for the ear in spoken lines (short sentences, numbers as words) and for
+   the eye in titles and kinetic lines (short, punchy).
+6. **Honest app claims:** only what `P/brand/product.md` says.
+
 ## 4. Answer comments
 
 For each entry in `P/content/context/comments-to-answer.json` write a reply draft in the project's
