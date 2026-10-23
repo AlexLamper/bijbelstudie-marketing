@@ -52,9 +52,11 @@ jobs:
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ matrix.project }} (folder projects/${{ matrix.project }}/).
             Read planner/PLAN.md and follow it exactly: report on last week, plan next ISO week,
-            draft comment replies, and run the validator until it passes.
+            meet the quality bar (draft, then edit like a strict editor; check every Bible fact in
+            data/statenvertaling), draft comment replies, and run the validator until it passes.
+            Take your time - quality over speed.
           claude_args: >-
-            --model claude-sonnet-5-5 --max-turns 260
+            --model claude-opus-5-5 --effort xhigh --fallback-model claude-sonnet-5-5 --max-turns 260
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
         if: steps.ctx.outputs.skip != 'true'
