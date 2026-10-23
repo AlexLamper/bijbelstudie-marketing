@@ -117,7 +117,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
     const [hk, c1, c2] = L.head; const hm = mat(c1, { rough: .95 }), hm2 = mat(c2 || c1);
     if (hk === 'doek' || hk === 'sluier') {
       head.add(at(rot(scl(mesh(G.cap(headR, Math.PI * .56, 0, 36, 16), hm), 1.13, 1.13, 1.13), -.32, 0, 0), 0, .01, -.01));
-      const drape = mesh(new THREE.CylinderGeometry(headR * 1.06, hk === 'sluier' ? .27 : .25, hk === 'sluier' ? .52 : .4, segs(28, 8), 1, true, Math.PI * .62, Math.PI * 1.76), mat(c1, { rough: .95, side: THREE.DoubleSide }));
+      const drape = mesh(new THREE.CylinderGeometry(headR * 1.06, hk === 'sluier' ? .27 : .25, hk === 'sluier' ? .52 : .4, segs(28, 8), 1, true, Math.PI * .3, Math.PI * 1.4), mat(c1, { rough: .95, side: THREE.DoubleSide }));
       head.add(at(drape, 0, hk === 'sluier' ? -.2 : -.15, -.035));
       if (hk === 'doek') head.add(rot(scl(at(mesh(G.torus(headR * 1.1, .018, Math.PI * 2, 8, 32), hm2), 0, .085, -.02), 1, 1, 1), Math.PI / 2 - .2, 0, 0));
     }
