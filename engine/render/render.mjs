@@ -77,7 +77,11 @@ export function unitsFromAlignment(al, texts) {
 }
 /** Fallback without timings: cut points at the (n-1) longest silences, in time order. */
 function cutsFromSilence(file, n) {
-  const log = String(spawnSync('ffmpeg', ['-hide_banner', '-i', file, '-af', 'silencedetect=noise=-38dB:d=0.2', '-f', 'null', '-']).stderr || '');   // silencedetect logs to stderr
+  for (const [noise, d] of [['-38dB', 0.2], ['-32dB', 0.12]]) { const c = silenceCuts(file, n, noise, d); if (c) return c; }
+  return null;
+}
+function silenceCuts(file, n, noise, d) {
+  const log = String(spawnSync('ffmpeg', ['-hide_banner', '-i', file, '-af', `silencedetect=noise=${noise}:d=${d}`, '-f', 'null', '-']).stderr || '');   // silencedetect logs to stderr
   const starts = [...log.matchAll(/silence_start: ([\d.]+)/g)].map(m => +m[1]);
   const gaps = [...log.matchAll(/silence_end: ([\d.]+) \| silence_duration: ([\d.]+)/g)].map((m, i) => ({ mid: (starts[i] + +m[1]) / 2, d: +m[2] })).filter(g => Number.isFinite(g.mid) && g.mid > 0.3);
   if (gaps.length < n - 1) return null;
