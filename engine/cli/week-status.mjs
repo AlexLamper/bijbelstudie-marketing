@@ -12,6 +12,8 @@ console.log(`[${project().id}] ${week}: ${items.length} items`);
 for (const it of items) {
   const when = new Date(it.slot).toLocaleString('nl-NL', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   console.log(`${it.status.padEnd(9)} ${when.padEnd(20)} ${it._id.padEnd(34)} ${it.kind.padEnd(15)} ${(it.spec.platforms || []).join('+')}${it.spec.subject ? `  "${it.spec.subject}"` : ''}`);
+  if (process.argv.includes('--media') && it.media?.url) console.log(`          ${it.media.url}${it.media.duration ? ` (${it.media.duration.toFixed(1)} s)` : ''}`);
+  if (it.error) console.log(`          fout: ${String(it.error).slice(0, 200)}`);
   for (const c of it.reviewComments || []) console.log(`          opmerking: ${String(c.text).replace(/\s+/g, ' ').slice(0, 200)}`);
 }
 await close();
