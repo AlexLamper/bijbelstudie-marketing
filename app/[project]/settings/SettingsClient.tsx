@@ -29,15 +29,29 @@ export function AppForm({ provider, idLabel, secretLabel, meta, replace }: { pro
 }
 
 export function ConnectActions({ project, provider, linked, appSource, clientId }: { project: string; provider: string; linked: boolean; appSource: string; clientId: string }) {
-  const router = useRouter(); const [busy, setBusy] = useState(false);
+  const router = useRouter(); const [busy, setBusy] = useState(''); const [ask, setAsk] = useState(false);
   async function unlink() {
-    if (!confirm('Ontkoppelen? Er wordt dan niet meer op dit account gepost.')) return;
-    setBusy(true); await fetch(`/api/${project}/connections/${provider}`, { method: 'DELETE' }); setBusy(false); router.refresh();
+    setBusy('unlink'); await fetch(`/api/${project}/connections/${provider}`, { method: 'DELETE' }); setBusy(''); setAsk(false); router.refresh();
   }
+  async function test() {
+    setBusy('test');
+    await fetch(`/api/${project}/connections/${provider}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ test: true }) });
+    setBusy(''); router.refresh();
+  }
+  if (ask) return (
+    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm">
+      <p className="text-danger">Ontkoppelen? Er wordt dan niet meer op dit account gepost.</p>
+      <div className="mt-2 flex gap-2">
+        <Button variant="danger" size="sm" className="bg-surface ring-1 ring-red-200" disabled={!!busy} onClick={unlink}>{busy === 'unlink' ? 'Bezig...' : 'Ja, ontkoppel'}</Button>
+        <Button variant="ghost" size="sm" onClick={() => setAsk(false)}>Annuleer</Button>
+      </div>
+    </div>
+  );
   return (
-    <div className="flex gap-2" data-app={appSource} data-client={clientId}>
-      <a href={`/api/oauth/${provider}/start?project=${project}`} className={buttonClass(linked ? 'secondary' : 'primary', 'md', 'flex-1')}>{linked ? 'Opnieuw koppelen' : 'Koppel'}</a>
-      {linked && <Button variant="danger" disabled={busy} onClick={unlink}>Ontkoppelen</Button>}
+    <div className="flex flex-wrap gap-2" data-app={appSource} data-client={clientId}>
+      {linked && <Button variant="primary" className="flex-1" disabled={!!busy} onClick={test}>{busy === 'test' ? 'Testen...' : 'Test koppeling'}</Button>}
+      <a href={`/api/oauth/${provider}/start?project=${project}`} className={buttonClass(linked ? 'secondary' : 'primary', 'md', linked ? '' : 'flex-1')}>{linked ? 'Opnieuw' : 'Koppel'}</a>
+      {linked && <Button variant="danger" disabled={!!busy} onClick={() => setAsk(true)}>Ontkoppelen</Button>}
     </div>
   );
 }

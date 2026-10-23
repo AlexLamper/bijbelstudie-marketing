@@ -4,6 +4,7 @@ import { getProject } from '@/lib/projects';
 import { getDb } from '@/lib/mongo';
 import { seal } from '@/lib/crypto';
 import { META_VERSION, accountOf, getApp, isProvider, redirectUri, saveConnection, studioBase } from '@/lib/connections';
+import { checkConnection } from '@/lib/connectionCheck';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +40,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
   } catch (e: any) {
     return back(req, project, provider, { error: e.message.slice(0, 300) });
   }
+  await checkConnection(project, provider).catch(() => {});   // shows account details right away
   const res = back(req, project, provider, { ok: provider });
   res.cookies.delete({ name: 'oauth', path: '/api/oauth' });
   return res;

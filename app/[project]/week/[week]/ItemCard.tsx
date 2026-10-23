@@ -12,17 +12,29 @@ export default function ItemCard({ project, item }: { project: string; item: any
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [caption, setCaption] = useState(item.spec.caption || '');
+  const [tags, setTags] = useState((item.spec.hashtags || []).join(' '));
+  const [msg, setMsg] = useState('');
   const s = item.spec; const video = item.kind.startsWith('reel-');
   const st = STATUS[item.status] ?? { label: item.status, tone: 'bg-bg' };
   const canDecide = ['review', 'approved', 'changes', 'rejected'].includes(item.status);
 
+  async function patch(body: object) {
+    setBusy(true); setError(''); setMsg('');
+    const r = await fetch(`/api/${project}/items/${item._id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (!r.ok) { setError(j.error || 'Opslaan mislukt'); return false; }
+    if (j.message) setMsg(j.message);
+    router.refresh(); return true;
+  }
   async function act(action: 'approve' | 'changes' | 'reject' | 'reset') {
     if (action === 'changes' && !note.trim()) { setOpen(true); return; }
-    setBusy(true); setError('');
-    const r = await fetch(`/api/${project}/items/${item._id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, comment: note.trim() || undefined }) });
-    setBusy(false);
-    if (!r.ok) { setError((await r.json().catch(() => ({}))).error || 'Opslaan mislukt'); return; }
-    setOpen(false); setNote(''); router.refresh();
+    if (await patch({ action, comment: note.trim() || undefined })) { setOpen(false); setNote(''); }
+  }
+  async function saveText() {
+    if (await patch({ action: 'edit', caption, hashtags: tags })) setEditing(false);
   }
 
   return (
@@ -46,8 +58,26 @@ export default function ItemCard({ project, item }: { project: string; item: any
             Caption en details
           </summary>
           <div className="mt-2 space-y-2 border-l-2 border-line pl-3">
-            <p className="whitespace-pre-line">{s.caption}</p>
-            {s.hashtags?.length > 0 && <p className="text-accent-dark">{s.hashtags.join(' ')}</p>}
+            {editing ? (
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-ink-muted">Caption
+                  <textarea value={caption} onChange={e => setCaption(e.target.value)} rows={6}
+                    className="mt-1 w-full rounded-lg border border-line-strong bg-surface p-2 text-sm text-ink outline-none transition hover:border-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
+                </label>
+                <label className="block text-xs font-semibold text-ink-muted">Hashtags
+                  <input value={tags} onChange={e => setTags(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-1.5 text-sm text-ink outline-none transition hover:border-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
+                </label>
+                <div className="flex gap-2">
+                  <Button variant="primary" size="sm" disabled={busy} onClick={saveText}>Opslaan</Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setCaption(s.caption || ''); setTags((s.hashtags || []).join(' ')); }}>Annuleer</Button>
+                </div>
+              </div>
+            ) : <>
+              <p className="whitespace-pre-line">{s.caption}</p>
+              {s.hashtags?.length > 0 && <p className="text-accent-dark">{s.hashtags.join(' ')}</p>}
+              {canDecide && <button type="button" onClick={() => setEditing(true)} className="cursor-pointer rounded-md text-xs font-semibold text-accent-dark transition hover:text-accent hover:underline">Tekst zelf aanpassen</button>}
+            </>}
             {s.lines && <ol className="list-decimal space-y-1 pl-5">{s.lines.map((l: any, i: number) => <li key={i}>{l.say}</li>)}</ol>}
             <p className="text-xs text-ink-muted">Platforms: {s.platforms.map((x: string) => PLATFORM[x] || x).join(', ')}{item.aiLabel ? ' - krijgt AI-label' : ''}</p>
             {s.basedOn && <p className="text-xs text-ink-muted">Gebaseerd op: {s.basedOn}</p>}
@@ -82,6 +112,9 @@ export default function ItemCard({ project, item }: { project: string; item: any
           </div>
         )}
         {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
+        {msg && <p role="status" className="mt-2 text-xs text-success">{msg}</p>}
+        {item.status === 'approved' && new Date(item.slot) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen 30 minuten).</p>}
+        {item.results && Object.values(item.results).some((r: any) => r.waiting) && <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-warn">Wacht op koppeling: {Object.entries(item.results).filter(([, r]: any) => r.waiting).map(([p]) => PLATFORM[p] || p).join(', ')} - zie Instellingen.</p>}
         {canDecide && (
           <div className="mt-auto flex gap-2 pt-4">
             {open ? <>
@@ -91,7 +124,10 @@ export default function ItemCard({ project, item }: { project: string; item: any
               : <>
                 {item.status !== 'approved'
                   ? <Button variant="primary" className="flex-1" disabled={busy} onClick={() => act('approve')}>Goedkeuren</Button>
-                  : <Button className="flex-1" disabled={busy} onClick={() => act('reset')}>Terug naar keuren</Button>}
+                  : <>
+                      <Button className="flex-1" disabled={busy} onClick={() => act('reset')}>Terug naar keuren</Button>
+                      {new Date(item.slot) > new Date() && <Button variant="ghost" disabled={busy} onClick={() => patch({ action: 'now' })} title="Plaats bij de volgende ronde in plaats van op het geplande tijdstip">Nu plaatsen</Button>}
+                    </>}
                 <Button disabled={busy} onClick={() => act('changes')}>Aanpassen</Button>
                 {item.status !== 'rejected' && <Button variant="danger" disabled={busy} onClick={() => act('reject')}>Weg</Button>}
               </>}

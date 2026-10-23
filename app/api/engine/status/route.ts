@@ -20,6 +20,10 @@ export async function GET(req: Request) {
     out.byWeek = Object.fromEntries((await db.collection('items').aggregate([{ $group: { _id: '$week', n: { $sum: 1 } } }, { $sort: { _id: 1 } }]).toArray()).map(r => [r._id, r.n]));
     out.problems = (await db.collection('items').find({ $or: [{ status: 'failed' }, { renderNotes: { $exists: true, $ne: [] } }] }, { projection: { status: 1, error: 1, renderNotes: 1 } }).limit(20).toArray());
     out.latest = (await db.collection('items').find({}, { projection: { status: 1, 'media.url': 1, renderedAt: 1 } }).sort({ renderedAt: -1 }).limit(3).toArray());
+    // linked accounts (names and last check only - never tokens) and the last run of each job
+    out.connections = Object.fromEntries((await db.collection('connections').find({}, { projection: { account: 1, lastCheck: 1, pending: 1 } }).toArray())
+      .map(c => [c._id, { name: c.account?.name, linked: !c.pending || !!c.account?.name, check: c.lastCheck }]));
+    out.runs = Object.fromEntries((await db.collection('runs').find({}, { projection: { at: 1, summary: 1, configured: 1 } }).toArray()).map(r => [r._id, r]));
   } catch (e: any) { out.mongo = `error: ${e.message}`; }
   return NextResponse.json(out);
 }

@@ -54,7 +54,7 @@ export default async function Settings({ params, searchParams }: { params: Promi
     { title: 'Engine in GitHub Actions', detail: runs.publish ? `Publiceren draaide ${ago(runs.publish.at)}.` : 'Nog geen run gezien. De secrets MONGODB_URI en ENGINE_KEY moeten in GitHub staan.', status: runs.publish ? (publishLate ? 'warn' : 'ok') : 'todo' },
     { title: 'Weekplanner (Claude)', detail: secrets.includes('CLAUDE_CODE_OAUTH_TOKEN') ? 'Draait elke vrijdag.' : 'Zet CLAUDE_CODE_OAUTH_TOKEN in de GitHub-secrets (claude setup-token).', status: !latest ? 'todo' : secrets.includes('CLAUDE_CODE_OAUTH_TOKEN') ? 'ok' : 'todo', href: 'https://github.com/AlexLamper/bijbelstudie-marketing/settings/secrets/actions' },
     ...providers.map(id => ({ title: PROVIDERS[id].name, detail: linked(id) ? `Gekoppeld: ${conn[id].account?.name}${id === 'tiktok' ? ' (privé tot TikTok de app goedkeurt)' : ''}` : (cfg[id === 'google' ? 'youtube' : id] ? 'Via GitHub-secrets ingesteld.' : conn[id]?.pending ? 'Kies hieronder de pagina.' : 'Nog niet gekoppeld.'),
-      status: (linked(id) || cfg[id === 'google' ? 'youtube' : id] ? 'ok' : 'todo') as Status, href: `#${id}` })),
+      status: (linked(id) ? (conn[id].lastCheck?.ok === false ? 'warn' : 'ok') : cfg[id === 'google' ? 'youtube' : id] ? 'ok' : 'todo') as Status, href: `#${id}` })),
     { title: 'Stem voor uitleg-reels', detail: cfg.tts ? `Stem via ${cfg.tts === 'elevenlabs' ? 'ElevenLabs' : 'Google'}.` : 'Nog geen stem: uitleg-reels hebben alleen ondertitels. ElevenLabs volgt later.', status: cfg.tts ? 'ok' : 'optional' },
     { title: 'Nieuwe gebruikers meten', detail: cfg.platformDb ? 'Aanmeldingen worden dagelijks geteld.' : `Optioneel: een alleen-lezen databasegebruiker voor ${p.name} (PLATFORM_MONGODB_URI).`, status: cfg.platformDb ? 'ok' : 'optional' },
   ];
@@ -96,12 +96,17 @@ export default async function Settings({ params, searchParams }: { params: Promi
               {linked(id) && (
                 <div className="mt-3 rounded-lg bg-bg p-3 text-sm">
                   <p className="font-semibold">{c.account?.name}</p>
-                  {id === 'meta' && <p className="text-ink-muted">Pagina: {c.account?.pageName}{c.account?.igUsername ? '' : ' - geen Instagram-account aan deze pagina gekoppeld'}</p>}
+                  {id === 'meta' && <p className="text-ink-muted">Pagina: {c.account?.pageName}{c.account?.igUsername ? '' : ' - geen Instagram aan deze pagina'}</p>}
                   <p className="text-xs text-ink-muted">Sinds {new Date(c.connectedAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}</p>
+                  {c.lastCheck && (
+                    <p className={`mt-2 border-t border-line pt-2 text-xs ${c.lastCheck.ok ? 'text-success' : 'text-danger'}`}>
+                      {c.lastCheck.ok ? 'Werkt' : 'Probleem'} ({ago(c.lastCheck.at)}): {c.lastCheck.detail}
+                    </p>
+                  )}
                 </div>
               )}
               {choices.length > 0 && <PagePicker project={project} choices={choices} />}
-              {!app ? (
+              {!app && !linked(id) ? (
                 <div className="mt-3 flex flex-1 flex-col">
                   <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-body">
                     <li>Open <a href={P.console} target="_blank" rel="noreferrer" className="cursor-pointer font-semibold text-accent-dark underline-offset-2 hover:underline">{P.consoleName}</a>.</li>
@@ -112,13 +117,13 @@ export default async function Settings({ params, searchParams }: { params: Promi
                 </div>
               ) : (
                 <div className="mt-auto pt-4">
-                  <ConnectActions project={project} provider={id} linked={linked(id)} appSource={app.source} clientId={app.clientId} />
+                  <ConnectActions project={project} provider={id} linked={linked(id)} appSource={app?.source || 'none'} clientId={app?.clientId || ''} />
                   <details className="group mt-3 text-sm">
-                    <summary className="cursor-pointer rounded text-ink-muted transition hover:text-ink">App-gegevens ({app.source === 'env' ? 'uit Vercel' : 'opgeslagen'})</summary>
+                    <summary className="cursor-pointer rounded text-ink-muted transition hover:text-ink">App-gegevens ({!app ? 'ontbreken' : app.source === 'env' ? 'uit Vercel' : 'opgeslagen'})</summary>
                     <div className="mt-2 space-y-2">
-                      <p className="text-xs text-ink-muted">{P.idLabel}: <code>{app.clientId}</code></p>
+                      {app && <p className="text-xs text-ink-muted">{P.idLabel}: <code>{app.clientId}</code></p>}
                       <CopyField label="Redirect-URL" value={`${origin}/api/oauth/${id}/callback`} />
-                      {app.source === 'studio' && <AppForm provider={id} idLabel={P.idLabel} secretLabel={P.secretLabel} meta={id === 'meta'} replace />}
+                      {app?.source !== 'env' && <AppForm provider={id} idLabel={P.idLabel} secretLabel={P.secretLabel} meta={id === 'meta'} replace={!!app} />}
                     </div>
                   </details>
                 </div>
