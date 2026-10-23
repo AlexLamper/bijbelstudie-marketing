@@ -74,3 +74,11 @@ export async function tiktokStats(ids) {
   }
   return out;
 }
+
+/** Account numbers (needs user.info.stats): { followers, likes, videos } */
+export async function tiktokAccount() {
+  const token = await accessToken();
+  const r = await fetch(`${API}/user/info/?fields=follower_count,likes_count,video_count`, { headers: { Authorization: `Bearer ${token}` } });
+  const j = await r.json(); if (j.error?.code && j.error.code !== 'ok') throw new Error(`TikTok user/info: ${j.error.code} ${j.error.message}`);
+  const u = j.data?.user || {}; return { followers: u.follower_count, likes: u.likes_count, videos: u.video_count };
+}

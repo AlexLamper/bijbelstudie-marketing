@@ -5,7 +5,8 @@
 // 2. Fair score per item and platform, once it has been online for 48 hours: its views compared with
 //    the median of the same platform and media type (reel or post) over the last 8 weeks, and its
 //    engagement (likes, comments, shares, saves per view) compared the same way. 2x the median views
-//    = 0.75, 4x = 1, half = 0.25. score = 0.6 * views part + 0.4 * engagement part, from 0 to 1.
+//    = 0.75, 4x = 1, half = 0.25. score = 0.6 * views part + 0.4 * engagement part, from 0 to 1;
+//    where the platform reports watch time: 0.45 views + 0.3 engagement + 0.25 share watched.
 // 3. Per trait value a Beta(1 + sum of scores, 1 + sum of (1 - score)) belief; Thompson sampling gives
 //    the chance that each value is the best. Next week's slots: a fixed share for exploring (spread
 //    evenly, so new things keep getting tried) + the rest in proportion to that chance.
@@ -58,17 +59,22 @@ export function trials(items, { now = Date.now(), minAgeHours = 48 } = {}) {
     if (!it.publishedAt || now - new Date(it.publishedAt).getTime() < minAgeHours * 3600e3) continue;
     for (const [platform, m] of Object.entries(it.metrics || {})) {
       if (!m || !Number.isFinite(m.views)) continue;
-      rows.push({ id: it._id, platform, family: isVideo(it.kind) ? 'reel' : 'post', views: m.views, eng: engagement(m), traits: traitsOf(it.spec, it) });
+      const dur = it.media?.duration;
+      const comp = m.avgViewPct != null ? m.avgViewPct / 100 : (m.avgWatchMs != null && dur) ? Math.min(1.5, m.avgWatchMs / 1000 / dur) : null;   // share of the reel watched
+      rows.push({ id: it._id, platform, family: isVideo(it.kind) ? 'reel' : 'post', views: m.views, eng: engagement(m), comp, traits: traitsOf(it.spec, it) });
     }
   }
   const groups = new Map();
   for (const r of rows) { const k = `${r.platform}|${r.family}`; groups.set(k, [...(groups.get(k) || []), r]); }
   for (const g of groups.values()) {
-    const mv = median(g.map(r => r.views)) ?? 0, me = median(g.map(r => r.eng)) ?? 0;
+    const mv = median(g.map(r => r.views)) ?? 0, me = median(g.map(r => r.eng)) ?? 0, mc = median(g.map(r => r.comp ?? NaN));
     for (const r of g) {
       const v = clamp01(.5 + .25 * Math.log2((r.views + 1) / (mv + 1)));
       const e = clamp01(.5 + .25 * Math.log2((r.eng + .002) / (me + .002)));
-      Object.assign(r, { medianViews: mv, score: g.length < 3 ? .5 : .6 * v + .4 * e });   // too few to compare yet: neutral
+      // watch time, where the platform reports it: share watched vs the median share watched
+      const c = r.comp != null && mc ? clamp01(.5 + .25 * Math.log2((r.comp + .01) / (mc + .01))) : null;
+      const score = c == null ? .6 * v + .4 * e : .45 * v + .3 * e + .25 * c;
+      Object.assign(r, { medianViews: mv, score: g.length < 3 ? .5 : score });   // too few to compare yet: neutral
     }
   }
   return rows;
@@ -109,6 +115,16 @@ export function allocate(rows, slots, explore, { minN = 0 } = {}) {
   return Object.fromEntries(Object.entries(res).filter(([, n]) => n > 0));
 }
 
+/** No value takes more than `cap` slots (variety for the audience); the excess goes to the next best. */
+export function capAllocation(alloc, rows, cap) {
+  const a = { ...alloc };
+  for (;;) {
+    const over = Object.keys(a).find(k => a[k] > cap); if (!over) return a;
+    const next = rows.find(r => r.value !== over && (a[r.value] || 0) < cap); if (!next) return a;
+    a[over]--; a[next.value] = (a[next.value] || 0) + 1;
+  }
+}
+
 /** Everything that can be tested (the catalogue), given the voices and music that exist. */
 export function catalogue({ voices = ['male', 'female'], moods = [] } = {}) {
   return {
@@ -125,7 +141,7 @@ export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPos
   const fmt = board.format; const voiced = reels;
   return {
     recipe: { mainPerDay, extraPerDay, feedPosts, days },
-    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: allocate(fmt, main, .15, { minN: 4 }) },
+    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(allocate(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => (b.n >= 4) - (a.n >= 4) || b.pBest - a.pBest), Math.ceil(main * .55)) },
     extraReels: { slots: extra, platforms: 'tiktok, youtube', format: allocate(fmt, extra, .5) },
     feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: allocate(board.postFormat, feedPosts, .35) },
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)

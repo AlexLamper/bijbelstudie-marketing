@@ -37,3 +37,18 @@ export async function youtubeStats(ids) {
   const j = await r.json(); if (!r.ok) throw new Error(`YouTube stats: ${JSON.stringify(j.error)}`);
   return Object.fromEntries(j.items.map(v => [v.id, { views: +v.statistics.viewCount || 0, likes: +v.statistics.likeCount || 0, comments: +v.statistics.commentCount || 0 }]));
 }
+
+/** Watch time per video from YouTube Analytics (scope yt-analytics.readonly; re-link YouTube once):
+ *  { [id]: { avgViewPct, avgViewSec, shares, subsGained } }. Empty when the scope is missing. */
+export async function youtubeRetention(ids) {
+  if (!ids.length) return {};
+  const token = await accessToken(); const out = {};
+  const end = new Date().toISOString().slice(0, 10), start = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10);
+  for (let i = 0; i < ids.length; i += 200) {
+    const q = new URLSearchParams({ ids: 'channel==MINE', startDate: start, endDate: end, dimensions: 'video', metrics: 'averageViewDuration,averageViewPercentage,shares,subscribersGained', filters: `video==${ids.slice(i, i + 200).join(',')}`, maxResults: '200' });
+    const r = await fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${q}`, { headers: { Authorization: `Bearer ${token}` } });
+    const j = await r.json(); if (!r.ok) throw new Error(`YouTube Analytics ${r.status}: ${j.error?.message || ''}`);
+    for (const row of j.rows || []) out[row[0]] = { avgViewSec: row[1], avgViewPct: row[2], shares: row[3], subsGained: row[4] };
+  }
+  return out;
+}
