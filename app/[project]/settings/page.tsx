@@ -56,12 +56,15 @@ export default async function Settings({ params, searchParams }: { params: Promi
     return a ? { clientId: a.clientId as string, configId: a.configId as string | undefined, source: 'studio' as const } : null;
   };
   const linked = (id: ProviderId) => !!conn[id]?.secret;
+  const ticks = Object.fromEntries((await (await getSharedDb()).collection('ticks').find().toArray()).map(t => [String(t._id), t])) as Record<string, any>;
   const publishLate = runs.publish ? Date.now() - +new Date(runs.publish.at) > 2 * 3600e3 : true;
 
   const checks: { title: string; detail: string; status: Status; href?: string }[] = [
     { title: 'Studio en database', detail: 'De studio draait en bereikt de database.', status: 'ok' },
     { title: 'Media-opslag', detail: process.env.BLOB_READ_WRITE_TOKEN ? 'Vercel Blob is gekoppeld.' : 'Koppel een Vercel Blob-store aan het studio-project.', status: process.env.BLOB_READ_WRITE_TOKEN ? 'ok' : 'todo' },
     { title: 'Engine in GitHub Actions', detail: runs.publish ? `Publiceren draaide ${ago(runs.publish.at)}.` : 'Nog geen run gezien. De secrets MONGODB_URI en ENGINE_KEY moeten in GitHub staan.', status: runs.publish ? (publishLate ? 'warn' : 'ok') : 'todo' },
+    { title: 'Tijdschema', detail: hasKey('GITHUB_DISPATCH_TOKEN') ? (ticks.publish ? `De studio start de engine elk uur (laatst ${ago(ticks.publish.at)}: ${ticks.publish.note}).` : 'Token staat klaar - de eerste tik komt binnen het uur.') : 'Plak een GitHub-token onder Sleutels, zodat posts ook op tijd gaan als GitHub zijn eigen schema overslaat.',
+      status: hasKey('GITHUB_DISPATCH_TOKEN') ? (ticks.publish && !ticks.publish.ok ? 'warn' : 'ok') : 'todo', href: '#sleutels' },
     { title: 'Weekplanner (Claude)', detail: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'Draait elke vrijdag.' : 'Plak je Claude-token onder Sleutels (op je computer: claude setup-token).', status: hasKey('CLAUDE_CODE_OAUTH_TOKEN') ? 'ok' : 'todo', href: '#sleutels' },
     ...providers.map(id => ({ title: PROVIDERS[id].name, detail: linked(id) ? `Gekoppeld: ${conn[id].account?.name}${id === 'tiktok' ? ' (privé tot TikTok de app goedkeurt)' : ''}` : (cfg[id === 'google' ? 'youtube' : id] ? 'Via GitHub-secrets ingesteld.' : conn[id]?.pending ? 'Kies hieronder de pagina.' : 'Nog niet gekoppeld.'),
       status: (linked(id) ? (conn[id].lastCheck?.ok === false ? 'warn' : 'ok') : cfg[id === 'google' ? 'youtube' : id] ? 'ok' : 'todo') as Status, href: `#${id}` })),

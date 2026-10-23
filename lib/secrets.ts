@@ -11,6 +11,8 @@ export type SecretDef = { name: string; label: string; help: string; scope: 'sha
 export const SECRET_DEFS: SecretDef[] = [
   { name: 'CLAUDE_CODE_OAUTH_TOKEN', label: 'Claude (weekplanner)', scope: 'shared', secret: true, pattern: /^sk-ant-[\w-]{20,}$/,
     help: 'Op je computer: `claude setup-token`, log in met je Claude-account en plak de token hier. Gebruikt je Claude-abonnement.' },
+  { name: 'GITHUB_DISPATCH_TOKEN', label: 'GitHub-token (tijdschema)', scope: 'shared', secret: true, pattern: /^(github_pat_|ghp_)\w{20,}$/,
+    help: 'Laat de studio de engine op tijd starten (GitHub-schema\'s blijven soms uit). GitHub > Settings > Developer settings > Fine-grained tokens: alleen deze repository, Actions: Read and write.' },
   { name: 'ELEVENLABS_API_KEY', label: 'ElevenLabs API key', scope: 'shared', secret: true, optional: true,
     help: 'Stem voor uitleg-reels. elevenlabs.io > Profile > API keys.' },
   { name: 'ELEVENLABS_VOICE_MALE', label: 'ElevenLabs stem (man)', scope: 'shared', secret: false, optional: true, pattern: /^\w{10,40}$/, help: 'Voice ID uit de Voice Library.' },
