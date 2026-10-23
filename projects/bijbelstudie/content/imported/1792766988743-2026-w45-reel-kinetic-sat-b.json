@@ -1,0 +1,25 @@
+{
+  "id": "2026-w45-reel-kinetic-sat-b",
+  "kind": "reel-kinetic",
+  "week": "2026-W45",
+  "slot": "2026-11-07T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "In Berea luisterden ze graag naar Paulus. En daarna zochten ze zelf in de Schriften of het klopte. Elke dag. De Bijbel noemt dat edel.\n\nVragen stellen bij wat je leest hoort erbij. In BijbelStudie zoek je het na met uitleg en context naast elk hoofdstuk. Gratis.",
+  "hashtags": ["#bijbellezen", "#handelingen", "#bijbelstudie", "#bijbel"],
+  "experiment": { "hook": "opluchting", "topic": "praktisch" },
+  "basedOn": "Handelingen 17:10-11 (SV): Paulus en Silas in Berea; 'edeler ... als die het woord ontvingen met alle toegenegenheid, onderzoekende dagelijks de Schriften, of deze dingen alzo waren'.",
+  "style": "photo",
+  "music": "upbeat",
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "hook": "In Berea controleerden ze zelfs Paulus.",
+  "lines": [
+    { "text": "Ze luisterden graag.", "emphasis": "graag" },
+    { "text": "En daarna gingen ze zelf zoeken.", "emphasis": "zelf" },
+    { "text": "Elke dag, in de Schriften.", "emphasis": "Elke", "verse": "Handelingen 17:11" },
+    { "text": "Of het wel klopte.", "emphasis": "klopte" },
+    { "text": "De Bijbel noemt dat: edel.", "emphasis": "edel" },
+    { "text": "Vragen stellen bij wat je leest? Dat mag.", "emphasis": "mag" }
+  ],
+  "endCard": { "headline": "Zoek het zelf na, met uitleg.", "button": "Download gratis" }
+}

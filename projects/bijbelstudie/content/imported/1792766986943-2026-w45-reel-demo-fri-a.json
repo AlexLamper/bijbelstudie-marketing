@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-demo-fri-a",
+  "kind": "reel-demo",
+  "week": "2026-W45",
+  "slot": "2026-11-06T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Geen tijd of zin in een hele studie? Kies in BijbelStudie één hoofdstuk en bestudeer alleen dat: eerst de context, dan lezen, dan uitleg. In dit voorbeeld: Filippenzen 2 in dertien minuten.\n\nDownload BijbelStudie gratis.",
+  "hashtags": ["#bijbelstudie", "#stilletijd", "#bijbellezen", "#bijbel"],
+  "style": "light",
+  "music": "upbeat",
+  "hook": "Waar begin je vandaag? Kies gewoon één hoofdstuk.",
+  "scenes": [
+    { "screenshot": "07-studies", "caption": "Tik op Kies een hoofdstuk." },
+    { "screenshot": "08-les-context", "caption": "Eerst de context." },
+    { "screenshot": "10-les-verdieping", "caption": "Dan uitleg bij wat je las." },
+    { "screenshot": "13-boom-groeide", "caption": "Filippenzen 2: klaar in 13 minuten." }
+  ],
+  "basedOn": "Functie Kies een hoofdstuk (07-studies, product.md); losse studie in stappen: context (08), verdieping (10); 'Filippenzen 2 gelezen in 13 min' (13-boom-groeide).",
+  "experiment": { "hook": "waar-begin-je", "topic": "app" },
+  "endCard": { "headline": "Eén hoofdstuk, goed begrepen.", "button": "Download gratis" }
+}

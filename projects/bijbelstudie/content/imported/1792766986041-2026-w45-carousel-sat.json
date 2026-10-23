@@ -1,0 +1,22 @@
+{
+  "id": "2026-w45-carousel-sat",
+  "kind": "carousel",
+  "week": "2026-W45",
+  "slot": "2026-11-07T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Vijf vragen die je bij elk hoofdstuk kunt stellen. Bewaar ze voor je volgende stille tijd, of stuur ze naar iemand met wie je samen leest.\n\nTip: via je profiel in BijbelStudie geef je een vriend een week Pro cadeau. Download BijbelStudie gratis.",
+  "hashtags": ["#bijbellezen", "#stilletijd", "#bijbelstudie", "#bijbel"],
+  "experiment": { "feedType": "carousel", "hook": "waardebelofte", "topic": "praktisch", "note": "referral in caption" },
+  "basedOn": "Leesvragen uit de app zelf: 'Let op woorden als daarom, want en maar' (09-les-lezen), 'Welke woorden of zinnen komen steeds terug?' en 'Wat wil de schrijver dat zijn lezers gaan doen?' (12-les-toepassing); Psalmen 119:18; referral een week Pro cadeau (15-profiel).",
+  "style": "dark",
+  "slides": [
+    { "type": "cover", "title": "Vastgelopen in een hoofdstuk? Stel deze 5 vragen.", "sub": "Bewaar dit voor je volgende stille tijd." },
+    { "type": "point", "title": "Wie schrijft, en aan wie?", "text": "Een brief aan een gemeente lees je anders dan een lied of een wet." },
+    { "type": "point", "title": "Wat ging eraan vooraf?", "text": "Lees het slot van het vorige hoofdstuk. Vaak loopt het verhaal gewoon door." },
+    { "type": "point", "title": "Welke woorden komen steeds terug?", "text": "Herhaling is zelden toeval. Daar zit vaak de kern." },
+    { "type": "point", "title": "Let op daarom, want en maar.", "text": "Die kleine woorden laten zien hoe de schrijver redeneert." },
+    { "type": "point", "title": "Wat wil de schrijver dat zijn lezers doen?", "text": "Eerst: wat betekende het voor hen? Dan pas: wat betekent het voor jou?" },
+    { "type": "verse", "verse": "Psalmen 119:18", "note": "Welke vraag helpt jou het meest? Zet het nummer in de reacties." }
+  ],
+  "endCard": { "headline": "Lees met uitleg erbij.", "button": "Download gratis" }
+}

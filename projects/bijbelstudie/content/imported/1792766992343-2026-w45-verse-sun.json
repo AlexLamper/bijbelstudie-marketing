@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-verse-sun",
+  "kind": "verse-still",
+  "week": "2026-W45",
+  "slot": "2026-11-08T07:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Twee verzen eerder staat de steen die de bouwlieden verworpen hadden, en die tot hoofd van de hoek werd. Daarna klinkt: dit is de dag. Een zin om je zondag mee te beginnen.\n\nLees Psalm 118 met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#zondag", "#bijbel", "#statenvertaling"],
+  "ref": "Psalmen 118:24",
+  "photo": 77,
+  "basedOn": "Dagelijks vers; exacte SV-tekst uit data/statenvertaling (Psalmen 118:24); context Psalmen 118:22 (de verworpen steen)",
+  "experiment": {}
+}

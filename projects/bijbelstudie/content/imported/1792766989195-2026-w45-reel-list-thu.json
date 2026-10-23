@@ -1,0 +1,24 @@
+{
+  "id": "2026-w45-reel-list-thu",
+  "kind": "reel-list",
+  "week": "2026-W45",
+  "slot": "2026-11-05T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Talitha kumi. Effatha. Abba. Eloi, Eloi, lamma sabachtani. Markus laat Jezus' eigen woorden in het Aramees staan, en vertaalt ze er telkens zelf bij.\n\nWil je zien wat er in de grondtekst staat? Dat kan per woord in BijbelStudie Pro. Lezen en uitleg zijn gratis.",
+  "hashtags": ["#grondtekst", "#markus", "#jezus", "#bijbelstudie"],
+  "experiment": { "feedType": "video-first", "hook": "grondtekst", "topic": "woord" },
+  "basedOn": "Markus 5:41-42, 7:32-34, 14:32-36, 15:34 (SV): Aramese woorden met Markus' eigen vertaling ('hetwelk is, overgezet zijnde').",
+  "style": "photo",
+  "music": "reflective",
+  "voice": "thomas",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "hook": "4 keer dat je Jezus in zijn eigen taal hoort",
+  "items": [
+    { "title": "Talitha kumi", "say": "Talitha kumi: meisje, sta op. Dat zegt Hij tegen een meisje van twaalf.", "verse": "Markus 5:41" },
+    { "title": "Effatha", "say": "Effatha: word geopend. Tegen een man die doof is.", "verse": "Markus 7:34" },
+    { "title": "Abba", "say": "Abba: Vader. Zo bidt Hij in Gethsemane.", "verse": "Markus 14:36" },
+    { "title": "Eloi, Eloi, lamma sabachtani", "say": "En aan het kruis: Eloi, Eloi, lamma sabachtani. Mijn God, mijn God, waarom hebt U mij verlaten?", "verse": "Markus 15:34" }
+  ],
+  "endCard": { "headline": "Lees mee in de grondtekst.", "button": "Download gratis" }
+}

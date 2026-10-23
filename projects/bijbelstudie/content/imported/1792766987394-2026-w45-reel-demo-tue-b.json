@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-demo-tue-b",
+  "kind": "reel-demo",
+  "week": "2026-W45",
+  "slot": "2026-11-03T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Bijbelstudie kan lastig zijn. Wat betekent dit gedeelte? Wat is de context? In BijbelStudie hoef je het niet alleen uit te zoeken: je begint met de context en leest daarna, met een leestip naast de tekst.\n\nDownload BijbelStudie gratis.",
+  "hashtags": ["#bijbelstudie", "#bijbellezen", "#stilletijd", "#bijbel"],
+  "style": "light",
+  "music": "none",
+  "hook": "Bijbelstudie kan lastig zijn.",
+  "scenes": [
+    { "screenshot": "18-onboarding-lastig", "caption": "Wat betekent dit? Wat is de context?" },
+    { "screenshot": "17-onboarding-doel", "caption": "Zeg wat je zoekt. De app stemt zich erop af." },
+    { "screenshot": "08-les-context", "caption": "Eerst de context, dan pas lezen." },
+    { "screenshot": "09-les-lezen", "caption": "Met een leestip naast de tekst." }
+  ],
+  "basedOn": "Eigen onboardingtekst 'Bijbelstudie kan lastig zijn' (18) en doelvraag die de app afstemt (17, product.md); losse studie: stap 1 Bijbelse context (08), stap 2 Lezen met leestip (09).",
+  "experiment": { "hook": "herkenning", "topic": "app" },
+  "endCard": { "headline": "Lees met uitleg erbij.", "button": "Download gratis" }
+}

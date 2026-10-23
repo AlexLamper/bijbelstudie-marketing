@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-quiz-tue",
+  "kind": "reel-quiz",
+  "week": "2026-W45",
+  "slot": "2026-11-03T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Zonder te spieken: hoeveel korven bleven er over toen Jezus vijfduizend mannen te eten gaf? Zet je antwoord in de reacties.\n\nLees Mattheüs 14 met uitleg ernaast in BijbelStudie. Gratis.",
+  "hashtags": ["#bijbelquiz", "#bijbel", "#bijbelstudie", "#mattheus"],
+  "experiment": { "feedType": "video-first", "hook": "vraag", "topic": "thema" },
+  "basedOn": "Mattheüs 14:17-21 (SV): vijf broden en twee vissen, twaalf volle korven over, omtrent 5000 mannen. Afleider 7: de manden bij de 4000 (Mattheüs 15:37).",
+  "style": "light",
+  "music": "cinematic",
+  "voice": "male",
+  "voiceStyle": "levendig",
+  "question": "Vijf broden, twee vissen. Hoeveel korven met brokken bleven er over?",
+  "options": ["3", "5", "7", "12"],
+  "answer": 3,
+  "explain": "Twaalf volle korven. Er bleef meer over dan waarmee ze begonnen.",
+  "verseRef": "Mattheüs 14:20",
+  "endCard": { "headline": "Lees het hele verhaal.", "button": "Download gratis" }
+}

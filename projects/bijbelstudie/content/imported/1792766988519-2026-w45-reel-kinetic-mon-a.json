@@ -1,0 +1,24 @@
+{
+  "id": "2026-w45-reel-kinetic-mon-a",
+  "kind": "reel-kinetic",
+  "week": "2026-W45",
+  "slot": "2026-11-02T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Wil je de Bijbel gaan lezen, maar weet je niet waar je moet beginnen? Begin bij Markus: het kortste evangelie, zestien hoofdstukken. Eén per dag en je hebt in ruim twee weken een heel evangelie gelezen.\n\nLees Markus met uitleg naast elk hoofdstuk in BijbelStudie. Gratis te downloaden.",
+  "hashtags": ["#bijbellezen", "#markus", "#bijbel", "#bijbelstudie"],
+  "experiment": { "hook": "waar-begin-je", "topic": "boek" },
+  "basedOn": "Markus telt 16 hoofdstukken, Mattheüs 28, Lukas 24, Johannes 21 (data/statenvertaling): het kortste evangelie. Brand-hook 'Begin niet bij Genesis. Begin hier.'",
+  "style": "light",
+  "music": "hopeful",
+  "voice": "thomas",
+  "voiceStyle": "levendig",
+  "hook": "Begin niet bij Genesis. Begin bij Markus.",
+  "lines": [
+    { "text": "Het kortste evangelie.", "emphasis": "kortste" },
+    { "text": "Zestien hoofdstukken. Meer niet.", "emphasis": "Zestien" },
+    { "text": "Eén hoofdstuk per dag.", "emphasis": "Eén" },
+    { "text": "In ruim twee weken lees je een heel evangelie.", "emphasis": "heel" },
+    { "text": "Je hoeft niet vooraan te beginnen.", "emphasis": "vooraan" }
+  ],
+  "endCard": { "headline": "Lees Markus met uitleg.", "button": "Download gratis" }
+}

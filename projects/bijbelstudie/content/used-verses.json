@@ -1,6 +1,10 @@
 {
-  "note": "Verses already posted on social. Never reuse one. Add each verse in the same change that publishes it.",
+  "note": "Verses already posted on social. Never reuse one.",
   "verses": [
-    { "ref": "Spreuken 3:5", "channel": "instagram", "date": null }
+    {
+      "ref": "Spreuken 3:5",
+      "channel": "instagram",
+      "date": null
+    }
   ]
 }

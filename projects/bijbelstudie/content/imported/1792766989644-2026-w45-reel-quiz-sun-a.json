@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-quiz-sun-a",
+  "kind": "reel-quiz",
+  "week": "2026-W45",
+  "slot": "2026-11-08T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Makkelijk, of toch niet? Let op: Elkana had twee vrouwen. Zet je antwoord in de reacties.\n\nLees 1 Samuël met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": ["#bijbelquiz", "#samuel", "#bijbel", "#bijbelstudie"],
+  "experiment": { "hook": "vraag", "topic": "persoon" },
+  "basedOn": "1 Samuël 1:1-2 (Elkana had twee vrouwen: Hanna en Peninna), 1:20 (Hanna noemt haar zoon Samuël).",
+  "style": "photo",
+  "music": "none",
+  "voice": "niels",
+  "voiceStyle": "rustig",
+  "question": "Hoe heette de moeder van Samuël?",
+  "options": ["Peninna", "Hanna", "Rachel", "Elisabeth"],
+  "answer": 1,
+  "explain": "Hanna. Ze noemde hem Samuël, want ze had hem van de Heere gebeden.",
+  "verseRef": "1 Samuël 1:20",
+  "endCard": { "headline": "Lees 1 Samuël met uitleg.", "button": "Download gratis" }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "2026-w45-reel-verse-thu-b",
+  "kind": "reel-verse",
+  "week": "2026-W45",
+  "slot": "2026-11-05T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Niet: er komt geen dal. Wel: Gij zijt met mij.\n\nLees Psalm 23 met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": ["#psalm23", "#versvandedag", "#bijbel", "#bijbelstudie"],
+  "ref": "Psalmen 23:4",
+  "photo": 29,
+  "style": "photo",
+  "music": "calm",
+  "voice": "noa",
+  "voiceStyle": "rustig",
+  "basedOn": "Psalmen 23:4 (exacte SV-tekst uit data)",
+  "experiment": { "topic": "vers" },
+  "endCard": { "headline": "Lees Psalm 23 met uitleg.", "button": "Download gratis" }
+}

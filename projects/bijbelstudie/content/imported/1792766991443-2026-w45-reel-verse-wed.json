@@ -1,0 +1,18 @@
+{
+  "id": "2026-w45-reel-verse-wed",
+  "kind": "reel-verse",
+  "week": "2026-W45",
+  "slot": "2026-11-04T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Vandaag is het in veel kerken dankdag voor gewas en arbeid. Vergeet geen van Zijn weldaden. Noem er eens een in de reacties.\n\nLees Psalm 103 met uitleg en context in BijbelStudie. Gratis te downloaden.",
+  "hashtags": ["#dankdag", "#psalmen", "#versvandedag", "#bijbelstudie"],
+  "ref": "Psalmen 103:2",
+  "photo": 356,
+  "style": "photo",
+  "music": "warm",
+  "voice": "niels",
+  "voiceStyle": "levendig",
+  "basedOn": "Psalmen 103:2 (exacte SV-tekst uit data); dankdag voor gewas en arbeid op woensdag 4 november 2026 (eerste woensdag van november)",
+  "experiment": { "feedType": "video-first", "topic": "vers" },
+  "endCard": { "headline": "Lees Psalm 103 met uitleg.", "button": "Download gratis" }
+}

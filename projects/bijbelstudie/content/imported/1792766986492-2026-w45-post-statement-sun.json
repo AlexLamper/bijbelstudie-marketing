@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-post-statement-sun",
+  "kind": "post-statement",
+  "week": "2026-W45",
+  "slot": "2026-11-08T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Je bent niet de enige: 80% van de christelijke jongeren vindt de Bijbel moeilijk (NBG, 2019). Logisch ook. De Bijbel speelt in een andere tijd, taal en cultuur, en de Statenvertaling is bijna vierhonderd jaar oud. Uitleg en context helpen.\n\nIn BijbelStudie staan ze naast elk hoofdstuk. Download gratis.",
+  "hashtags": ["#bijbellezen", "#bijbelstudie", "#stilletijd"],
+  "line": "Elke dag lezen en het toch niet snappen? Dat ligt niet aan jou.",
+  "sub": "Uitleg en context naast elk hoofdstuk - BijbelStudie",
+  "basedOn": "Kernpijn 'Ik lees, maar ik begrijp het niet' (voice-and-rules.md); 80% van christelijke jongeren vindt de Bijbel moeilijk (NBG, 2019, product.md); Statenvertaling uit 1637.",
+  "experiment": { "feedType": "statement", "hook": "pijnpunt", "topic": "thema" }
+}

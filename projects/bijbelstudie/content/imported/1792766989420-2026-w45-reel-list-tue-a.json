@@ -1,0 +1,25 @@
+{
+  "id": "2026-w45-reel-list-tue-a",
+  "kind": "reel-list",
+  "week": "2026-W45",
+  "slot": "2026-11-03T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Twee keer je naam horen. Het gebeurt een paar keer in de Bijbel, telkens op een moment dat ertoe doet. Abraham en Mozes antwoorden allebei: Zie, hier ben ik! Samuël zegt: Spreek, want Uw knecht hoort.\n\nWelke van de vijf raakt jou het meest? Lees de verhalen met uitleg in BijbelStudie. Gratis.",
+  "hashtags": ["#bijbel", "#bijbelstudie", "#bijbellezen", "#geloof"],
+  "experiment": { "hook": "inzicht", "topic": "thema" },
+  "basedOn": "Genesis 22:10-11, Exodus 3:2-4, 1 Samuël 3:1-10, Lukas 10:39-41, Handelingen 9:1-4 (SV).",
+  "style": "dark",
+  "music": "warm",
+  "voice": "female",
+  "voiceStyle": "levendig",
+  "captions": "none",
+  "hook": "5 mensen die twee keer bij hun naam werden geroepen",
+  "items": [
+    { "title": "Abraham, Abraham!", "say": "Abraham, op de berg. Met het mes al in zijn hand.", "verse": "Genesis 22:11" },
+    { "title": "Mozes, Mozes!", "say": "Mozes, bij een braambos dat brandde maar niet verbrandde.", "verse": "Exodus 3:4" },
+    { "title": "Samuël, Samuël!", "say": "Samuël, nog een jongen, 's nachts in de tempel.", "verse": "1 Samuël 3:10" },
+    { "title": "Martha, Martha", "say": "Martha, druk met bedienen, terwijl Maria aan Jezus' voeten zat.", "verse": "Lukas 10:41" },
+    { "title": "Saul, Saul!", "say": "En Saulus, op weg naar Damaskus om volgelingen van Jezus op te pakken.", "verse": "Handelingen 9:4" }
+  ],
+  "endCard": { "headline": "Ontdek wat er echt staat.", "button": "Download gratis" }
+}

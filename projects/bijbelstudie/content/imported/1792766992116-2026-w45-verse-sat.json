@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-verse-sat",
+  "kind": "verse-still",
+  "week": "2026-W45",
+  "slot": "2026-11-07T07:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Een zegen om je weekend mee te beginnen: blijdschap, vrede en hoop die overloopt.\n\nLees Romeinen 15 met uitleg naast de tekst in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#bijbel", "#statenvertaling", "#romeinen"],
+  "ref": "Romeinen 15:13",
+  "photo": 290,
+  "basedOn": "Dagelijks vers; exacte SV-tekst uit data/statenvertaling (Romeinen 15:13)",
+  "experiment": {}
+}

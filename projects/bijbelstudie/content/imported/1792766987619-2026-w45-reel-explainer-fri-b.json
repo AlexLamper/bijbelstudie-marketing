@@ -1,0 +1,26 @@
+{
+  "id": "2026-w45-reel-explainer-fri-b",
+  "kind": "reel-explainer",
+  "week": "2026-W45",
+  "slot": "2026-11-06T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Nicodemus komt drie keer voor in het evangelie van Johannes: 's nachts met een vraag (hoofdstuk 3), tussen de Farizeeën (hoofdstuk 7) en bij de begrafenis van Jezus, met zo'n honderd pond mirre en aloë (hoofdstuk 19).\n\nLees Johannes met uitleg naast elk hoofdstuk in BijbelStudie. Gratis.",
+  "hashtags": ["#nicodemus", "#johannes", "#bijbel", "#bijbelstudie"],
+  "voice": "thomas",
+  "voiceStyle": "levendig",
+  "style": "dark",
+  "music": "calm",
+  "captions": "none",
+  "hook": "Nicodemus komt drie keer voor in Johannes. Let op wat er verandert.",
+  "lines": [
+    { "say": "De eerste keer komt hij 's nachts. Een Farizeeër, een leider van de Joden.", "verse": "Johannes 3:2" },
+    { "say": "De tweede keer neemt hij het op voor Jezus. Hij vraagt of de wet iemand oordeelt zonder hem eerst te horen." },
+    { "say": "De derde keer is na het kruis. Hij brengt zo'n honderd pond mirre en aloë, om Jezus te begraven.", "verse": "Johannes 19:39" },
+    { "say": "En Johannes zet er zelf bij: dit is die van 's nachts." },
+    { "say": "Van een vraag in de nacht naar een daad bij het graf. Stap voor stap." },
+    { "say": "Zulke verbanden zie je sneller met uitleg naast de tekst, in BijbelStudie.", "screenshot": "10-les-verdieping" }
+  ],
+  "basedOn": "Johannes 3:1-2 (des nachts, Farizeeër, overste der Joden), 7:50-51 (neemt het op in de wet-vraag), 19:39 ('die des nachts tot Jezus eerst gekomen was', honderd ponden mirre en aloë).",
+  "experiment": { "hook": "inzicht", "topic": "persoon" },
+  "endCard": { "headline": "Lees Johannes met uitleg.", "button": "Download gratis" }
+}

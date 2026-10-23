@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-post-statement-tue",
+  "kind": "post-statement",
+  "week": "2026-W45",
+  "slot": "2026-11-03T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Filippus stelde deze vraag aan een man op een wagen die de profeet Jesaja zat te lezen. Het antwoord was eerlijk: Hoe zou ik toch kunnen, zo mij niet iemand onderricht?\n\nHerken je dat? In BijbelStudie staan uitleg en context naast elk hoofdstuk. Download gratis.",
+  "hashtags": ["#bijbellezen", "#bijbelstudie", "#handelingen", "#bijbel"],
+  "line": "Verstaat gij ook, hetgeen gij leest?",
+  "sub": "Handelingen 8:30 - Filippus tegen een man die Jesaja las",
+  "basedOn": "Handelingen 8:28-31 (SV): Filippus vraagt 'Verstaat gij ook, hetgeen gij leest?'; antwoord 'Hoe zou ik toch kunnen, zo mij niet iemand onderricht?'",
+  "experiment": { "feedType": "statement", "hook": "herkenning", "topic": "praktisch" }
+}

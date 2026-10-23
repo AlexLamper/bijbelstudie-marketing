@@ -1,0 +1,18 @@
+{
+  "id": "2026-w45-reel-verse-sat-a",
+  "kind": "reel-verse",
+  "week": "2026-W45",
+  "slot": "2026-11-07T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Al je bekommernis. Niet een deel ervan. Omdat Hij voor je zorgt.\n\nLees 1 Petrus 5 met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#bijbel", "#bijbelstudie", "#zorgen"],
+  "ref": "1 Petrus 5:7",
+  "photo": 312,
+  "style": "photo",
+  "music": "hopeful",
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "basedOn": "1 Petrus 5:7 (exacte SV-tekst uit data)",
+  "experiment": { "topic": "vers" },
+  "endCard": { "headline": "Lees 1 Petrus met uitleg.", "button": "Download gratis" }
+}

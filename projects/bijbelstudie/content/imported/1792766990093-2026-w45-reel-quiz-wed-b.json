@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-quiz-wed-b",
+  "kind": "reel-quiz",
+  "week": "2026-W45",
+  "slot": "2026-11-04T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Een hele stadsmuur, herbouwd onder Nehemia. Hoe lang duurde dat volgens jou? Antwoord in de reacties, zonder te googelen.\n\nLees Nehemia met uitleg en context in BijbelStudie. Gratis.",
+  "hashtags": ["#bijbelquiz", "#nehemia", "#bijbel", "#bijbelstudie"],
+  "experiment": { "hook": "verrassing", "topic": "context" },
+  "basedOn": "Nehemia 2:17 (muur van Jeruzalem), 6:15 (volbracht in 52 dagen), 6:16 (de vijanden merkten dat het werk van God was). Afleider 12 jaar: Nehemia's tijd als landvoogd (5:14).",
+  "style": "dark",
+  "music": "upbeat",
+  "voice": "marianne",
+  "voiceStyle": "levendig",
+  "question": "Onder Nehemia werd de muur van Jeruzalem herbouwd. Hoe lang duurde dat?",
+  "options": ["52 dagen", "7 maanden", "3 jaar", "12 jaar"],
+  "answer": 0,
+  "explain": "Tweeënvijftig dagen. Zelfs de vijanden merkten dat God dit werk deed.",
+  "verseRef": "Nehemia 6:15",
+  "endCard": { "headline": "Lees Nehemia met context.", "button": "Download gratis" }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "2026-w45-reel-kinetic-fri",
+  "kind": "reel-kinetic",
+  "week": "2026-W45",
+  "slot": "2026-11-06T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Elia was op. Hij zat onder een jeneverboom en zei: Het is genoeg. Wat God daarna deed, is opvallend: eerst een koek en een fles water. Slapen. Nog een keer eten. Pas daarna de weg verder.\n\nLees 1 Koningen 19 met uitleg naast de tekst in BijbelStudie. Gratis.",
+  "hashtags": ["#elia", "#bijbel", "#bijbelstudie", "#rust"],
+  "experiment": { "feedType": "video-first", "hook": "opluchting", "topic": "thema" },
+  "basedOn": "1 Koningen 19:4-8 (SV): jeneverboom, 'Het is genoeg', een engel, koek op de kolen en fles water, slapen, 'want de weg zou te veel voor u zijn', veertig dagen naar Horeb.",
+  "style": "dark",
+  "music": "reflective",
+  "voice": "marianne",
+  "voiceStyle": "rustig",
+  "hook": "Elia zei: het is genoeg.",
+  "lines": [
+    { "text": "Hij lag onder een jeneverboom. Helemaal op.", "emphasis": "op" },
+    { "text": "God begon niet met een preek.", "emphasis": "preek" },
+    { "text": "Hij begon met brood en water.", "emphasis": "brood", "verse": "1 Koningen 19:6" },
+    { "text": "En met slaap.", "emphasis": "slaap" },
+    { "text": "Want de weg zou te veel voor u zijn.", "emphasis": "veel" },
+    { "text": "Soms begint God met rust.", "emphasis": "rust" }
+  ],
+  "endCard": { "headline": "Lees 1 Koningen 19 met uitleg.", "button": "Download gratis" }
+}

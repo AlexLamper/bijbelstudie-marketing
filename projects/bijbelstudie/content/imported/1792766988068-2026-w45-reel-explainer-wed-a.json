@@ -1,0 +1,27 @@
+{
+  "id": "2026-w45-reel-explainer-wed-a",
+  "kind": "reel-explainer",
+  "week": "2026-W45",
+  "slot": "2026-11-04T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Ijdelheid der ijdelheden. Het klinkt alsof Prediker zegt dat niets zin heeft. Maar het Hebreeuwse woord hevel betekent adem, of damp: iets wat je even ziet en dan weer weg is.\n\nIn BijbelStudie Pro zie je per woord wat er in het Hebreeuws staat. Lezen, studies en uitleg zijn gratis.",
+  "hashtags": ["#prediker", "#grondtekst", "#hebreeuws", "#bijbelstudie"],
+  "voice": "noa",
+  "voiceStyle": "rustig",
+  "style": "photo",
+  "music": "reflective",
+  "captions": "block",
+  "hook": "Prediker zegt het meer dan dertig keer: ijdelheid.",
+  "lines": [
+    { "say": "Ijdelheid der ijdelheden, zo opent het boek.", "verse": "Prediker 1:2" },
+    { "say": "Klinkt somber. Alsof niets ertoe doet." },
+    { "say": "Maar in het Hebreeuws staat er hevel. Dat betekent adem, of damp." },
+    { "say": "Zoals je adem op een koude ochtend. Je ziet hem, en dan is hij weg." },
+    { "say": "Psalm honderdvierenveertig gebruikt hetzelfde woord voor de mens. Zijn dagen gaan voorbij als een schaduw.", "verse": "Psalmen 144:4" },
+    { "say": "Lees Prediker eens met dat beeld in je hoofd." },
+    { "say": "In BijbelStudie zie je per woord wat er in de grondtekst staat.", "screenshot": "04-grondtekst" }
+  ],
+  "basedOn": "Prediker 1:2; 'ijdelheid/ijdelheden' 36 keer in SV-Prediker (data); Hebreeuws hevel/hebel (Strong H1892) = adem, damp; hetzelfde woord in Psalmen 144:4 naast 'voorbijgaande schaduw'. Grondtekst is Pro (product.md).",
+  "experiment": { "hook": "grondtekst", "topic": "woord" },
+  "endCard": { "headline": "Lees de grondtekst mee.", "button": "Download gratis" }
+}

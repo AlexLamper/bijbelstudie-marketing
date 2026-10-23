@@ -1,0 +1,27 @@
+{
+  "id": "2026-w45-reel-story-thu-a",
+  "kind": "reel-story",
+  "week": "2026-W45",
+  "slot": "2026-11-05T12:30:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Abraham was vijfenzeventig toen hij uit Haran vertrok, naar een land dat God hem zou wijzen. Van Ur via Haran naar Kanaän, op de kaart.\n\nIn BijbelStudie volg je zijn verhaal in de studie Het geloof van Abraham: acht lessen van ongeveer een kwartier. Gratis.",
+  "hashtags": ["#abraham", "#genesis", "#bijbel", "#bijbelstudie"],
+  "voice": "niels",
+  "voiceStyle": "rustig",
+  "style": "light",
+  "music": "warm",
+  "captions": "karaoke",
+  "hook": "Abraham was vijfenzeventig. Waar hij heen ging, wist hij niet.",
+  "scenes": [
+    { "say": "Het begint in Ur. Abram, zo heet hij dan nog, trekt met zijn vader naar Haran.", "show": "map", "places": ["ur", "haran"] },
+    { "say": "Dan zegt God dat hij moet gaan, naar een land dat Hij hem wijzen zal.", "show": "verse", "verse": "Genesis 12:1" },
+    { "say": "Op zijn vijfenzeventigste vertrekt hij uit Haran, naar Sichem in Kanaän.", "show": "map", "places": ["haran", "sichem"] },
+    { "say": "Dan Bethel, Egypte, en uiteindelijk Hebron.", "show": "map", "places": ["sichem", "bethel", "egypte", "hebron"] },
+    { "say": "Hebreeën zegt later: hij ging, zonder te weten waar hij uit zou komen.", "show": "verse", "verse": "Hebreeën 11:8" },
+    { "say": "Zijn geloof begon niet met een kaart, maar met een stap.", "show": "photo", "photo": 110 },
+    { "say": "Volg zijn reis in BijbelStudie, in de studie Het geloof van Abraham.", "show": "text", "text": "Studie: Het geloof van Abraham - 8 lessen" }
+  ],
+  "basedOn": "Genesis 11:31 (Ur, Haran), 12:1, 12:4 (75 jaar), 12:6 (Sichem), 12:8 (Bethel), 12:10 (Egypte), 13:18 (Hebron), 17:5 (Abram wordt Abraham); Hebreeën 11:8; studie 'Het geloof van Abraham' (8 lessen, product.md).",
+  "experiment": { "hook": "herkenning", "topic": "persoon" },
+  "endCard": { "headline": "Volg Abraham, les voor les.", "button": "Download gratis" }
+}

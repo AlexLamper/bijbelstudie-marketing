@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-verse-mon",
+  "kind": "verse-still",
+  "week": "2026-W45",
+  "slot": "2026-11-02T07:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Morgen heeft zijn eigen zorgen. Vandaag hoef je alleen vandaag te dragen.\n\nLees Mattheüs 6 met uitleg naast de tekst in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#bijbel", "#statenvertaling", "#mattheus"],
+  "ref": "Mattheüs 6:34",
+  "photo": 7,
+  "basedOn": "Dagelijks vers; exacte SV-tekst uit data/statenvertaling (Mattheüs 6:34)",
+  "experiment": {}
+}

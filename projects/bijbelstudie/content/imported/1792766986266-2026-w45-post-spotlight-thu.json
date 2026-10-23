@@ -1,0 +1,14 @@
+{
+  "id": "2026-w45-post-spotlight-thu",
+  "kind": "post-spotlight",
+  "week": "2026-W45",
+  "slot": "2026-11-05T12:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Een hoofdstuk leest anders als je weet waar het gebeurde. In BijbelStudie zie je bij elk bijbelboek de achtergrond en foto's van de plaatsen, met bronvermelding. Zo krijgt een naam op papier een plek.\n\nDownload BijbelStudie gratis.",
+  "hashtags": ["#bijbelstudie", "#bijbellezen", "#bijbel", "#context"],
+  "screenshot": "05-info",
+  "headline": "Zie waar het gebeurde.",
+  "sub": "Bij elk bijbelboek: achtergrond en foto's van de plaatsen, met bronvermelding.",
+  "basedOn": "Functie Info per bijbelboek: achtergrond met foto's van de plaatsen, met bronvermelding (product.md, 05-info)",
+  "experiment": { "feedType": "spotlight", "hook": "waardebelofte", "topic": "context" }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "2026-w45-reel-explainer-mon",
+  "kind": "reel-explainer",
+  "week": "2026-W45",
+  "slot": "2026-11-02T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Leviticus 16: twee bokken. De ene wordt geofferd. Op de kop van de andere belijdt Aaron alle zonden van het volk, en dan gaat die bok de woestijn in en draagt alles weg.\n\nVastgelopen in Leviticus? Lees het met uitleg naast elk hoofdstuk in BijbelStudie. Download gratis.",
+  "hashtags": ["#leviticus", "#bijbel", "#bijbelstudie", "#oudetestament"],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "style": "light",
+  "music": "none",
+  "captions": "karaoke",
+  "hook": "Waarom moest er een bok de woestijn in?",
+  "lines": [
+    { "say": "Leviticus zestien. Eén keer per jaar, op de Verzoendag, neemt Aaron twee bokken." },
+    { "say": "Het lot beslist. De ene bok wordt geofferd." },
+    { "say": "Op de kop van de andere legt Aaron allebei zijn handen. En hij belijdt alle zonden van het volk." },
+    { "say": "Dan gaat die bok de woestijn in. Hij draagt alles weg, staat er.", "verse": "Leviticus 16:22" },
+    { "say": "Schuld wordt hier niet weggepoetst. Ze wordt weggedragen." },
+    { "say": "Leviticus lees je anders als je de context kent. In BijbelStudie staat de uitleg naast elk hoofdstuk.", "screenshot": "03-commentaar" }
+  ],
+  "basedOn": "Leviticus 16:5-10 (twee bokken, het lot), 16:21-22 (handen opleggen, zonden belijden, wegdragen), 16:34 (eenmaal des jaars), 23:27 (verzoendag). Brand-hook 'Waarom moest er een bok de woestijn in?'",
+  "experiment": { "feedType": "video-first", "hook": "vraag", "topic": "context" },
+  "endCard": { "headline": "Lees Leviticus met uitleg.", "button": "Download gratis" }
+}

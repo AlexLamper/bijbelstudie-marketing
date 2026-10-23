@@ -1,0 +1,25 @@
+{
+  "id": "2026-w45-reel-list-sun-b",
+  "kind": "reel-list",
+  "week": "2026-W45",
+  "slot": "2026-11-08T17:00:00+01:00",
+  "platforms": ["tiktok", "youtube"],
+  "caption": "Vijf bijbelboeken van maar één hoofdstuk: Obadja, Filemon, 2 Johannes, 3 Johannes en Judas. Een heel bijbelboek uitlezen kan dus vanavond nog.\n\nWelke lees jij als eerste? In BijbelStudie lees je ze met uitleg naast de tekst. Gratis.",
+  "hashtags": ["#bijbellezen", "#bijbel", "#bijbelstudie", "#stilletijd"],
+  "experiment": { "hook": "waar-begin-je", "topic": "boek" },
+  "basedOn": "Obadja, Filemon, 2 Johannes, 3 Johannes en Judas hebben elk 1 hoofdstuk (data/statenvertaling); Obadja 1:1-4, Filémon 1:12-16, 2 Johannes 1:1 en 1:12 (liever mond tot mond), 3 Johannes 1:1 en 1:13-14 (idem), Judas 1:1 (broeder van Jakobus).",
+  "style": "light",
+  "music": "calm",
+  "voice": "noa",
+  "voiceStyle": "levendig",
+  "captions": "block",
+  "hook": "Nog nooit een heel bijbelboek gelezen? Begin hier.",
+  "items": [
+    { "title": "Obadja", "text": "Het kortste boek van het Oude Testament", "say": "Obadja. Het kortste boek van het Oude Testament, over de trots van Edom.", "verse": "Obadja 1:4" },
+    { "title": "Filemon", "text": "Een brief van Paulus", "say": "Filemon. Paulus stuurt Onesimus terug, niet als dienstknecht, maar als broeder.", "verse": "Filémon 1:16" },
+    { "title": "2 Johannes", "text": "Aan de uitverkoren vrouw", "say": "De tweede brief van Johannes. Hij stopt met schrijven: liever mond tot mond.", "verse": "2 Johannes 1:12" },
+    { "title": "3 Johannes", "text": "Aan Gajus", "say": "De derde, aan Gajus. Die eindigt bijna net zo.", "verse": "3 Johannes 1:13" },
+    { "title": "Judas", "text": "Broer van Jakobus", "say": "En Judas. Niet de verrader, maar een broer van Jakobus.", "verse": "Judas 1:1" }
+  ],
+  "endCard": { "headline": "Lees een heel boek met uitleg.", "button": "Download gratis" }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "2026-w45-reel-demo-sat",
+  "kind": "reel-demo",
+  "week": "2026-W45",
+  "slot": "2026-11-07T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Een hoofdstuk lezen lukt meestal wel. Begrijpen is iets anders. In BijbelStudie tik je op Studie: uitleg per vers, achtergrond bij het bijbelboek, en een vraag stellen over het hoofdstuk dat openstaat.\n\nGratis: lezen, alle studies, KingComments en 3 vragen per dag. Download BijbelStudie.",
+  "hashtags": ["#bijbelstudie", "#bijbellezen", "#bijbel", "#deuteronomium"],
+  "style": "dark",
+  "music": "cinematic",
+  "hook": "Je las Deuteronomium 2. Maar wat stond er nou?",
+  "scenes": [
+    { "screenshot": "02-bijbel", "caption": "Lezen lukt wel." },
+    { "screenshot": "03-commentaar", "caption": "Tik op Studie: uitleg per vers." },
+    { "screenshot": "05-info", "caption": "Zie waar het zich afspeelt." },
+    { "screenshot": "06-assistent", "caption": "Nog een vraag? Stel hem over dit hoofdstuk." }
+  ],
+  "basedOn": "Kernpijn 'ik lees, maar begrijp het niet'; tab Studie: commentaar (03), info per bijbelboek (05), assistent (06); gratis versie met 3 vragen per dag (product.md).",
+  "experiment": { "feedType": "video-first", "hook": "pijnpunt", "topic": "app" },
+  "endCard": { "headline": "Begrijp wat je leest.", "button": "Download gratis" }
+}

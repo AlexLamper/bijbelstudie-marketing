@@ -1,0 +1,13 @@
+{
+  "id": "2026-w45-verse-fri",
+  "kind": "verse-still",
+  "week": "2026-W45",
+  "slot": "2026-11-06T07:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Voor iedereen die deze week moe is geworden van het goede doen: te zijner tijd zul je maaien.\n\nLees Galaten 6 met uitleg naast de tekst in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#bijbel", "#statenvertaling", "#galaten"],
+  "ref": "Galaten 6:9",
+  "photo": 341,
+  "basedOn": "Dagelijks vers; exacte SV-tekst uit data/statenvertaling (Galaten 6:9)",
+  "experiment": {}
+}
