@@ -6,6 +6,7 @@ import { sessionValue } from '@/lib/session';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname === '/login' || pathname === '/api/login') return NextResponse.next();
+  if (pathname.startsWith('/api/engine/')) return NextResponse.next(); // own auth: x-engine-key
   const pw = process.env.STUDIO_PASSWORD;
   if (!pw) return new NextResponse('Set STUDIO_PASSWORD to open the studio.', { status: 500 });
   if (req.cookies.get('studio')?.value === (await sessionValue(pw))) return NextResponse.next();

@@ -1,6 +1,7 @@
 // Before the planner runs: write everything it should know into content/context/ -
 // last weeks' results per item, Alex's review comments, competitor patterns, comments
 // waiting for a reply, items marked "changes", and the used-verse ledger.
+import '../env.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../paths.mjs';

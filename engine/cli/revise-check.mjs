@@ -1,6 +1,7 @@
 // Runs inside the Publish workflow (every 30 min). If Alex pressed "Aanpassingen naar Claude"
 // in the studio, the studio set a flag in Mongo; this script clears it and tells the workflow to
 // start the Revise workflow. That way the studio needs no GitHub token.
+import '../env.mjs';
 import { appendFileSync } from 'node:fs';
 import { db, close, STATUS } from '../db.mjs';
 

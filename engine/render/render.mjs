@@ -1,5 +1,6 @@
 // spec -> media. Images (1080x1350 JPEG) for posts, MP4 (1080x1920, H.264 + AAC) for reels.
 // Runs headless Chromium frame by frame, then ffmpeg. Used locally and in GitHub Actions.
+import '../env.mjs';
 import { createRequire } from 'node:module';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

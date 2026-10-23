@@ -32,7 +32,8 @@ jobs:
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund
       - name: Export context
-        run: node engine/cli/export-context.mjs
+        shell: bash
+        run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
       - name: Today
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
       - name: Claude revises the items
@@ -45,9 +46,11 @@ jobs:
             --model claude-sonnet-5-5 --max-turns 60
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
       - name: Validate (gate)
-        run: node engine/cli/validate.mjs
+        shell: bash
+        run: node engine/cli/validate.mjs 2>&1 | tee -a run.log
       - name: Import into the studio
-        run: node engine/cli/import-queue.mjs
+        shell: bash
+        run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         run: |
           git config user.name "BijbelStudie engine"; git config user.email "studio@bijbelstudie.io"
@@ -55,4 +58,12 @@ jobs:
           git diff --cached --quiet || (git commit -m "revise: $(date -u +%F)" && git push)
       - run: npx playwright install --with-deps chromium
       - name: Render and notify
-        run: node engine/cli/render-pending.mjs
+        shell: bash
+        run: node engine/cli/render-pending.mjs 2>&1 | tee -a run.log
+      - name: Report failure
+        if: failure()
+        shell: bash
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
+          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md

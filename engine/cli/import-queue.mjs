@@ -4,6 +4,7 @@
 //   replies.json  drafted comment replies -> comments
 // Invalid specs are not imported; their errors go to content/queue/_errors.json so the
 // planner's next run (or a revise run) can fix them.
+import '../env.mjs';
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT } from '../paths.mjs';

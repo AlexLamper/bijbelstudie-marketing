@@ -1,6 +1,7 @@
 // Runs every 15 minutes: publishes APPROVED items whose slot has passed, platform by platform.
 // Only approved items are ever touched. A platform that fails is retried next run (max 3x);
 // platforms that succeeded are never posted twice.
+import '../env.mjs';
 import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

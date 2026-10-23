@@ -32,9 +32,18 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund --omit=dev
-      - run: node engine/cli/publish-due.mjs
+      - shell: bash
+        run: node engine/cli/publish-due.mjs 2>&1 | tee -a run.log
       - id: revise
-        run: node engine/cli/revise-check.mjs
+        shell: bash
+        run: node engine/cli/revise-check.mjs 2>&1 | tee -a run.log
       - if: steps.revise.outputs.revise == 'true'
         run: gh workflow run revise.yml --repo ${{ github.repository }}
         env: { GH_TOKEN: '${{ github.token }}' }
+      - name: Report failure
+        if: failure()
+        shell: bash
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          { echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"; echo; echo '```'; tail -n 60 run.log 2>/dev/null || echo "no log"; echo '```'; } > fail.md
+          gh issue create --repo ${{ github.repository }} --title "${{ github.workflow }} faalde ($(date -u +%F))" --label studio --body-file fail.md

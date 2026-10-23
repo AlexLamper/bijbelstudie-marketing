@@ -3,6 +3,7 @@ node_modules/
 out/
 .env*
 !.env.example
+!.env.engine
 next-env.d.ts
 *.tsbuildinfo
 content/context/

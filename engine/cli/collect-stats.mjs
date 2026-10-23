@@ -1,5 +1,6 @@
 // Daily: per-item metrics (Instagram, YouTube), account numbers, new BijbelStudie signups,
 // new comments to draft replies for, and (weekly) competitor snapshots.
+import '../env.mjs';
 import { db, close, STATUS } from '../db.mjs';
 import { metaConfigured, instagramInsights, instagramAccount, instagramComments, businessDiscovery } from '../publish/meta.mjs';
 import { youtubeConfigured, youtubeStats } from '../publish/youtube.mjs';
