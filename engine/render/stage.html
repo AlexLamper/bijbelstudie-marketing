@@ -214,11 +214,13 @@ const T = {};
 <script src="templates/base.js"></script>
 <script src="templates/formats.js"></script>
 <script src="templates/story.js"></script>
+<script type="importmap">{ "imports": { "three": "../../node_modules/three/build/three.module.js", "three/addons/": "../../node_modules/three/examples/jsm/" } }</script>
+<script type="module" src="templates/scene3d.js"></script>
 <script>
 /* ---------- entry ---------- */
 let current;
 /** The spoken units of a voiced spec (render.mjs voices them), or null for a silent reel. */
-window.units = spec => { const t = T[spec.kind]; return t?.units && hasVoice(spec) ? t.units(spec) : null; };
+window.units = spec => { const t = T[spec.kind]; return t?.units && (hasVoice(spec) || t.voiced?.(spec)) ? t.units(spec) : null; };
 window.setup = async (spec, timing, context) => {
   const t = T[spec.kind]; if (!t) throw new Error('No template for ' + spec.kind);
   if (context) {
@@ -233,10 +235,11 @@ window.setup = async (spec, timing, context) => {
   }
   current = t(spec, timing);
   css(stage, { width: current.width + 'px', height: current.height + 'px' });
+  if (current.ready) await current.ready;
   await document.fonts.ready;
   await Promise.all([...document.images].map(i => i.decode().catch(() => { throw new Error('Image failed: ' + i.src); })));
   current.render(current.duration ? current.duration - .05 : 0);
-  return { width: current.width, height: current.height, duration: current.duration, starts: current.starts || null, slides: current.slides || 0 };
+  return { width: current.width, height: current.height, duration: current.duration, starts: current.starts || null, slides: current.slides || 0, fps: current.fps || null };
 };
 /** Carousels: show slide i (0-based) for the screenshot. */
 window.slide = i => current.showSlide(i);

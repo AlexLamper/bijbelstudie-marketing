@@ -1,0 +1,43 @@
+{
+  "id": "w45-reel-3d-skit",
+  "kind": "reel-3d",
+  "week": "2026-W45",
+  "slot": "2026-11-04T12:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Herkenbaar? Je leest een vers en denkt: wat betekent dit eigenlijk? In BijbelStudie staat de uitleg naast elk hoofdstuk, vers voor vers.",
+  "hashtags": ["#bijbellezen", "#bijbelstudie", "#romeinen", "#christelijk"],
+  "music": "warm",
+  "captions": "karaoke",
+  "hook": "Lees jij ook weleens iets wat je niet snapt?",
+  "basedOn": "Kernpijn 'ik lees, maar begrijp het niet' (voice-and-rules.md); Romeinen 12:1 (SV) 'uw redelijke godsdienst'; functie uitleg naast elk hoofdstuk (tab Studie, KingComments gratis, screenshot 03-commentaar).",
+  "subject": "Redelijke godsdienst (Romeinen 12)",
+  "experiment": { "hook": "herkenning", "topic": "app" },
+  "endCard": { "headline": "Begrijp wat je leest.", "button": "Download gratis" },
+  "cast": [
+    { "id": "sanne", "look": "vrouw-modern", "name": "Sanne", "voice": "female" },
+    { "id": "daan", "look": "man-modern", "name": "Daan", "voice": "male" }
+  ],
+  "shots": [
+    { "set": "slaapkamer", "time": "nacht", "camera": "push-in", "on": "sanne", "verse": "Romeinen 12:1",
+      "actors": [{ "id": "sanne", "at": "bed", "do": "read", "mood": "verward" }],
+      "by": "sanne", "line": "Uw redelijke godsdienst... Wat betekent dat eigenlijk?" },
+    { "set": "slaapkamer", "time": "nacht", "camera": "wide",
+      "actors": [{ "id": "sanne", "at": "bed", "do": "read", "mood": "verward" }, { "id": "daan", "at": "deur", "to": "midden", "face": "sanne" }],
+      "by": "daan", "line": "Wat zit jij te mompelen?" },
+    { "set": "slaapkamer", "time": "nacht", "camera": "over-shoulder", "on": "sanne",
+      "actors": [{ "id": "sanne", "at": "bed", "mood": "verdrietig" }, { "id": "daan", "at": "midden", "face": "sanne" }],
+      "by": "sanne", "line": "Romeinen twaalf. Ik lees het wel, maar ik snap het niet." },
+    { "set": "slaapkamer", "time": "nacht", "camera": "medium", "on": "daan",
+      "actors": [{ "id": "sanne", "at": "bed", "mood": "nadenkend" }, { "id": "daan", "at": "midden", "do": "phone", "mood": "blij" }],
+      "by": "daan", "line": "Wacht, ik laat je iets zien.", "screen": "03-commentaar" },
+    { "set": "slaapkamer", "time": "nacht", "camera": "two-shot",
+      "actors": [{ "id": "sanne", "at": "bed", "mood": "verrast", "face": "daan" }, { "id": "daan", "at": "midden", "do": "show-phone", "face": "sanne", "mood": "blij" }],
+      "by": "daan", "line": "Naast elk hoofdstuk staat uitleg. Vers voor vers.", "app": "03-commentaar" },
+    { "set": "slaapkamer", "time": "nacht", "camera": "close", "on": "sanne",
+      "actors": [{ "id": "sanne", "at": "bed", "mood": "blij" }, { "id": "daan", "at": "midden", "face": "sanne" }],
+      "by": "sanne", "line": "Oh, zo snap ik het wel!" },
+    { "set": "slaapkamer", "time": "nacht", "camera": "two-shot",
+      "actors": [{ "id": "sanne", "at": "bed", "mood": "blij" }, { "id": "daan", "at": "midden", "mood": "blij", "face": "camera" }],
+      "by": "daan", "line": "Niet alleen lezen, maar ook begrijpen." }
+  ]
+}

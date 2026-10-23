@@ -16,6 +16,10 @@ export const PHOTO_COUNT = list(PHOTO_DIR, '.jpg').length;
 const PLACES_FILE = join(dirname(fileURLToPath(import.meta.url)), 'render', 'data', 'places.json');
 export const PLACES = existsSync(PLACES_FILE) ? Object.keys(JSON.parse(readFileSync(PLACES_FILE, 'utf8')).places) : [];
 
+// What a 3D reel can use (looks, sets + spots, cameras, actions): engine/render/3d/catalog.json
+const CATALOG_FILE = join(dirname(fileURLToPath(import.meta.url)), 'render', '3d', 'catalog.json');
+export const CATALOG3D = existsSync(CATALOG_FILE) ? JSON.parse(readFileSync(CATALOG_FILE, 'utf8')) : { looks: {}, sets: {}, cameras: {}, actions: {}, bases: [], moods: [] };
+
 const ref = z.string().regex(/^.+\s\d+:\d+(-\d+)?$/, 'Bible reference like "Johannes 3:16"');
 const screenshot = z.string().refine(s => SCREENSHOTS.includes(s), s => ({ message: SCREENSHOTS.length
   ? `Unknown screenshot "${s}". Use one of: ${SCREENSHOTS.join(', ')}` : `${P.name} has no screenshots yet (projects/${P.id}/assets/screenshots/)` }));
@@ -161,6 +165,69 @@ export const ReelStory = z.object({
   })).min(3).max(8),
 });
 
+// 3D animated reel: characters acting in 3D sets, shot by shot (engine/render/templates/scene3d.js).
+// Every shot is one spoken line - the narrator ("say", voice = spec.voice) or a character ("by" + "line",
+// voice = that cast member's voice) - or a silent "hold" of 1-4 s. Dialog: every speaker a different voice.
+const keys = o => Object.keys(o || {});
+const enumOf = (list, what) => z.string().refine(v => list.includes(v), v => ({ message: `Unknown ${what} "${v}". Use one of: ${list.join(', ')}` }));
+const actor3d = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/),
+  at: z.string(),                                         // a spot of the shot's set (catalog.json)
+  to: z.string().optional(),                              // walks there during the shot
+  do: enumOf(keys(CATALOG3D.actions), 'action').optional(),
+  base: enumOf(CATALOG3D.bases, 'base').optional(),       // stand / sit / kneel / lie (default: the spot's)
+  face: z.string().optional(),                            // an actor id, a spot, or "camera"
+  mood: enumOf(CATALOG3D.moods, 'mood').optional(),
+});
+const shot3d = z.object({
+  set: enumOf(keys(CATALOG3D.sets), 'set'),
+  time: z.enum(['dag', 'avond', 'nacht']).optional(),
+  weather: z.enum(['helder', 'storm']).optional(),
+  camera: enumOf(keys(CATALOG3D.cameras), 'camera').optional(),
+  on: z.string().optional(),                              // actor the camera frames (default: the speaker)
+  actors: z.array(actor3d).max(4).default([]),
+  say: said(4, 220).optional(),                           // narrator
+  by: z.string().optional(), line: said(2, 200).optional(),   // a character speaks
+  hold: z.number().min(1).max(4).optional(),              // silent shot
+  text: z.string().max(60).optional(),                    // small label: place / time ("Joppe, ca. 760 v.Chr.")
+  verse: ref.optional(),                                  // verse card (exact SV text)
+  app: screenshot.optional(),                             // the app on a phone, full size over the scene
+  screen: screenshot.optional(),                          // what the phone in someone's hand shows
+  places: z.array(place).min(2).max(7).optional(),        // set "kaart": the route in travel order
+}).superRefine((s, c) => {
+  const n = [s.say, s.line, s.hold].filter(x => x != null).length;
+  if (n !== 1) c.addIssue({ code: 'custom', message: 'a shot has exactly one of: say (narrator), line + by (a character), hold (silent seconds)' });
+  if (s.line && !s.by) c.addIssue({ code: 'custom', message: 'line needs by (the actor id who speaks)', path: ['by'] });
+  if (s.by && !s.line) c.addIssue({ code: 'custom', message: 'by goes with line', path: ['line'] });
+  const set = CATALOG3D.sets[s.set]; if (!set) return;
+  if (s.time && set.time && !set.time.includes(s.time)) c.addIssue({ code: 'custom', message: `set ${s.set} has time ${set.time.join('/')}`, path: ['time'] });
+  if (s.weather && !set.weather?.includes(s.weather)) c.addIssue({ code: 'custom', message: `set ${s.set} has no weather (only zee: helder/storm)`, path: ['weather'] });
+  if (s.set === 'kaart' && !s.places) c.addIssue({ code: 'custom', message: 'set kaart needs places (2-7, in travel order)', path: ['places'] });
+  s.actors.forEach((a, i) => {
+    for (const k of ['at', 'to']) if (a[k] && !keys(set.spots).includes(a[k])) c.addIssue({ code: 'custom', message: `spot "${a[k]}" is not in set ${s.set}. Spots: ${keys(set.spots).join(', ') || '(none - no actors in this set)'}`, path: ['actors', i, k] });
+  });
+  if (s.by && !s.actors.some(a => a.id === s.by)) c.addIssue({ code: 'custom', message: `the speaker "${s.by}" must be one of this shot's actors`, path: ['by'] });
+  if (s.on && !s.actors.some(a => a.id === s.on)) c.addIssue({ code: 'custom', message: `on "${s.on}" must be one of this shot's actors`, path: ['on'] });
+  if (s.camera === 'phone' && !s.actors.some(a => (a.do === 'phone' || a.do === 'show-phone') && (!s.on || a.id === s.on))) c.addIssue({ code: 'custom', message: 'camera phone needs an actor doing phone or show-phone', path: ['camera'] });
+});
+export const ReelScene = z.object({
+  ...base, ...reel, kind: z.literal('reel-3d'),
+  voice: voice.optional(),                                // narrator (needed when a shot has "say")
+  hook: shortLine,                                        // big title over the first shot
+  cast: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]+$/), look: enumOf(keys(CATALOG3D.looks), 'look'), name: z.string().max(30).optional(), voice: voice.optional() })).max(4).default([]),
+  shots: z.array(shot3d).min(3).max(14),
+}).superRefine((s, c) => {
+  const ids = s.cast.map(x => x.id);
+  if (new Set(ids).size !== ids.length) c.addIssue({ code: 'custom', message: 'cast ids must be unique', path: ['cast'] });
+  s.shots.forEach((sh, i) => sh.actors.forEach((a, j) => { if (!ids.includes(a.id)) c.addIssue({ code: 'custom', message: `actor "${a.id}" is not in cast`, path: ['shots', i, 'actors', j, 'id'] }); }));
+  if (s.shots.some(sh => sh.say) && (!s.voice || s.voice === 'none')) c.addIssue({ code: 'custom', message: 'shots with "say" need a narrator voice (voice)', path: ['voice'] });
+  const speakers = [...new Set(s.shots.map(sh => sh.by).filter(Boolean))];
+  for (const id of speakers) { const m = s.cast.find(x => x.id === id); if (m && !m.voice) c.addIssue({ code: 'custom', message: `cast member "${id}" speaks, so give them a voice`, path: ['cast'] }); }
+  const vs = [...speakers.map(id => s.cast.find(x => x.id === id)?.voice).filter(Boolean), ...(s.shots.some(sh => sh.say) && s.voice ? [s.voice] : [])];
+  if (new Set(vs).size !== vs.length) c.addIssue({ code: 'custom', message: 'every speaker (and the narrator) needs a different voice - one voice per person, never two people with one voice', path: ['cast'] });
+  if (Math.abs(s.shots.reduce((n, sh) => n + (sh.say || sh.line || '').length, 0)) > 1100) c.addIssue({ code: 'custom', message: 'too much text for one reel - keep all lines together under 1100 characters (about 60 s)', path: ['shots'] });
+});
+
 export const PostSpotlight = z.object({
   ...base, kind: z.literal('post-spotlight'),
   screenshot, headline: shortLine, sub: z.string().max(120),
@@ -187,9 +254,9 @@ export const Carousel = z.object({
 }).refine(s => s.slides[0].type === 'cover', { message: 'the first slide must be type "cover" (the hook)', path: ['slides', 0] })
   .refine(s => s.platforms.every(p => p === 'instagram' || p === 'facebook'), { message: 'carousels go to instagram and facebook only', path: ['platforms'] });
 
-export const Spec = z.union([VerseStill, ReelVerse, ReelDemo, ReelExplainer, ReelKinetic, ReelQuiz, ReelList, ReelStory, PostSpotlight, PostStatement, Carousel]);
+export const Spec = z.union([VerseStill, ReelVerse, ReelDemo, ReelExplainer, ReelKinetic, ReelQuiz, ReelList, ReelStory, ReelScene, PostSpotlight, PostStatement, Carousel]);
 const SCHEMAS = { 'verse-still': VerseStill, 'reel-verse': ReelVerse, 'reel-demo': ReelDemo, 'reel-explainer': ReelExplainer, 'reel-kinetic': ReelKinetic,
-  'reel-quiz': ReelQuiz, 'reel-list': ReelList, 'reel-story': ReelStory, 'post-spotlight': PostSpotlight, 'post-statement': PostStatement, carousel: Carousel };
+  'reel-quiz': ReelQuiz, 'reel-list': ReelList, 'reel-story': ReelStory, 'reel-3d': ReelScene, 'post-spotlight': PostSpotlight, 'post-statement': PostStatement, carousel: Carousel };
 export const KINDS = Object.keys(SCHEMAS);
 export const REEL_KINDS = KINDS.filter(k => k.startsWith('reel-'));
 export const isVideo = kind => kind.startsWith('reel-');
@@ -197,7 +264,7 @@ export const VOICE_REQUIRED = ['reel-explainer', 'reel-story'];
 /** Kinds that have a template (engine/render/templates/*.js register T['kind']). */
 const TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'render', 'templates');
 export const RENDERABLE = existsSync(TEMPLATES_DIR) ? [...new Set(readdirSync(TEMPLATES_DIR).filter(f => f.endsWith('.js'))
-  .flatMap(f => [...readFileSync(join(TEMPLATES_DIR, f), 'utf8').matchAll(/T\['([a-z-]+)'\]\s*=[^=]/g)].map(m => m[1])))] : KINDS;
+  .flatMap(f => [...readFileSync(join(TEMPLATES_DIR, f), 'utf8').matchAll(/T\['([a-z0-9-]+)'\]\s*=[^=]/g)].map(m => m[1])))] : KINDS;
 
 /** Validate + enrich: fills exact verse text so templates and reviewers see the real words. */
 export async function prepare(raw) {
@@ -213,5 +280,6 @@ export async function prepare(raw) {
   for (const l of spec.items || []) if (l.verse) l.verseData = getVerse(l.verse);
   for (const l of spec.scenes || []) if (l.verse) l.verseData = getVerse(l.verse);
   for (const l of spec.slides || []) if (l.verse) l.verseData = getVerse(l.verse);
+  for (const l of spec.shots || []) if (l.verse) l.verseData = getVerse(l.verse);
   return spec;
 }

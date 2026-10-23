@@ -95,15 +95,29 @@ function takesOf(texts, max) {
   return takes;
 }
 
+// Dialog (reel-3d): a unit may name its own voice. Every voice is still one take: all lines of one
+// speaker are voiced together and cut apart, so a character never changes voice between lines.
 export async function voiceClips(spec, units, work, say = synthesize) {   // say: injectable for tests
   if (!units?.length) return null;
   if (!ttsConfigured()) return { timing: null, clips: [], note: 'Nog geen stem ingesteld - gemaakt zonder stem (Instellingen > Sleutels/Stemmen, daarna Opnieuw renderen)' };
+  const byVoice = new Map();
+  units.forEach((u, i) => { const v = u.voice || spec.voice; if (!v || v === 'none') throw new Error(`Voice: line ${i + 1} has no voice`); if (!byVoice.has(v)) byVoice.set(v, []); byVoice.get(v).push(i); });
+  const all = new Array(units.length);
+  for (const [v, idx] of byVoice) {
+    const part = await voiceOne({ ...spec, voice: v, id: byVoice.size > 1 ? `${spec.id}-${v}` : spec.id }, idx.map(i => units[i]), work, say, all.filter(Boolean).length);
+    part.forEach((c, j) => { all[idx[j]] = c; });
+  }
+  return { timing: all.map(c => ({ dur: c.dur, words: c.words })), clips: all };
+}
+
+/** One voice: its units in as few takes as possible (one, unless very long), cut into clips. */
+async function voiceOne(spec, units, work, say, offset) {
   const texts = units.map(u => u.text.trim());
   const max = spec.voiceStyle === 'levendig' ? MAX_CHARS.eleven_v3 : 9000;
   const seed = seedOf(spec.id); const clips = [];
   for (const [n, take] of takesOf(texts, max).entries()) {
     const part = take.map(i => texts[i]);
-    const full = join(work, `take${n}.mp3`);
+    const full = join(work, `take${offset}-${n}.mp3`);
     const said = await say(part.join(SEP), spec.voice, { style: spec.voiceStyle, seed,
       previous: texts.slice(0, take[0]).join(' ').slice(-400) || undefined, next: texts.slice(take.at(-1) + 1).join(' ').slice(0, 400) || undefined });
     writeFileSync(full, said.audio);
@@ -114,18 +128,18 @@ export async function voiceClips(spec, units, work, say = synthesize) {   // say
       aligned.forEach((u, j) => {
         const lo = j ? (aligned[j - 1].b + u.a) / 2 : 0, hi = j < aligned.length - 1 ? (u.b + aligned[j + 1].a) / 2 : total;
         const from = Math.max(lo, u.a - 0.08), to = Math.min(hi, u.b + 0.25);
-        const f = cut(full, from, to, join(work, `v${clips.length}.wav`));
+        const f = cut(full, from, to, join(work, `v${offset + clips.length}.wav`));
         clips.push({ f, dur: probe(f), words: u.words.map(w => ({ w: w.w, a: w.a - from, b: w.b - from })) });
       });
     } else {
       const inner = part.length === 1 ? [] : cutsFromSilence(full, part.length);
       if (!inner) throw new Error(`Voice: could not split the take into its ${part.length} lines - render again`);
       const cuts = [0, ...inner, total];
-      for (let j = 0; j < part.length; j++) { const f = cut(full, cuts[j], j === part.length - 1 ? null : cuts[j + 1], join(work, `v${clips.length}.wav`)); clips.push({ f, dur: probe(f), words: null }); }
+      for (let j = 0; j < part.length; j++) { const f = cut(full, cuts[j], j === part.length - 1 ? null : cuts[j + 1], join(work, `v${offset + clips.length}.wav`)); clips.push({ f, dur: probe(f), words: null }); }
     }
   }
   if (clips.length !== units.length || clips.some(c => !(c.dur > 0.1))) throw new Error('Voice: a line came out empty - render again');
-  return { timing: clips.map(c => ({ dur: c.dur, words: c.words })), clips };
+  return clips;
 }
 
 /** Voice clips at their starts + music bed (ducked under the voice), loudness-normalised for social. */
@@ -156,13 +170,15 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
   const spec = await prepare(raw);
   const dir = join(outDir, spec.id); mkdirSync(dir, { recursive: true });
   const work = mkdtempSync(join(process.env.TMPDIR || tmpdir(), `r-${spec.id}-`));
-  const browser = shared || await pw.chromium.launch();
+  const browser = shared || await launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+    const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
     await page.goto(STAGE);
     const units = isVideo(spec.kind) ? await page.evaluate(s => window.units(s), spec) : null;
     const voice = await voiceClips(spec, units, work);
-    const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()]);
+    const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()])
+      .catch(e => { throw new Error(e.message.split('\n')[0] + (errs.length ? ' | page: ' + errs.join(' | ') : '')); });
     await page.setViewportSize({ width: info.width, height: info.height });
     const result = { id: spec.id, kind: spec.kind, files: {}, duration: info.duration, notes: [] };
 
@@ -179,9 +195,9 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
       await page.screenshot({ path: f, type: 'jpeg', quality: 92 });
       result.files.media = f;
     } else {
-      const frames = Math.round(info.duration * FPS);
+      const fps = info.fps || FPS, frames = Math.round(info.duration * fps);
       for (let i = 0; i < frames; i++) {
-        await page.evaluate(t => window.render(t), i / FPS);
+        await page.evaluate(t => window.render(t), i / fps);
         await page.screenshot({ path: join(work, `f${String(i).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 92 });
       }
       const music = musicFor(spec.music, spec.id);
@@ -189,9 +205,9 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
       const sound = mixAudio({ clips: voice?.clips, starts: info.starts, music, duration: info.duration, work });
       const media = join(dir, `${spec.id}.mp4`);
       const audio = sound ? ['-i', sound] : ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100'];
-      execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-framerate', String(FPS), '-i', join(work, 'f%05d.jpg'), ...audio,
+      execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-framerate', String(fps), '-i', join(work, 'f%05d.jpg'), ...audio,
         '-map', '0:v', '-map', '1:a', '-t', info.duration.toFixed(3), '-af', 'apad',
-        '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(FPS),
+        '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps),
         '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', media]);
       // cover: a moment with the hook / verse fully visible
       const cover = join(dir, `${spec.id}-cover.jpg`);
@@ -209,12 +225,43 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
   }
 }
 
-export const launch = () => pw.chromium.launch();
+// WebGL (3D reels) runs in software in headless Chromium; module scripts load from file:// with the first flag.
+export const BROWSER_ARGS = ['--allow-file-access-from-files', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+export const launch = () => pw.chromium.launch({ args: BROWSER_ARGS });
+
+/** Quick look without voice or video: stills of a spec at the given seconds (and its duration). */
+export async function renderStills(raw, times, { outDir = join(OUT, project().id), browser: shared } = {}) {
+  const spec = await prepare(raw); const dir = join(outDir, spec.id, 'stills'); mkdirSync(dir, { recursive: true });
+  const browser = shared || await launch(); const errs = [];
+  try {
+    const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+    page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); else if (process.env.DEBUG3D) console.log('page:', m.text()); });
+    await page.goto(STAGE);
+    if (process.env.DEBUG3D) await page.evaluate(() => { window.__debug3d = true; });
+    const info = await page.evaluate(([s, c]) => window.setup(s, null, c), [spec, stageContext()]).catch(e => { throw new Error(e.message + (errs.length ? ' | ' + errs.join(' | ') : '')); });
+    const files = [];
+    for (const t of times.length ? times : [0, info.duration / 3, info.duration / 2, info.duration - 1]) {
+      const t0 = Date.now(); await page.evaluate(t => window.render(t), t);
+      const f = join(dir, `t${t.toFixed(1).padStart(5, '0')}.jpg`); await page.screenshot({ path: f, type: 'jpeg', quality: 88 }); files.push({ f, ms: Date.now() - t0 });
+    }
+    await page.close();
+    return { duration: info.duration, fps: info.fps, files, errors: errs };
+  } finally { if (!shared) await browser.close(); }
+}
 
 // CLI: node engine/render/render.mjs projects/<id>/content/samples/x.json [more.json ...]
 // (the project comes from the path, or PROJECT). --frames=1.2,5 also writes stills at those seconds.
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const browser = await launch();
+  const stills = process.argv.find(a => a.startsWith('--stills'));
+  if (stills) {
+    const times = (stills.split('=')[1] || '').split(',').filter(Boolean).map(Number);
+    for (const f of process.argv.slice(2).filter(a => !a.startsWith('--'))) {
+      const r = await renderStills(JSON.parse(readFileSync(f, 'utf8')), times, { browser });
+      console.log(`${f}: ${r.duration.toFixed(1)}s @${r.fps || FPS}fps; ${r.files.map(x => `${x.f.split('/').pop()} (${x.ms} ms)`).join(', ')}${r.errors.length ? '\nerrors: ' + r.errors.join(' | ') : ''}`);
+    }
+    await browser.close(); process.exit(0);
+  }
   for (const f of process.argv.slice(2).filter(a => !a.startsWith('--'))) {
     const r = await renderSpec(JSON.parse(readFileSync(f, 'utf8')), { browser });
     console.log(`${r.id}: ${[r.files.media, ...(r.files.slides?.slice(1) || []), r.files.cover].filter(Boolean).map(x => x.split('/').pop()).join(', ')} ${r.duration ? `(${r.duration.toFixed(1)}s)` : ''} ${r.notes.join('; ')}`);
