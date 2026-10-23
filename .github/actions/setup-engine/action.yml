@@ -16,10 +16,15 @@ runs:
       shell: bash
       env: { DEBIAN_FRONTEND: noninteractive }
       run: |
+        # 1. a static build from GitHub releases (fast, same network), 2. apt, 3. another static build
+        github_ffmpeg() {
+          rm -rf /tmp/gh-ff && mkdir -p /tmp/gh-ff &&
+          curl -fsSL --retry 4 --retry-all-errors --max-time 240 https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz -o /tmp/gh-ff.tar.xz &&
+          tar xJf /tmp/gh-ff.tar.xz -C /tmp/gh-ff && sudo cp /tmp/gh-ff/*/bin/ffmpeg /tmp/gh-ff/*/bin/ffprobe /usr/local/bin/; }
         apt_ffmpeg() { timeout 180 sudo -E apt-get update -qq -o Acquire::Retries=2 && timeout 300 sudo -E apt-get install -y -qq --no-install-recommends ffmpeg; }
         static_ffmpeg() {
-          curl -fsSL --retry 3 --max-time 300 https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o /tmp/ffmpeg.tar.xz &&
+          curl -fsSL --retry 4 --retry-all-errors --max-time 300 https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o /tmp/ffmpeg.tar.xz &&
           tar xJf /tmp/ffmpeg.tar.xz -C /tmp && sudo cp /tmp/ffmpeg-*-static/ffmpeg /tmp/ffmpeg-*-static/ffprobe /usr/local/bin/; }
-        command -v ffmpeg >/dev/null || apt_ffmpeg > /dev/null || static_ffmpeg
+        command -v ffmpeg >/dev/null || github_ffmpeg || apt_ffmpeg > /dev/null || static_ffmpeg
         ffmpeg -version | head -1 && ffprobe -version | head -1
         timeout 300 npx playwright install chromium || timeout 600 npx playwright install --with-deps chromium
