@@ -16,19 +16,22 @@ but write as if it will go out exactly as written.
 7. `P/content/context/performance.json` - every item of the last 6 weeks with its numbers and Alex's review comments.
 8. `P/content/context/competitor-top-posts.json` - what works for similar accounts (patterns only, never copy wording).
 9. `P/content/context/account-metrics.json` - followers and new signups per day.
-10. `P/content/used-verses.json` - verses that went out. Never reuse one.
+10. `P/content/context/target-week.json` - which week to plan, its dates and time offsets.
+11. `P/content/used-verses.json` - verses that went out. Never reuse one.
 
 ## 2. Write a report on the past week
 
-`P/content/queue/report-<last week, e.g. 2026-W45>.md`, in the project's language, short, with
+`P/content/queue/report-<the week before the target week, e.g. 2026-W45>.md`, in the project's language, short, with
 the sections listed in `P/plan.md`. Skip a section when there is no data yet and say so in one
 line. Never invent numbers.
 
-## 3. Plan next week (ISO week after the current one)
+## 3. Plan the target week
 
-Write one JSON file per item to `P/content/queue/<id>.json`, following the recipe in `P/plan.md`.
-Ids: `<week>-<kind short>-<day>`, e.g. `2026-w46-verse-mon`. Times are in the project's timezone
-(project.json, usually Europe/Amsterdam) with the right offset (+01:00 in winter, +02:00 in summer).
+Plan exactly the week in `P/content/context/target-week.json` (the first week that has no content
+yet; never a week listed in `alreadyPlanned`). Write one JSON file per item to
+`P/content/queue/<id>.json`, following the recipe in `P/plan.md`. Ids: `<idPrefix>-<kind short>-<day>`,
+e.g. `2026-w46-verse-mon`; `week` is the target week. Use the dates and `utcOffset` per day from
+target-week.json for `slot` (e.g. `2026-11-09T07:00:00+01:00`) - the offset changes with summer/winter time.
 Set `experiment` on every item as `P/plan.md` describes, and `basedOn` to the real fact, quote or
 feature the item rests on.
 

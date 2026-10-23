@@ -28,7 +28,9 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
       const spec = await prepare(raw);
       if (spec.ref && isUsed(spec.ref, used)) throw new Error(`Verse ${spec.ref} was already posted - pick another`);
       const existing = await d.collection('items').findOne({ _id: spec.id });
-      if (existing && ![STATUS.CHANGES, STATUS.QUEUED, STATUS.REVIEW].includes(existing.status)) throw new Error(`Item ${spec.id} is already ${existing.status}`);
+      // Only items Alex sent back (changes), or that never rendered, may be replaced. Anything he is
+      // reviewing, approved or that went out stays as it is - a new plan must use new ids.
+      if (existing && ![STATUS.CHANGES, STATUS.QUEUED, STATUS.FAILED].includes(existing.status)) throw new Error(`Item ${spec.id} already exists (${existing.status}) - use a new id / the target week`);
       const aiLabel = spec.kind === 'reel-explainer';           // AI voice -> platform AI label
       await d.collection('items').updateOne({ _id: spec.id }, {
         $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, renderAttempts: 0, updatedAt: new Date() },

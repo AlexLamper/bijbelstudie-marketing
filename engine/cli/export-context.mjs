@@ -17,6 +17,20 @@ const score = it => { const ig = it.metrics?.instagram || {}, yt = it.metrics?.y
 const rows = items.map(it => ({ id: it._id, week: it.week, kind: it.kind, status: it.status, experiment: it.spec.experiment, hook: it.spec.hook || it.spec.headline || it.spec.line || it.spec.ref, slot: it.spec.slot, results: score(it), review: (it.reviewComments || []).map(c => c.text) }));
 writeFileSync(join(OUTD, 'performance.json'), JSON.stringify(rows, null, 2));
 
+// Which week to plan: the first week after the current one that has no items yet.
+const isoWeekOf = date => { const t = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y = t.getUTCFullYear(); return `${y}-W${String(Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7)).padStart(2, '0')}`; };
+const planned = new Set(await d.collection('items').distinct('week'));
+let monday = new Date(); monday.setUTCHours(12, 0, 0, 0); monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() || 7) - 1) + 7);
+while (planned.has(isoWeekOf(monday))) monday.setUTCDate(monday.getUTCDate() + 7);
+const dayNames = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const target = { week: isoWeekOf(monday), idPrefix: isoWeekOf(monday).toLowerCase(), note: 'Plan exactly this week. Item ids start with idPrefix, e.g. ' + isoWeekOf(monday).toLowerCase() + '-verse-mon.',
+  days: dayNames.map((name, i) => { const dt = new Date(monday); dt.setUTCDate(monday.getUTCDate() + i);
+    const off = new Intl.DateTimeFormat('en', { timeZone: P.timezone, timeZoneName: 'longOffset' }).formatToParts(dt).find(x => x.type === 'timeZoneName').value.replace('GMT', '') || '+00:00';
+    return { day: name, date: dt.toISOString().slice(0, 10), utcOffset: off }; }),
+  alreadyPlanned: [...planned].sort() };
+writeFileSync(join(OUTD, 'target-week.json'), JSON.stringify(target, null, 2));
+
 const changes = await d.collection('items').find({ status: STATUS.CHANGES }).toArray();
 writeFileSync(join(OUTD, 'changes-requested.json'), JSON.stringify(changes.map(it => ({ id: it._id, spec: it.spec, comments: it.reviewComments })), null, 2));
 
@@ -38,6 +52,6 @@ const before = existsSync(P.paths.usedVerses) ? JSON.parse(readFileSync(P.paths.
 const inDb = new Set(verses.map(v => v.ref));
 const ledger = { note: 'Verses already posted on social. Never reuse one.', verses: [...before.filter(v => !inDb.has(v.ref) && !v.date), ...verses.map(v => ({ ref: v.ref, date: v.at }))] };
 writeFileSync(P.paths.usedVerses, JSON.stringify(ledger, null, 2));
-console.log(`[${P.id}] context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
+console.log(`[${P.id}] target ${target.week}; context: ${rows.length} items, ${changes.length} changes, ${comments.length} comments, ${top.length} competitor posts`);
 await heartbeat('plan', { items: rows.length, changes: changes.length });
 await close();
