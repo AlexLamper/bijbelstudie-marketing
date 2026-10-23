@@ -34,6 +34,10 @@ Projects:
 - `.github/workflows/` plan-week (matrix per project), revise (one project), render, publish (also runs `cli/kick.mjs`: starts Revise/Render when the studio asked), stats (also the approval reminder), ci; shared steps in `.github/actions/`.
 - Studio Instellingen: setup checklist, account linking (OAuth: `app/api/oauth/*`, `lib/connections.ts`), Sleutels (`lib/secrets.ts`), ElevenLabs voices (`lib/elevenlabs.ts`), last runs (engine heartbeats in Mongo `runs`).
 
+## Workflow schedules
+
+GitHub runs a scheduled workflow as the user who last changed its file. Commits from these sessions are attributed to the GitHub user `claude`, which has no access to this private repo, so schedules silently stop. Commit any change under `.github/workflows/` with `--author="AlexLamper <143872753+AlexLamper@users.noreply.github.com>"`.
+
 ## Check before you commit
 
 `npm run check` (syntax + every project's samples valid), `node scripts/sync-projects.mjs` after changing any `project.json` or logo, and render one sample: `node engine/render/render.mjs projects/bijbelstudie/content/samples/w45-verse-mon.json`.
