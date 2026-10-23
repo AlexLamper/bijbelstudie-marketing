@@ -1,4 +1,4 @@
-# Daily, for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
+# Daily (schedule saved by AlexLamper), for every enabled project: metrics per item, followers, new users, comments; competitors on Mondays.
 name: Stats
 on:
   schedule:

@@ -1,4 +1,4 @@
-# Every Friday, per enabled project (one after the other): Claude plans next week (report + specs +
+# Every Friday (schedule saved by AlexLamper), per enabled project (one after the other): Claude plans next week (report + specs +
 # comment replies), the engine validates, imports and renders everything, and Alex gets one message.
 name: Plan week
 on:

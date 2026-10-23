@@ -1,4 +1,4 @@
-# Every 30 minutes during the day, for every enabled project: publish APPROVED items whose time
+# Every 30 minutes during the day (re-saved 23 Oct by AlexLamper so the schedule runs as him), for every enabled project: publish APPROVED items whose time
 # has come, and start the Revise workflow when Alex asked for changes in the studio.
 name: Publish
 on:
