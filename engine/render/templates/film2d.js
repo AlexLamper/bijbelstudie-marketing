@@ -962,6 +962,8 @@
       fontSize: (draw ? fit(spec.hook, [[22, 108], [36, 94], [60, 78]], 940) : fit(spec.hook, [[22, 96], [36, 84], [60, 68]], 940)) + 'px', lineHeight: draw ? 1.02 : 1.04, letterSpacing: draw ? '0' : '-2px', textWrap: 'balance',
       textShadow: draw ? '0 4px 0 rgba(0,0,0,.35), 0 0 22px rgba(10,10,14,.75), 0 0 6px rgba(10,10,14,.6)' : '0 8px 28px rgba(0,0,0,.55)', WebkitTextStroke: draw ? '0' : '10px rgba(8,10,16,.9)', paintOrder: 'stroke fill' });
     if (POSTER) css(hook, { color: S.ink, textShadow: 'none', textAlign: 'left', width: '900px', left: '90px', top: '250px', padding: '30px 40px', boxSizing: 'border-box', background: S.paper, border: `6px solid ${S.ink}`, borderRadius: '8px', boxShadow: '0 14px 30px rgba(0,0,0,.18)' });
+    // the hook stays long enough to read it calmly twice (Alex, 24 Oct: a second longer than before)
+    const HOOK_OUT = Math.min(5, Math.max(3.8, 1.3 + .24 * spec.hook.split(/\s+/).length));
     if (draw) hook.textContent = spec.hook;
     else { const words = spec.hook.split(/\s+/); const n = Math.min(3, Math.max(1, Math.round(words.length / 3))); hook.innerHTML = esc(words.slice(0, -n).join(' ')) + (words.length > n ? ' ' : '') + `<span style="color:${TEAL.light}">${esc(words.slice(-n).join(' '))}</span>`; }
     const label = el('div', 'abs'); css(label, draw ? { left: '70px', top: '120px', color: 'rgba(235,230,217,.9)', textShadow: '0 0 14px rgba(10,10,14,.8), 0 2px 0 rgba(0,0,0,.4)', fontFamily: S.font, fontSize: '40px', letterSpacing: '3px', textTransform: 'uppercase', zIndex: 3, opacity: 0 }
@@ -993,7 +995,7 @@
     });
 
     /** Pose a shot's world at time T: people, moving things, its own camera (the parallax layers). */
-    function poseWorld(s, T, bo) {
+    function poseWorld(s, T, bo, cam = null) {   // cam: a camera to use instead of the shot's own (a glide between two shots)
       const w = s.world; const jr = bo ? rng('boil' + bo) : null;
       if (w.kaart) return w.map.render(T, cl((T - s.start) / (s.end - s.start)), s.popAt);
       Object.values(w.actors).forEach(a => a.g.setAttribute('display', 'none'));
@@ -1011,7 +1013,7 @@
         for (const o of list) main.appendChild(o.n);
       }
       if (w.update) w.update(T);
-      const c = shoot(s, Math.min(T, s.end), states);
+      const c = cam || shoot(s, Math.min(T, s.end), states);
       for (const [k, f] of Object.entries(PARALLAX)) {
         const lg = w.g._layers[k]._outer; const z = 1 + (c.z - 1) * f, ex = w.def.cx + (c.cx - w.def.cx) * f, ey = 960 + (c.cy - 960) * f;
         const jx = jr && k !== 'sky' ? (jr() - .5) * 2.4 : 0, jy = jr && k !== 'sky' ? (jr() - .5) * 2.4 : 0;
@@ -1052,6 +1054,21 @@
     // is frozen into a copy (a ghost) laid over the incoming one while it fades away.
     const XF = draw ? .75 : .65;
     let ghost = null;
+    // Alex, 24 Oct (weduwe 0:47): after a shot up into the sky the background jumped back down. Two shots in the
+    // same world now share ONE camera across the cut, gliding from where the last shot ends to where the next
+    // begins; the further apart, the longer the glide (up to 1.5 s). Only the people dissolve.
+    const camAt = (s, t) => { const T = Math.min(Math.max(t, s.start + .01), s.end); return shoot(s, T, actorsAt(s, T)); };
+    const xfs = new Map();
+    const xfFor = nx => {
+      if (xfs.has(nx.i)) return xfs.get(nx.i);
+      const pv = shots[nx.i - 1]; let xf = XF;
+      if (pv.world === nx.world && !nx.world.kaart) {
+        const a = camAt(pv, pv.end), b = camAt(nx, nx.start);
+        const d = Math.hypot(a.cx - b.cx, a.cy - b.cy) + 900 * Math.abs(Math.log(a.z / b.z));
+        xf = Math.min(1.5, .8 * Math.min(pv.end - pv.start, nx.end - nx.start), Math.max(XF, .45 + d / 1100));
+      }
+      xfs.set(nx.i, xf); return xf;
+    };
     function render(t) {
       if (ghost) { ghost.remove(); ghost = null; }
       const i = Math.max(0, shots.findIndex(s => t >= s.start && t < s.end)); const s = t >= at ? shots[shots.length - 1] : shots[i];
@@ -1060,13 +1077,18 @@
       let sp = null;
       if (!POSTER) {
         for (const x of worlds.values()) { x.g.setAttribute('display', x === w ? 'inline' : 'none'); x.g.removeAttribute('opacity'); }
-        const nx = shots.find(x => x.i > 0 && Math.abs(t - x.start) < XF / 2);
+        const nx = shots.find(x => x.i > 0 && Math.abs(t - x.start) < xfFor(x) / 2);
         if (nx) {
-          const pv = shots[nx.i - 1]; const k = sm((t - (nx.start - XF / 2)) / XF);
+          const pv = shots[nx.i - 1]; const xf = xfFor(nx); const k = sm((t - (nx.start - xf / 2)) / xf);
           pv.world.g.setAttribute('display', 'inline'); nx.world.g.setAttribute('display', 'inline');
-          const a = poseWorld(pv, t, bo);
+          let cam = null;
+          if (pv.world === nx.world && !nx.world.kaart) {
+            const ca = camAt(pv, t), cb = camAt(nx, t), e = inout(cl((t - (nx.start - xf / 2)) / xf));
+            cam = { cx: lerp(ca.cx, cb.cx, e), cy: lerp(ca.cy, cb.cy, e), z: Math.exp(lerp(Math.log(ca.z), Math.log(cb.z), e)) };
+          }
+          const a = poseWorld(pv, t, bo, cam);
           if (pv.world === nx.world) { ghost = pv.world.g.cloneNode(true); pv.world.g.after(ghost); ghost.setAttribute('opacity', (1 - k).toFixed(3)); }
-          const b = poseWorld(nx, t, bo);
+          const b = poseWorld(nx, t, bo, cam);
           sp = s === nx ? b : a;
           if (pv.world !== nx.world) {   // two worlds: the upper one fades
             const nxAbove = !!(pv.world.g.compareDocumentPosition(nx.world.g) & Node.DOCUMENT_POSITION_FOLLOWING);
@@ -1104,13 +1126,14 @@
       }
       if (w.kaart && s.mapLabels && sp) s.mapLabels.forEach((n, j) => { const v = out(cl((t - s.popAt[j] - .1) / .35)); n.style.opacity = v; n.style.transform = `translate(${r1(sp[j].x + 26)}px, ${r1(sp[j].y - 70 + (1 - v) * 14)}px)`; });
       // overlays (as in the 3D films)
-      const hk = out(prog(t, .15, .5)) * (1 - prog(t, Math.min(3.0, shots[0].end - .2), Math.min(3.3, shots[0].end + .1)));
+      const hk = out(prog(t, .15, .5)) * (1 - prog(t, HOOK_OUT, HOOK_OUT + .35));
       set(hook, hk, (1 - hk) * 30, .94 + .06 * hk);
-      const lk = s.text && !POSTER ? out(prog(t, s.start + .2, s.start + .55)) * (1 - prog(t, s.start + 2.8, s.start + 3.2)) : 0;
+      const l0 = Math.max(s.start + .2, s.start < HOOK_OUT + .3 ? HOOK_OUT + .2 : 0);   // a place label waits for the hook to go
+      const lk = s.text && !POSTER ? out(prog(t, l0, l0 + .35)) * (1 - prog(t, Math.max(s.start + 2.8, l0 + 2.2), Math.max(s.start + 3.2, l0 + 2.6))) : 0;
       if (s.text && label.textContent !== s.text) label.textContent = s.text;
       set(label, lk, (1 - lk) * 12);
       shots.forEach(x => {
-        if (x.card) { const c0 = x.i === 0 ? Math.min(x.end - 1.2, 3.1) : x.start + .3; const v = x === s ? out(prog(t, c0, c0 + .4)) * (1 - prog(t, x.end - .3, x.end)) : 0; set(x.card, v, (1 - v) * 24); }
+        if (x.card) { const c0 = x.i === 0 ? Math.min(x.end - 1.2, Math.max(3.1, HOOK_OUT + .2)) : x.start + .3; const v = x === s ? out(prog(t, c0, c0 + .4)) * (1 - prog(t, x.end - .3, x.end)) : 0; set(x.card, v, (1 - v) * 24); }
         if (x.phone) { const v = x === s ? out(prog(t, x.start + .25, x.start + .75)) * (1 - prog(t, x.end - .25, x.end)) : 0; set(x.phone.node, v, (1 - v) * 260); const im = x.phone.node.querySelector('img'); im.style.transform = `translateY(${-140 * sm(prog(t, x.start + 1.2, x.end - .3))}px)`; }
         if (x.mapLabels && x !== s) x.mapLabels.forEach(n => { n.style.opacity = 0; });
       });

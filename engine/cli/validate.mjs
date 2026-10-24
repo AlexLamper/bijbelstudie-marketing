@@ -28,6 +28,7 @@ const allocation = target ? ctx('allocation.json') : null;
 // Repeats: against history.json (everything planned or posted, from export-context), the posted verses,
 // and the items of this batch that come earlier (so only the later one of a pair has to change).
 const samples = arg === 'samples';
+const NUMBERED_BOOK = /\b(eerste|tweede|derde|[123]e?)\s+(Samu[eë]l|Koningen|Kronieken|[CK]orinth|Thessalon|Timothe|Petrus|Johannes)/i;
 const history = samples ? [] : ctx('history.json')?.items;
 if (!samples && !history) console.log('WARN no content/context/history.json (run export-context) - repeats only checked within this batch and against used-verses.json');
 const posted = !samples && existsSync(P.paths.usedVerses) ? JSON.parse(readFileSync(P.paths.usedVerses, 'utf8')).verses : [];
@@ -49,6 +50,14 @@ for (const f of files) {
     if (speakers.size > 2) throw new Error(`${speakers.size} different voices (${[...speakers].join(', ')}) - Alex wants one, at most two voices per video`);
     const allowedStyles = P.voiceStylesAllowed; if (allowedStyles && s.voiceStyle && !allowedStyles.includes(s.voiceStyle)) throw new Error(`voiceStyle "${s.voiceStyle}" - use ${allowedStyles.join('/')} (calm voices only)`);
     if (P.musicMoods && s.music && s.music !== 'none' && !P.musicMoods.includes(s.music)) throw new Error(`music "${s.music}" - only calm music: ${P.musicMoods.join(', ')}`);
+    // Alex, 24 Oct (studio, brand/lessons.md): how a story reel ends, and numbered books said as he says them
+    if (!samples && (s.kind === 'reel-story' || s.kind === 'reel-3d')) {
+      const lines = (s.kind === 'reel-story' ? [s.hook, ...s.scenes.map(x => x.say)] : (s.shots || []).map(x => x.say)).filter(Boolean).map(l => l.trim());
+      const last = lines.at(-1) || '';
+      if (!/met uitleg, in de BijbelStudie app[.!]?$/i.test(last)) throw new Error(`the last spoken line must end with "met uitleg, in de BijbelStudie app." (Alex: "lees het met uitleg, in de BijbelStudie app"), not "...${last.slice(-70)}"`);
+      const ord = lines.find(l => NUMBERED_BOOK.test(l));
+      if (ord) throw new Error(`say numbered books as Alex says them - "één Koningen", "twee Samuël" (in words, not "eerste" or a digit): "${ord.match(NUMBERED_BOOK)[0]}"`);
+    }
     // what Alex chose (24 Oct 2026, project.json): only these formats and looks for new items; reels go to every
     // platform, the verse of the day only to instagram + facebook; map stories are told on the map
     if (!revising.has(s.id) && !samples) {

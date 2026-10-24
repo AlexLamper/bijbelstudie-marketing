@@ -88,6 +88,7 @@
   }
 
   // Region and river names that hold for every Bible era (geography, not states); shown within a view width range (degrees)
+  const stemOf = name => { const n = norm(name); return n.length > 5 ? n.slice(0, -1) : n; };   // "Egypte" also in "Egyptenaren"
   const REGIONS = [
     { name: 'EGYPTE', lon: 29.6, lat: 26.2, range: [7, 60] }, { name: 'SINAÏ', lon: 33.9, lat: 29.3, size: .78, range: [4, 30] },
     { name: 'ARABIË', lon: 44.5, lat: 24.6, range: [9, 60] }, { name: 'MESOPOTAMIË', lon: 43.4, lat: 33.4, range: [7, 60] },
@@ -117,6 +118,7 @@
     kroon: { word: 'koning', parts: [{ d: 'M14 74L20 32L36 50L50 24L64 50L80 32L86 74Z', fill: 'teal' }, { d: 'M14 83H86' }, { d: 'M46 61a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M29 64a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M65 64a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', w: 2.5, kind: 'blink' }] },
     zwaard: { word: 'strijd', parts: [{ d: 'M20 18L68 66' }, { d: 'M58 74L76 56' }, { d: 'M70 70L84 84', w: 6 }, { d: 'M80 18L32 66' }, { d: 'M24 56L42 74' }, { d: 'M30 70L16 84', w: 6 }] },
     schapen: { word: 'schapen', parts: [{ d: 'M28 66C18 66 18 52 26 50C24 40 38 36 44 42C50 34 64 36 66 44C76 42 82 54 74 60C76 68 66 70 62 66Z', fill: 'light' }, { d: 'M74 48C82 44 90 50 86 58C84 62 78 62 74 58', fill: 'teal' }, { d: 'M34 66V80M44 68V80M58 68V80M66 66V80' }] },
+    licht: { word: 'licht', parts: [{ d: 'M28 20Q50 4 72 20', w: 3 }, { d: 'M40 22L14 92H86L60 22Z', fill: 'light' }, { d: 'M50 30V84M44 30L32 84M56 30L68 84', w: 2 }, { d: 'M18 14L10 8M82 14L90 8M50 8V2', w: 3, kind: 'blink' }] },   // a light from heaven shining down (Alex: not a star)
     ster: { word: 'ster', parts: [{ d: 'M50 10L60 38L90 38L66 56L75 86L50 68L25 86L34 56L10 38L40 38Z', fill: 'light' }, { d: 'M86 8V22M79 15H93', w: 3, kind: 'blink' }] },
     graan: { word: 'graan', parts: [{ d: 'M50 92V30M40 92C40 62 36 52 30 42M60 92C60 62 64 52 70 42' }, { d: 'M50 30C44 24 46 14 50 10C54 14 56 24 50 30ZM50 48C42 46 40 36 44 32C50 34 52 42 50 48ZM50 48C58 46 60 36 56 32C50 34 48 42 50 48ZM30 42C24 38 24 28 28 24C34 28 34 36 30 42ZM70 42C76 38 76 28 72 24C66 28 66 36 70 42Z', fill: 'teal' }] },
     toren: { word: 'toren', parts: [{ d: 'M16 86H84V74H76V62H68V50H60V38H54V28H46V38H40V50H32V62H24V74H16Z', fill: 'teal' }, { d: 'M46 86V78H54V86', w: 3 }] },
@@ -359,13 +361,16 @@
     if (runs.length) {
       mapLayer = el('div', 'abs full'); mapLayer.style.opacity = 0;
       bm = baseMap(mapLayer, P); setCam = bm.setCam;
-      clouds = [0, 1, 2].map(() => { const c = el('div', 'abs', mapLayer); css(c, { left: 0, top: 0, width: '1150px', height: '760px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(1,7,9,.34), transparent)' }); return c; });
+      // Alex, 24 Oct (Saulus): "a bit too much stuff on the screen, keep it simple, display what is actually useful".
+      // So no drifting clouds and no locator; a region or river name only when the story names it; the
+      // story's other places only once the story has been there.
       seaNames = (m.seas || []).map(sn => {
         const e = el('div', 'abs serif', mapLayer, esc(sn.name));
         css(e, { left: 0, top: 0, whiteSpace: 'nowrap', fontStyle: 'italic', fontWeight: 500, fontSize: Math.round(34 * (sn.size || 1)) + 'px', letterSpacing: '3px', color: P.seaName });
         return { e, p: project(m, sn.lon, sn.lat), rot: sn.rotate || 0, w: 0, h: 0 };
       });
-      regionNames = REGIONS.map(rg => {
+      const told = norm(segs.map(x => `${x.text || ''} ${x.shown || ''}`).join(' ') + ' ' + (spec.title || ''));
+      regionNames = REGIONS.filter(rg => told.includes(stemOf(rg.name))).map(rg => {
         const e = el('div', 'abs' + (rg.italic ? ' serif' : ''), mapLayer, esc(rg.name));
         css(e, { left: 0, top: 0, whiteSpace: 'nowrap', fontStyle: rg.italic ? 'italic' : 'normal', fontWeight: rg.italic ? 500 : 700, fontSize: Math.round(31 * (rg.size || 1)) + 'px',
           letterSpacing: rg.italic ? '1px' : '8px', color: rg.river ? P.riverName : P.regionName });
@@ -378,7 +383,8 @@
         const pl = ctx.places[key];
         const dot = el('div', 'abs', ctxLayer); css(dot, { left: 0, top: 0, width: '16px', height: '16px', borderRadius: '50%', boxSizing: 'border-box', border: '3px solid rgba(255,255,255,.7)', background: 'color-mix(in srgb, var(--accent) 60%, transparent)' });
         const lb = el('div', 'abs', ctxLayer, esc(pl.name)); css(lb, { left: 0, top: 0, whiteSpace: 'nowrap', fontWeight: 600, fontSize: '31px', color: 'rgba(255,255,255,.66)', webkitTextStroke: `7px ${P.halo}`, paintOrder: 'stroke fill' });
-        return { key, p: project(m, pl.lon, pl.lat), dot, lb, w: 0, h: 0 };
+        const first = segs.find(x => x.show === 'map' && (x.places || []).includes(key));
+        return { key, p: project(m, pl.lon, pl.lat), dot, lb, w: 0, h: 0, from: first ? first.start : 0 };
       });
       const routeSvg = svgEl('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, mapLayer); routeSvg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible';
       overlay = el('div', 'abs full', mapLayer);
@@ -477,7 +483,7 @@
         const route = sc.legs.flatMap(l => { const a = toScreen(cam, l.a), b = toScreen(cam, l.b), c = toScreen(cam, l.c);
           return Array.from({ length: 15 }, (_, q) => { const u = q / 14; return { x: (1 - u) ** 2 * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) ** 2 * a.y + 2 * (1 - u) * u * c.y + u * u * b.y }; }); });
         const boxes = pos.map(p => ({ x: p.x - 22, y: p.y - 22, w: 44, h: 44 }));
-        boxes.push({ x: 56, y: 268, w: 470, h: 110 }, { x: 696, y: 270, w: 232, h: 184 });   // title chip, locator
+        boxes.push({ x: 56, y: 268, w: 470, h: 110 });   // title chip
         sc.pins.forEach((pin, j) => {
           pin.w = pin.label.offsetWidth; pin.h = pin.label.offsetHeight;
           const { w, h } = pin; const p = pos[j]; const g = pin.r + 13, d = pin.r + 5;
@@ -870,25 +876,7 @@
       const e = el('div', 'abs', null, esc(s.ref)); css(e, { left: title ? '120px' : '64px', top: title ? '330px' : '282px', fontWeight: 600, fontSize: '30px', color: L.dark ? 'rgba(255,255,255,.74)' : 'var(--ink-muted)', opacity: 0, textShadow: '0 2px 12px rgba(0,0,0,.45)' });
       return e;
     });
-    let loc = null;
-    if (runs.length && storyKeys.length) {   // a locator: the wider region, the story's places and where the camera is
-      const ll = storyKeys.map(key => ctx.places[key]); const lons = ll.map(p => p.lon), lats = ll.map(p => p.lat);
-      const LW = 214, LH = 164;
-      const span = Math.max(30, (Math.max(...lons) - Math.min(...lons)) * 1.6 + 10, ((Math.max(...lats) - Math.min(...lats)) * 1.6 + 8) * LW / LH / m.proj.cos);
-      const wU = span * m.proj.cos * k, hU = wU * LH / LW;
-      const c0 = project(m, (Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2);
-      const box = el('div', 'abs'); css(box, { left: '706px', top: '280px', width: LW + 'px', height: LH + 'px', borderRadius: '18px', overflow: 'hidden', boxSizing: 'border-box',
-        border: '2px solid rgba(204,251,241,.24)', background: P.sea, boxShadow: '0 12px 30px rgba(0,0,0,.4)', opacity: 0 });
-      const sv = svgEl('svg', { width: LW, height: LH, viewBox: `${r1(c0.x - wU / 2)} ${r1(c0.y - hU / 2)} ${r1(wU)} ${r1(hU)}` }, box); sv.style.cssText = 'position:absolute;left:0;top:0';
-      svgEl('path', { d: m.land, 'vector-effect': 'non-scaling-stroke' }, sv).style.cssText = `fill:#3a6168;stroke:rgba(153,246,228,.5);stroke-width:1`;
-      if (m.rivers) svgEl('path', { d: m.rivers, fill: 'none', 'vector-effect': 'non-scaling-stroke' }, sv).style.cssText = `stroke:${P.river};stroke-width:1`;
-      const rect = svgEl('rect', { 'vector-effect': 'non-scaling-stroke', rx: r1(6 * wU / LW) }, sv); rect.style.cssText = 'fill:color-mix(in srgb, var(--accent) 24%, transparent);stroke:#5eead4;stroke-width:2.5';
-      for (const p of ll) { const q = project(m, p.lon, p.lat); svgEl('circle', { cx: r1(q.x), cy: r1(q.y), r: r1(3.4 * wU / LW) }, sv).style.fill = '#fff'; }
-      const nn = el('div', 'abs', box); css(nn, { right: '10px', top: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 800, fontSize: '18px', lineHeight: 1, color: 'rgba(255,255,255,.8)' });
-      const tri = el('div', '', nn); css(tri, { width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '10px solid rgba(255,255,255,.8)', marginBottom: '3px' });
-      el('div', '', nn, 'N');
-      loc = { box, rect };
-    }
+    const loc = null;   // no locator any more (Alex, 24 Oct: keep it simple)
     const subs = subtitles(segs, spec.captions || 'block');
     const end = endCard(spec);
 
@@ -1018,7 +1006,7 @@
       // the story's other places: a faint dot and name, out of the way of everything above
       for (const cp of ctxPlaces) {
         const p = toScreen(cam, cp.p);
-        let o = pinned.has(cp.key) ? 0 : .9 * live;
+        let o = pinned.has(cp.key) || t < cp.from ? 0 : .9 * live;
         const right = p.x + 18 + cp.w <= SAFE.right + 40;
         const lb = { x: right ? p.x + 18 : p.x - 18 - cp.w, y: p.y - cp.h / 2, w: cp.w, h: cp.h };
         if (p.x < 20 || p.x > W - 20 || p.y < 380 || p.y > 1300) o = 0;

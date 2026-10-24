@@ -138,7 +138,7 @@ export const ReelList = z.object({
 
 // Narrated story with animated scenes: a map with a route, a timeline, a big line, a verse, a photo,
 // a counting number (stat), a family line (tree), two sides (compare) or a Hebrew/Greek word (word).
-export const STORY_ICONS = ['schip', 'storm', 'vis', 'golven', 'ark', 'stad', 'tempel', 'tent', 'berg', 'put', 'vuur', 'kroon', 'zwaard', 'schapen', 'ster', 'graan', 'toren', 'rol', 'kruis'];
+export const STORY_ICONS = ['schip', 'storm', 'vis', 'golven', 'ark', 'stad', 'tempel', 'tent', 'berg', 'put', 'vuur', 'kroon', 'zwaard', 'schapen', 'licht', 'ster', 'graan', 'toren', 'rol', 'kruis'];
 export const STORY_TRAVEL = ['lopen', 'schip', 'kameel'];
 export const ReelStory = z.object({
   ...base, ...reel, kind: z.literal('reel-story'),
@@ -166,7 +166,7 @@ export const ReelStory = z.object({
     ref: z.string().min(3).max(28).regex(/^\S.*\s\d+(:\d+)?(-\d+(:\d+)?)?$/, 'ref like "Jona 1:3", "Jona 1:4-16", "Jona 3" or "1 Koningen 18:46-19:3"').optional(),   // the passage, small under the title
     travel: z.enum(STORY_TRAVEL).optional(),            // map with 2+ places: a ship / walker / camel rides the route, a chip counts the km
     // map: drawn icons beside a place (default the last), each when its word (cue, else the icon's name) is spoken
-    marks: z.array(z.object({ icon: z.enum(STORY_ICONS), at: place.optional(), side: z.enum(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']).optional(), cue: z.string().max(24).optional() })).min(1).max(3).optional(),
+    marks: z.array(z.object({ icon: z.enum(STORY_ICONS), at: place.optional(), side: z.enum(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']).optional(), cue: z.string().max(24).optional() })).min(1).max(2).optional(),   // at most 2 per scene (Alex, 24 Oct: keep it simple)
   }).superRefine((s, c) => {
     if ((s.marks || s.travel) && s.show !== 'map') c.addIssue({ code: 'custom', message: 'marks and travel belong to a map scene', path: [s.marks ? 'marks' : 'travel'] });
     if (s.travel && !(s.places?.length > 1)) c.addIssue({ code: 'custom', message: 'travel needs a route: 2+ places', path: ['travel'] });

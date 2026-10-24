@@ -52,15 +52,52 @@ const probe = f => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries
 // at the longest silences. A script too long for one request is voiced in as few takes as possible,
 // all with the same seed and the text around them as context.
 const SEP = '\n\n';
+// Before the last line (the closing call to the app) a real pause, so the story's last sentence ends as an
+// ending and does not rise into the next line (Alex, 24 Oct: "het klinkt nu dat er nog iets erna komt").
+// Multilingual v2 takes break tags; v3 does not (it gets the plain paragraph break).
+const LAST_SEP = style => style === 'levendig' ? SEP : '\n\n<break time="0.9s" />\n\n';
 const MAX_CHARS = { eleven_v3: 2800 };
 const seedOf = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 4294967295; };
-const cut = (src, from, to, out) => { execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-ss', Math.max(0, from).toFixed(3), ...(to != null ? ['-to', to.toFixed(3)] : []), '-ar', '44100', '-ac', '1', out]); return out; };
+// A clip fades in and out over a few milliseconds, so a cut never clicks or sounds chopped off.
+const cut = (src, from, to, out) => {
+  const fade = to != null ? [`afade=t=in:d=0.012,afade=t=out:st=${Math.max(0, to - from - 0.06).toFixed(3)}:d=0.06`] : ['afade=t=in:d=0.012'];
+  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-ss', Math.max(0, from).toFixed(3), ...(to != null ? ['-to', to.toFixed(3)] : []), '-af', fade.join(','), '-ar', '44100', '-ac', '1', out]); return out;
+};
+
+/** Names with a tricky stress, as the voice should hear them: P/brand/pronunciation.json { words: { "Elia": "Elía" } }. */
+export const pronunciations = (p = project()) => { try { return JSON.parse(readFileSync(join(p.paths.brand, 'pronunciation.json'), 'utf8')).words || {}; } catch { return {}; } };
+/** What the voice hears for one line (the captions keep the written words: the number of words stays the same):
+ *  names from the pronunciation list (Alex, 24 Oct: "Elia" with the stress on the i, every time), and every
+ *  line ends as a sentence - one ending in , ; : or nothing sounds as if more is coming. */
+export function speakable(text, words = {}) {
+  let t = String(text).trim().split(/\s+/).map(tok => {
+    const m = tok.match(/^([^\p{L}]*)(\p{L}+)(.*)$/u);
+    return m && words[m[2]] ? m[1] + words[m[2]] + m[3] : tok;
+  }).join(' ');
+  if (!/[.!?\u2026]["'\u201d\u2019)]*$/.test(t)) t = t.replace(/[\s,;:\u2013-]+$/, '') + '.';
+  return t;
+}
+/** Silences in a take (start/end seconds): where each spoken line really ends. */
+function silencesOf(file) {
+  const log = String(spawnSync('ffmpeg', ['-hide_banner', '-i', file, '-af', 'silencedetect=noise=-40dB:d=0.06', '-f', 'null', '-']).stderr || '');
+  const starts = [...log.matchAll(/silence_start: (-?[\d.]+)/g)].map(m => Math.max(0, +m[1])), ends = [...log.matchAll(/silence_end: ([\d.]+)/g)].map(m => +m[1]);
+  return starts.map((a, i) => ({ a, b: ends[i] ?? Infinity }));
+}
+/** Where a line's clip ends: just after the voice really goes quiet (not cut off in the fade of the last word),
+ *  but never into a breath, a sigh or the next line (Alex, 24 Oct: a 'zucht' at the end, a word cut off). */
+export function lineEnd(u, silences, hi) {
+  const q = silences.find(x => x.a >= u.b - 0.15 && x.a <= u.b + 0.6);
+  const end = q ? Math.min(Math.max(q.a + 0.06, u.b + 0.05), u.b + 0.4) : u.b + 0.2;
+  return Math.min(hi, end);
+}
 
 /** Per unit: [first, last] alignment index and its words, matched on non-space characters (whitespace may be normalised). */
 export function unitsFromAlignment(al, texts) {
   if (!al?.characters?.length) return null;
   const S = al.character_start_times_seconds, E = al.character_end_times_seconds;
-  const ink = []; al.characters.forEach((c, k) => { if (!/\s/.test(c)) ink.push(k); });
+  // characters of a <break .../> tag are not spoken text (when the alignment lists them at all)
+  let tag = false; const ink = [];
+  al.characters.forEach((c, k) => { if (c === '<' && al.characters.slice(k, k + 6).join('') === '<break') tag = true; if (!tag && !/\s/.test(c)) ink.push(k); if (tag && c === '>') tag = false; });
   const want = texts.map(t => t.replace(/\s+/g, ''));
   if (ink.length !== want.reduce((n, t) => n + t.length, 0) || ink.map(k => al.characters[k]).join('') !== want.join('')) return null;
   let at = 0;
@@ -113,24 +150,30 @@ export async function voiceClips(spec, units, work, say = synthesize) {   // say
 
 /** One voice: its units in as few takes as possible (one, unless very long), cut into clips. */
 async function voiceOne(spec, units, work, say, offset) {
-  const texts = units.map(u => u.text.trim());
+  const written = units.map(u => u.text.trim()), lex = pronunciations();
+  const texts = written.map(t => speakable(t, lex));
   const max = spec.voiceStyle === 'levendig' ? MAX_CHARS.eleven_v3 : 9000;
   const seed = seedOf(spec.id); const clips = [];
   for (const [n, take] of takesOf(texts, max).entries()) {
     const part = take.map(i => texts[i]);
     const full = join(work, `take${offset}-${n}.mp3`);
-    const said = await say(part.join(SEP), spec.voice, { style: spec.voiceStyle, seed,
+    const last = take.at(-1) === texts.length - 1 && part.length > 1;   // this take holds the closing line
+    const script = last ? part.slice(0, -1).join(SEP) + LAST_SEP(spec.voiceStyle) + part.at(-1) : part.join(SEP);
+    const said = await say(script, spec.voice, { style: spec.voiceStyle, seed,
       previous: texts.slice(0, take[0]).join(' ').slice(-400) || undefined, next: texts.slice(take.at(-1) + 1).join(' ').slice(0, 400) || undefined });
     writeFileSync(full, said.audio);
     const total = probe(full);
     const aligned = unitsFromAlignment(said.alignment, part);
     if (aligned) {
-      // tight clips: a little air before the first and after the last word, never past the middle of a pause
+      // tight clips: a little air before the first word, after the last one until the voice goes quiet
+      // (lineEnd), never past the middle of a pause; the captions show the written words
+      const quiet = silencesOf(full);
       aligned.forEach((u, j) => {
         const lo = j ? (aligned[j - 1].b + u.a) / 2 : 0, hi = j < aligned.length - 1 ? (u.b + aligned[j + 1].a) / 2 : total;
-        const from = Math.max(lo, u.a - 0.08), to = Math.min(hi, u.b + 0.25);
+        const from = Math.max(lo, u.a - 0.08), to = lineEnd(u, quiet, hi);
         const f = cut(full, from, to, join(work, `v${offset + clips.length}.wav`));
-        clips.push({ f, dur: probe(f), words: u.words.map(w => ({ w: w.w, a: w.a - from, b: w.b - from })) });
+        const shown = written[take[j]].split(/\s+/).filter(Boolean), same = shown.length === u.words.length;
+        clips.push({ f, dur: probe(f), words: u.words.map((w, i) => ({ w: same ? shown[i] : w.w, a: w.a - from, b: w.b - from })) });
       });
     } else {
       const inner = part.length === 1 ? [] : cutsFromSilence(full, part.length);
@@ -271,7 +314,7 @@ export async function renderStills(raw, times, { outDir = join(OUT, project().id
       const f = join(dir, `t${t.toFixed(1).padStart(5, '0')}.jpg`); await page.screenshot({ path: f, type: 'jpeg', quality: 88 }); files.push({ f, ms: `${tr}+${Date.now() - t0 - tr}` });
     }
     await page.close();
-    return { duration: info.duration, fps: info.fps, files, errors: errs };
+    return { duration: info.duration, fps: info.fps, starts: info.starts || null, files, errors: errs };
   } finally { if (!shared) await browser.close(); }
 }
 
@@ -284,7 +327,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const times = (stills.split('=')[1] || '').split(',').filter(Boolean).map(Number);
     for (const f of process.argv.slice(2).filter(a => !a.startsWith('--'))) {
       const r = await renderStills(JSON.parse(readFileSync(f, 'utf8')), times, { browser });
-      console.log(`${f}: ${r.duration.toFixed(1)}s @${r.fps || FPS}fps; ${r.files.map(x => `${x.f.split('/').pop()} (${x.ms} ms)`).join(', ')}${r.errors.length ? '\nerrors: ' + r.errors.join(' | ') : ''}`);
+      console.log(`${f}: ${r.duration.toFixed(1)}s @${r.fps || FPS}fps${r.starts ? ` (units start ${r.starts.map(x => x.toFixed(1)).join(' ')})` : ''}; ${r.files.map(x => `${x.f.split('/').pop()} (${x.ms} ms)`).join(', ')}${r.errors.length ? '\nerrors: ' + r.errors.join(' | ') : ''}`);
     }
     await browser.close(); process.exit(0);
   }

@@ -30,22 +30,30 @@ formats fills the reel slots comes from `allocation.json` (`mainReels.format`). 
 ## Formats (only these; Alex, 24 Oct: "you should not use the other ones anymore")
 
 Every reel tells a Bible story (Alex: "the storytelling videos are going to do the best"), with ONE calm
-narrator: `voice` `male` or `female` (the two default voices Alex picked), `voiceStyle` `rustig`, no
-character lines. Music only `calm`, `reflective` or `cinematic`. Never show Jesus, God or angels as a
+narrator: `voice` `male`, `female` or `daniel` (the default voices Alex picked, and Daniel from the test set
+he asked for), `voiceStyle` `rustig`, no character lines. Alex's feedback on earlier videos is in
+`brand/lessons.md` - every rule there applies to every reel. Two that the validator checks:
+- The last spoken line ends with "met uitleg, in de BijbelStudie app." - e.g. "Lees het in één Koningen
+  zeventien, met uitleg, in de BijbelStudie app."
+- Numbered books are said as Alex says them, in words: "één Koningen", "twee Samuël", "één Korinthe".
+Names whose stress the voice gets wrong go in `brand/pronunciation.json` (only the voice hears the respelling). Music only `calm`, `reflective` or `cinematic`. Never show Jesus, God or angels as a
 figure (narrate about them), no violence on screen (tell it, show the aftermath).
 
 - **reel-story** (`style` `dark` only) - the map story, Alex's favourite: "the style with the map is
   amazing". A narrated story told on a dark relief map of the Bible lands; the map stays on screen the
-  whole video (dimmed behind text and verse scenes). Alex found the first ones "too minimalistic, not
-  filled up enough" - so fill every map scene:
+  whole video (dimmed behind text and verse scenes). Alex found the first ones "too minimalistic", then
+  Saulus "a bit too much stuff on the screen - keep it simple, display what is actually useful". So every
+  map scene shows something new that explains the story, and nothing that does not:
   - `title` (top-level, max 34): the story's name on a chip at the top ("Jona en de grote vis").
   - per scene `ref`: the passage of that line ("Jona 1:3", "Handelingen 27:14-20"), shown under the title.
   - `places` (keys from `engine/render/data/places.json`, in route order; one place = a pin). With 2+
     places set `travel` (`lopen`, `schip`, `kameel`): a walker/ship/camel rides the route and a chip counts
     the kilometres (as the crow flies) - only when someone really travels that way.
-  - `marks`: 1-3 drawn icons beside a place, each appearing when its word is spoken (`cue`, else the icon's
-    name): `schip`, `storm`, `vis`, `golven`, `ark`, `stad`, `tempel`, `tent`, `berg`, `put`, `vuur`,
-    `kroon`, `zwaard`, `schapen`, `ster`, `graan`, `toren`, `rol`, `kruis`. `at` = one of the scene's
+  - `marks`: 1-2 drawn icons beside a place (the validator allows 2), each appearing when its word is spoken
+    (`cue`, else the icon's name): `schip`, `storm`, `vis`, `golven`, `ark`, `stad`, `tempel`, `tent`, `berg`,
+    `put`, `vuur`, `kroon`, `zwaard`, `schapen`, `licht` (a light from heaven shining down - Saulus; never a
+    star for that), `ster` (only a real star), `graan`, `toren`, `rol`, `kruis`. The icon must fit exactly
+    what the line says; when none fits, leave it out. `at` = one of the scene's
     places (default the last), `side` (n, ne, e, se, s, sw, w, nw) only when it matters (sea things are put
     on the sea, the rest on land, automatically). Use them for what happens there: a storm and a big fish
     off Joppe, a tent at Bethel, a city at Ninevé, a well at Haran.
@@ -87,8 +95,8 @@ reel-demo, carousel, post-spotlight, post-statement, reel-story in light/photo, 
 
 ## Traits (what each item tests)
 
-- `voice`: `male` or `female` (the two default voices Alex picked; `voices.json` lists what exists). One
-  narrator per video. (Alex: when several people speak, test-set voices may join - not used now, `narratorOnly`.)
+- `voice`: `male`, `female` or `daniel` (the default voices and Daniel from the test set; `voices.json` lists
+  what exists). One narrator per video. (Alex: when several people speak, test-set voices may join - not used now, `narratorOnly`.)
 - `voiceStyle`: `rustig` only (Alex wants calm voices, not sharp ones; project.json `voiceStylesAllowed`). `captions`: `karaoke` (word by
   word), `block` or `none` - for voiced explainers, lists and stories.
 - `music`: a mood from `voices.json` `musicMoods` (only those exist), else leave it out.

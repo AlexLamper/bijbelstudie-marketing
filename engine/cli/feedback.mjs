@@ -17,5 +17,7 @@ for (const f of all) {
   console.log(`${done.has(f.key) ? 'learned' : 'NEW    '} ${when} ${f.itemId} ${f.kind} ${f.status}${f.subject ? ` "${f.subject}"` : ''} [${[t.style3d || t.style, t.voice, t.music].filter(Boolean).join(' ')}]`);
   console.log(`        ${f.text.replace(/\s+/g, ' ')}`);
 }
+const vs = (await d.collection('settings').findOne({ _id: 'voices' }))?.list || [];
+console.log(`[${P.id}] voice test set: ${vs.map(v => `${v.key} = ${v.name}${v.gender ? ` (${v.gender})` : ''}`).join('; ') || '(empty)'}`);
 if (process.argv.includes('--mark-learned')) console.log(`[${P.id}] marked learned: ${await markLearned(d, all.map(f => f.key), 'by hand')}`);
 await close();
