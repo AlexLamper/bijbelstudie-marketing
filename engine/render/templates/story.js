@@ -921,7 +921,13 @@
         if (op > 0) drawMap(t);
         if (loc) loc.box.style.opacity = Math.min(1, op * 1.3) * out(prog(t, .3, .9));
       }
-      if (titleEl) { const q = out(prog(t, .15, .6)); set(titleEl, q, (1 - q) * 12); }
+      if (titleEl) {
+        if (!titleEl.dataset.fit) {   // once the fonts are in: small enough to stay clear of the locator (x 700)
+          titleEl.dataset.fit = 1; const tx = titleEl.lastChild; let fs = 28;
+          while (titleEl.offsetWidth > (loc ? 620 : 900) && fs > 18) { fs--; tx.style.fontSize = fs + 'px'; tx.style.letterSpacing = (fs > 23 ? 5 : 3.5) + 'px'; }
+        }
+        const q = out(prog(t, .15, .6)); set(titleEl, q, (1 - q) * 12);
+      }
       refs.forEach((e, i) => { if (e) e.style.opacity = vis(i, t).o; });
       subs(t);
       end(t, endStart);
