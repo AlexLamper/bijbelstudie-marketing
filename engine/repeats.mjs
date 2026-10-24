@@ -63,14 +63,16 @@ export function similarHook(a, b) {
 }
 
 /** A history row for an item: what export-context writes and what the batch is compared as. */
-export const rowOf = (s, extra = {}) => ({ id: s.id, week: s.week, kind: s.kind, slot: s.slot, subject: s.subject || null, topic: s.experiment?.topic || null, hook: hookOf(s), verses: versesOf(s), ...extra });
+export const rowOf = (s, extra = {}) => ({ id: s.id, variantOf: s.variantOf || null, week: s.week, kind: s.kind, slot: s.slot, subject: s.subject || null, topic: s.experiment?.topic || null, hook: hookOf(s), verses: versesOf(s), ...extra });
 
 /**
  * Problems with spec `s` (array of strings, empty = fine).
  * others: history rows + the rest of the batch (rows, same id is skipped); posted: [{ ref, date }] from used-verses.json.
  */
 export function repeatProblems(s, others, posted = [], { requireSubject = true } = {}) {
-  const out = [], me = rowOf(s), rows = others.filter(o => o.id !== s.id);
+  // a look variant (the same story in another look, spec.variantOf) is not a repeat of its original or of the other variants
+  const fam = new Set([s.id, s.variantOf].filter(Boolean));
+  const out = [], me = rowOf(s), rows = others.filter(o => o.id !== s.id && !fam.has(o.id) && !(o.variantOf && fam.has(o.variantOf)));
   const when = o => o.week === s.week ? 'this week' : `${o.week || 'earlier'}`;
   for (const v of me.verses) {
     if (v.main) {

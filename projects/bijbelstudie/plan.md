@@ -103,7 +103,7 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
 - `style`: `light`, `dark` or `photo` (reels and carousels).
 - `style3d` (reel-3d): `lowpoly` (faceted triangles, flat colours), `rond` (smooth toy look), `toon`
   (cartoon, outlines), `blok` (everything blocks), `klei` (claymation), `silhouet` (shadow play against a
-  dusk sky - strong for evening and night stories), `papier` (storybook paper). Alex wants many styles tried:
+  dusk sky - strong for evening and night stories), `papier` (storybook paper), and two 2D looks drawn by templates/film2d.js from the same spec: `getekend` (hand-drawn, muted and dark, round-headed figures, handwritten type) and `stickman` (flat vector stick figures with black heads, colourful skies, heavy type). Alex wants many styles tried:
   follow the `style3d` target in allocation.json, and vary it from day to day (`performance.json`).
 - `experiment.hook` and `experiment.topic` on every item (`topic`: boek, persoon, context, woord,
   thema, vers, app, praktisch).

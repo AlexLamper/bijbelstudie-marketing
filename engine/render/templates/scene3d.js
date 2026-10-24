@@ -12,6 +12,7 @@ const FPS3D = 24;                       // animation-film frame rate (and a quar
 const HEAD = { stand: 1.6, walk: 1.6, sit: 1.22, row: 1.22, kneel: 1.18, lie: .3 };
 
 T['reel-3d'] = (spec, timing) => {
+  if (window.FILM2D?.looks.includes(spec.style3d)) return window.FILM2D(spec, timing);   // the 2D looks (templates/film2d.js)
   const W = 1080, H = 1920;
   setStyle(spec.style3d || 'lowpoly');   // before anything 3D is built
   const L = ground('dark', spec); stage.style.background = '#000';
