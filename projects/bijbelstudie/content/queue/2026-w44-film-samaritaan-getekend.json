@@ -1,0 +1,224 @@
+{
+  "id": "2026-w44-film-samaritaan-getekend",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-27T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een man ligt gewond langs de weg naar Jericho. Een priester loopt door, een Leviet ook. Dan stopt iemand van wie niemand het verwachtte. Lukas 10 in beeld, met uitleg naast de tekst in BijbelStudie.",
+  "hashtags": [
+    "#barmhartigesamaritaan",
+    "#lukas10",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "calm",
+  "captions": "karaoke",
+  "hook": "Twee mensen liepen hem voorbij. De derde stopte.",
+  "style3d": "getekend",
+  "basedOn": "Lukas 10:29-37 (SV): wie is mijn naaste; een man van Jeruzalem naar Jericho, overvallen, half dood; priester en Leviet gaan voorbij; de Samaritaan verbindt zijn wonden met olie en wijn, brengt hem naar een herberg, betaalt de waard; ga heen en doe gij desgelijks.",
+  "subject": "De barmhartige Samaritaan",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "thema",
+    "note": "zelfde verhaal als 2026-w44-film-samaritaan, andere look (getekend)"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "reiziger",
+      "look": "man-bijbels-2",
+      "name": "Een reiziger"
+    },
+    {
+      "id": "priester",
+      "look": "oude-man-bijbels",
+      "name": "Een priester"
+    },
+    {
+      "id": "leviet",
+      "look": "man-bijbels",
+      "name": "Een Leviet"
+    },
+    {
+      "id": "samaritaan",
+      "look": "zeeman",
+      "name": "Een Samaritaan"
+    }
+  ],
+  "shots": [
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "establish",
+      "text": "Lukas 10",
+      "actors": [
+        {
+          "id": "reiziger",
+          "at": "pad-ver",
+          "to": "pad-boven"
+        }
+      ],
+      "say": "Iemand vroeg aan Jezus: wie is mijn naaste? Jezus vertelde over een man die van Jeruzalem naar Jericho reisde."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "reiziger",
+          "at": "berm",
+          "mood": "verdrietig"
+        }
+      ],
+      "say": "Onderweg werd hij overvallen. Ze sloegen hem, namen alles mee, en lieten hem half dood liggen."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "track",
+      "on": "priester",
+      "actors": [
+        {
+          "id": "priester",
+          "at": "pad-boven",
+          "to": "pad-dichtbij"
+        },
+        {
+          "id": "reiziger",
+          "at": "berm"
+        }
+      ],
+      "say": "Er kwam een priester langs. Hij zag hem liggen, en liep aan de andere kant voorbij."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "track",
+      "on": "leviet",
+      "actors": [
+        {
+          "id": "leviet",
+          "at": "pad-boven",
+          "to": "pad-dichtbij"
+        },
+        {
+          "id": "reiziger",
+          "at": "berm"
+        }
+      ],
+      "say": "Daarna kwam er een Leviet. Ook hij zag hem, en ging verder."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "sky",
+      "hold": 2,
+      "actors": [
+        {
+          "id": "reiziger",
+          "at": "berm"
+        }
+      ]
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "wide",
+      "verse": "Lukas 10:33",
+      "actors": [
+        {
+          "id": "samaritaan",
+          "at": "pad-boven",
+          "to": "berm-naast"
+        },
+        {
+          "id": "reiziger",
+          "at": "berm"
+        }
+      ],
+      "say": "Maar een zeker Samaritaan, reizende, kwam omtrent hem, en hem ziende, werd hij met innerlijke ontferming bewogen."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "samaritaan",
+          "at": "berm-naast",
+          "face": "reiziger"
+        },
+        {
+          "id": "reiziger",
+          "at": "berm"
+        }
+      ],
+      "say": "Hij verbond zijn wonden met olie en wijn, zette hem op zijn eigen dier, en bracht hem naar een herberg."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "samaritaan",
+          "at": "kampvuur"
+        },
+        {
+          "id": "reiziger",
+          "at": "tent",
+          "base": "lie"
+        }
+      ],
+      "say": "Daar zorgde hij voor hem. En hij betaalde de waard, zodat er voor hem gezorgd werd tot hij beter was."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "sky",
+      "verse": "Lukas 10:37",
+      "actors": [
+        {
+          "id": "samaritaan",
+          "at": "kampvuur"
+        },
+        {
+          "id": "reiziger",
+          "at": "tent",
+          "base": "lie"
+        }
+      ],
+      "say": "En hij zeide: Die barmhartigheid aan hem gedaan heeft. Zo zeide dan Jezus tot hem: Ga heen, en doe gij desgelijks."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "aerial",
+      "app": "web:bijbel/lukas/10",
+      "actors": [
+        {
+          "id": "samaritaan",
+          "at": "kampvuur"
+        },
+        {
+          "id": "reiziger",
+          "at": "tent",
+          "base": "lie"
+        }
+      ],
+      "say": "Lees het in Lukas 10, met uitleg naast de tekst, in BijbelStudie."
+    }
+  ],
+  "variantOf": "2026-w44-film-samaritaan"
+}
