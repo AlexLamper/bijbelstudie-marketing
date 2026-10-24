@@ -19,11 +19,20 @@ await (await import('../library.mjs')).loadVoices(d);     // voice test set for 
 // RENDER_MINUTES (default 140) so it ends inside its time limit; the next run picks up the rest.
 // a failed item is tried again (at most 3 times in a row), also when it still has an older video - e.g. a
 // rewritten item (Revise, Learn) whose new render failed once
-const WAITING = { $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, renderAttempts: { $not: { $gte: 3 } } }] };
+// An item still "rendering" long after any job could be on it (render.yml stops a job at 160 min) was cut
+// off by that limit: it is picked up again, so it never stays stuck.
+const STALE_MIN = 170;
+const WAITING = () => ({ $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, renderAttempts: { $not: { $gte: 3 } } },
+  { status: STATUS.RENDERING, renderStartedAt: { $lt: new Date(Date.now() - STALE_MIN * 60e3) } }] });
 const stopAt = Date.now() + Number(process.env.RENDER_MINUTES || 140) * 60e3;
+// A map story takes long (about 3 s a frame, 60-90 min): with less time left a job takes other items first,
+// so it is not cut off halfway (the next run takes the story).
+const LONG = { 'reel-story': 95 };
+const claimable = () => { const left = (stopAt - Date.now()) / 60e3 + 20; const skip = Object.entries(LONG).filter(([, m]) => left < m).map(([k]) => k);
+  return skip.length ? { $and: [WAITING(), { kind: { $nin: skip } }] } : WAITING(); };
 // Storage first: when media cannot be stored (24 Oct: the Blob store was suspended over its limit), rendering
 // would only throw the work away. Then nothing is claimed, the items stay queued, and the run fails visibly.
-if (await items.countDocuments(WAITING)) {
+if (await items.countDocuments(WAITING())) {
   try { const f = join(tmpdir(), `probe-${Date.now()}.txt`); writeFileSync(f, 'probe'); await remove([await upload(f, `${project().id}/probe/${Date.now()}.txt`)]); }
   catch (e) {
     console.error(`[${project().id}] media storage does not work (${e.message}) - nothing rendered, the items stay queued`);
@@ -50,7 +59,7 @@ async function say(text, voice, opts = {}) {
   return out;
 }
 const browser = await launch(); let ok = 0, n = 0;
-const claim = async () => { const r = await items.findOneAndUpdate(WAITING, { $set: { status: STATUS.RENDERING, renderStartedAt: new Date() }, $inc: { renderAttempts: 1 } }, { sort: { slot: 1 }, returnDocument: 'after' }); return r?.value !== undefined && r?.ok !== undefined ? r.value : r; };
+const claim = async () => { const r = await items.findOneAndUpdate(claimable(), { $set: { status: STATUS.RENDERING, renderStartedAt: new Date() }, $inc: { renderAttempts: 1 } }, { sort: { slot: 1 }, returnDocument: 'after' }); return r?.value !== undefined && r?.ok !== undefined ? r.value : r; };
 
 for (let it = await claim(); it; it = Date.now() < stopAt ? await claim() : null) {
   n++;
