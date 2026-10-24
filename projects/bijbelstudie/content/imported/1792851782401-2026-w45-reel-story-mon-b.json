@@ -1,0 +1,78 @@
+{
+  "id": "2026-w45-reel-story-mon-b",
+  "week": "2026-W43",
+  "slot": "2026-10-24T17:00:00+02:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Waarom vluchtte Jona eigenlijk? In hoofdstuk 4 zegt hij het zelf: omdat hij wist dat God genadig en barmhartig is. En het boek eindigt met een vraag van God.\n\nLees Jona met uitleg en context in BijbelStudie. Download gratis.",
+  "hashtags": [
+    "#jona",
+    "#bijbel",
+    "#bijbelstudie",
+    "#oudetestament"
+  ],
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "boek"
+  },
+  "basedOn": "Jona 1:2-3 (Ninevé; Jafo = Joppe; schip naar Tarsis), 1:4-17, 3:3-10, 4:1-2 (zijn eigen reden om te vluchten), 4:11 (slotvraag); Jona heeft 4 hoofdstukken.",
+  "subject": "Jona",
+  "kind": "reel-story",
+  "style": "dark",
+  "music": "cinematic",
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "captions": "block",
+  "endCard": {
+    "headline": "Lees Jona met uitleg.",
+    "button": "Download gratis"
+  },
+  "hook": "Jona vluchtte voor Gods genade. Dat zegt hij zelf.",
+  "scenes": [
+    {
+      "say": "God stuurt Jona naar Ninevé, een grote stad in het oosten.",
+      "show": "map",
+      "places": [
+        "nineve"
+      ]
+    },
+    {
+      "say": "Maar Jona neemt in Joppe een schip naar Tarsis. De andere kant op.",
+      "show": "map",
+      "places": [
+        "joppe"
+      ]
+    },
+    {
+      "say": "Dan komen de storm en de grote vis.",
+      "show": "map",
+      "places": [
+        "joppe"
+      ]
+    },
+    {
+      "say": "Daarna gaat hij toch. En heel Ninevé bekeert zich.",
+      "show": "map",
+      "places": [
+        "joppe",
+        "nineve"
+      ]
+    },
+    {
+      "say": "Jona wordt boos. Hij zegt waarom hij vluchtte: hij wist dat God genadig is. En die genade gunde hij Ninevé niet.",
+      "show": "text",
+      "text": "Ik wist, dat Gij een genadig en barmhartig God zijt. - Jona 4:2"
+    },
+    {
+      "say": "Het boek eindigt met een vraag van God. Over een stad vol mensen, en veel vee.",
+      "show": "verse",
+      "verse": "Jona 4:11"
+    },
+    {
+      "say": "Jona telt maar vier hoofdstukken. Lees ze met uitleg, in BijbelStudie.",
+      "show": "text"
+    }
+  ]
+}
