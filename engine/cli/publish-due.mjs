@@ -1,4 +1,6 @@
-// Runs every 30 minutes, per project: publishes APPROVED items whose slot has passed, platform by
+// Runs every hour, per project. First, every posting time that is open now (engine/slots.mjs) takes the
+// next item of its type from the pile of approved items (approved longest ago first) - Alex approves
+// without dates, the pile is the schedule. Then it publishes the items whose time has come, platform by
 // platform. Only approved items are ever touched. A platform that fails is retried next run (max 3x);
 // platforms that succeeded are never posted twice. A platform that is not linked yet is waited for
 // (link it on the studio's Instellingen page) for up to a day, then skipped.
@@ -13,6 +15,7 @@ import { youtubeConfigured, publishYouTube } from '../publish/youtube.mjs';
 import { tiktokConfigured, uploadPostConfigured, publishTikTok } from '../publish/tiktok.mjs';
 import { notify, studioLink } from '../notify.mjs';
 import { project } from '../project.mjs';
+import { openTimes, slotGroup, approvedAt, localDay } from '../slots.mjs';
 
 const PUBLISHERS = {
   instagram: { ok: metaConfigured, run: publishInstagram, label: 'Instagram' },
@@ -26,7 +29,22 @@ const WAIT_FOR_LINK_MS = 24 * 3600e3;
 const d = await db();
 const items = d.collection('items');
 const linked = await applyConnections();          // accounts linked in the studio
-const due = await items.find({ status: { $in: [STATUS.APPROVED, STATUS.PARTIAL] }, slot: { $lte: new Date() } }).sort({ slot: 1 }).toArray();
+// The pile: an open posting time takes the next approved item of its type that has no time yet.
+const tz = project().timezone || 'Europe/Amsterdam'; const now = new Date();
+const open = openTimes({ now, tz });
+if (open.length) {
+  const used = new Set((await items.find({ postAt: { $in: open.map(t => t.at) } }, { projection: { postAt: 1 } }).toArray()).map(o => +new Date(o.postAt)));
+  const pile = (await items.find({ status: STATUS.APPROVED, postAt: null }).toArray()).sort((a, b) => approvedAt(a) - approvedAt(b));
+  for (const t of open.filter(t => !used.has(+t.at))) {
+    const i = pile.findIndex(it => slotGroup(it.kind, it.spec.platforms) === t.group); if (i < 0) continue;
+    const [it] = pile.splice(i, 1);
+    const r = await items.updateOne({ _id: it._id, status: STATUS.APPROVED, postAt: null }, {
+      $set: { postAt: t.at, slot: t.at, 'spec.slot': t.iso, week: t.week, 'spec.week': t.week, plannedSlot: it.plannedSlot || it.slot },
+      $push: { history: { at: now, event: 'scheduled', note: `${localDay(t.at, tz)} ${t.time}` } } });
+    if (r.modifiedCount) console.log(`[${project().id}] ${it._id}: from the pile for ${t.time}`);
+  }
+}
+const due = await items.find({ $or: [{ status: STATUS.PARTIAL }, { status: STATUS.APPROVED, postAt: { $lte: now } }] }).sort({ postAt: 1, slot: 1 }).toArray();
 const tmp = mkdtempSync(join(process.env.TMPDIR || tmpdir(), 'pub-'));
 const problems = []; const waiting = new Set(); const tiktokPrivate = [];
 

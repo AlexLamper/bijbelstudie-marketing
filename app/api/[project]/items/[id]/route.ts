@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
 import { getProject } from '@/lib/projects';
-import { DEFAULT_TZ, slotMessage } from '@/lib/postingSlots';
-import { freeSlotFor, scheduledEvent, slotFields } from '@/lib/schedule';
 
 const NEXT: Record<string, string> = { approve: 'approved', changes: 'changes', reject: 'rejected', reset: 'review' };
 const LONG_DASH = /[–—]/;
 
-// PATCH { action: approve | changes (+comment) | reject | reset }       review decisions; approve also gives
-//                                                                        the item the next free posting time
-//                                                                        (lib/postingSlots.ts)
+// PATCH { action: approve | changes (+comment) | reject | reset }       review decisions; approve puts the item
+//                                                                        on the pile (no date: the publish job
+//                                                                        takes from it every day, lib/postingSlots.ts)
 // PATCH { action: 'edit', caption, hashtags }                            fix the text yourself, no Claude round trip
 // PATCH { action: 'now' }                                                post an approved item at the next run
 // PATCH { action: 'rerender' }                                           make the media again (e.g. after choosing voices)
@@ -50,9 +48,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ projec
 
   if (action === 'now') {
     if (item.status !== 'approved') return NextResponse.json({ error: 'Keur het eerst goed.' }, { status: 409 });
-    await db.collection('items').updateOne({ _id: id as any }, { $set: { slot: at, 'spec.slot': at.toISOString(), updatedAt: at },
+    await db.collection('items').updateOne({ _id: id as any }, { $set: { postAt: at, slot: at, 'spec.slot': at.toISOString(), updatedAt: at },
       $push: { history: { at, event: 'post-now' } } as any });
-    return NextResponse.json({ ok: true, message: 'Gaat online bij de volgende ronde (binnen 30 minuten).' });
+    return NextResponse.json({ ok: true, message: 'Gaat online bij de volgende ronde (binnen een uur).' });
   }
 
   const status = NEXT[action];
@@ -63,18 +61,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ projec
   const update: any = { $set: { status, updatedAt: at }, $push: { history: { at, event: action, note } } };
   if (note) update.$push.reviewComments = { text: note, at };
 
-  // Approving is the decision to post: the item goes out at the next free posting time from now,
-  // not on the date the planner wrote.
+  // Approving puts the item on the pile: no date. Every day the publish job takes the next item of each
+  // type from it (approved longest ago first). Leaving "approved" takes it off the pile again.
   if (action === 'approve') {
-    const tz = getProject(project)!.timezone || DEFAULT_TZ;
-    if (item.status === 'approved') return NextResponse.json({ ok: true, status, message: slotMessage(item.slot, { now: at, tz }) });
+    if (item.status === 'approved') return NextResponse.json({ ok: true, status, message: 'Staat al op de stapel.' });
     if (['queued', 'rendering'].includes(item.status)) return NextResponse.json({ error: 'Wordt nog gemaakt - keur hem goed als hij klaar is.' }, { status: 409 });
-    const slot = await freeSlotFor(db, item as any, tz, at);
-    Object.assign(update.$set, slotFields(slot));
-    update.$push.history = { $each: [update.$push.history, scheduledEvent(slot, tz, at)] };
+    update.$set.approvedAt = at; update.$unset = { postAt: '' };
     await db.collection('items').updateOne({ _id: id as any }, update);
-    return NextResponse.json({ ok: true, status, slot: slot.iso, message: slotMessage(slot.at, { now: at, tz }) });
+    return NextResponse.json({ ok: true, status, message: 'Goedgekeurd - hij staat op de stapel en gaat vanzelf online.' });
   }
+  if (item.status === 'approved' && !item.results) update.$unset = { postAt: '' };
 
   await db.collection('items').updateOne({ _id: id as any }, update);
   return NextResponse.json({ ok: true, status });

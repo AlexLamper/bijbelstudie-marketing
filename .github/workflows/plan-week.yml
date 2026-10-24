@@ -5,7 +5,7 @@
 name: Plan day
 # Started daily at 04:00 UTC by the studio's timer (Vercel Cron, /api/cron/plan); GitHub's own schedule is not
 # used here so the planner can never run twice. By hand: Actions > Plan day > Run workflow.
-# export-context sets skip=true when the next free day is more than 3 days ahead (PLAN_FORCE overrides).
+# export-context sets skip=true when enough is waiting already (20+ items to make or review, or 25+ approved on the pile; PLAN_FORCE overrides).
 on:
   workflow_dispatch:
     inputs:

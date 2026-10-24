@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 import { Button, Pill } from '@/components/ui';
 import { toast } from '@/components/Toast';
 import { KIND, PLATFORM, STATUS, traitValue } from '@/lib/labels';
-import { DEFAULT_TZ, postingTimesText, slotLabel } from '@/lib/postingSlots';
+import { DEFAULT_TZ } from '@/lib/postingSlots';
 
-// Not yet decided: the planner's date is only provisional, approving gives the real posting time.
-const UNSCHEDULED = ['review', 'changes', 'queued', 'rendering', 'failed'];
+// No dates on cards: approved items wait on the pile and go out by themselves (lib/postingSlots.ts).
 
 export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: string; item: any; tz?: string }) {
   const router = useRouter();
@@ -70,10 +69,7 @@ export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-ink-muted">
           <span>{KIND[item.kind] || item.kind}</span>
-          {UNSCHEDULED.includes(item.status) ? <span>Nog niet ingepland</span>
-            : item.status === 'approved' ? <span className="text-accent-dark" title="Gaat dan online">{slotLabel(item.slot, { tz })}</span>
-            : ['published', 'partial'].includes(item.status) ? <span title="Online sinds">{slotLabel(item.publishedAt || item.slot, { tz })}</span>
-            : null}
+          {item.status === 'approved' && <span className="text-accent-dark">{item.postAt ? 'Aan de beurt' : 'Op de stapel'}</span>}
         </div>
         {s.verse && <p className="mt-2 font-serif text-[15px] leading-snug text-ink">&ldquo;{s.verse.text}&rdquo; <span className="whitespace-nowrap text-xs font-bold text-accent-dark">{s.verse.ref}</span></p>}
         {(s.hook || s.question || s.headline || s.line || s.slides?.[0]?.title) && <p className="mt-2 font-semibold leading-snug">{s.hook || s.question || s.headline || s.line || s.slides[0].title}</p>}
@@ -147,14 +143,11 @@ export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: 
           </div>
         )}
         {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
-        {item.status === 'approved' && new Date(item.slot) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen 30 minuten).</p>}
+        {item.status === 'approved' && item.postAt && new Date(item.postAt) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen een uur).</p>}
         {item.status === 'rejected' && <p className="mt-2 rounded-md bg-bg px-2 py-1 text-xs text-ink-muted ring-1 ring-line">Wordt na ongeveer een dag verwijderd (video en item). Tot dan kun je het nog goedkeuren of laten aanpassen; de planner onthoudt wat je hebt afgewezen.</p>}
         {item.results && Object.values(item.results).some((r: any) => r.waiting) && <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-warn">Wacht op koppeling: {Object.entries(item.results).filter(([, r]: any) => r.waiting).map(([p]) => PLATFORM[p] || p).join(', ')} - zie Instellingen.</p>}
         {canDecide && (
           <div className="mt-auto pt-4">
-            {item.status !== 'approved' && !open && (
-              <p className="mb-2 text-xs text-ink-muted">Na goedkeuren gaat hij om de eerstvolgende vrije {postingTimesText(item.kind, s.platforms)} online.</p>
-            )}
             <div className="flex flex-wrap gap-2">
               {open ? <>
                   <Button variant="primary" className="flex-1" disabled={busy || !note.trim()} onClick={() => act('changes')}>Verstuur opmerking</Button>
@@ -165,7 +158,7 @@ export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: 
                     ? <Button variant="primary" className="flex-1" disabled={busy} onClick={() => act('approve')}>Goedkeuren</Button>
                     : <>
                         <Button className="flex-1" disabled={busy} onClick={() => act('reset')}>Terug naar keuren</Button>
-                        {new Date(item.slot) > new Date() && <Button variant="ghost" disabled={busy} onClick={() => patch({ action: 'now' })} title="Plaats bij de volgende ronde in plaats van op het geplande tijdstip">Nu plaatsen</Button>}
+                        {!item.postAt && <Button variant="ghost" disabled={busy} onClick={() => patch({ action: 'now' })} title="Plaats bij de volgende ronde in plaats van te wachten op zijn beurt">Nu plaatsen</Button>}
                       </>}
                   <Button disabled={busy} onClick={() => act('changes')}>Aanpassen</Button>
                   {item.status !== 'rejected' && <Button variant="danger" disabled={busy} onClick={() => act('reject')}>Weg</Button>}

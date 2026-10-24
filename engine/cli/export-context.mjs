@@ -21,19 +21,26 @@ const rows = items.map(it => ({ id: it._id, week: it.week, kind: it.kind, status
   results: score(it), perPlatform: it.metrics || {}, review: (it.reviewComments || []).map(c => c.text) }));
 writeFileSync(join(OUTD, 'performance.json'), JSON.stringify(rows, null, 2));
 
-// Which day to plan: the first day from tomorrow (project timezone) that has no items yet. The file keeps its
-// name (target-week.json) and its shape; `days` holds just that one day.
+// Which day to plan: the first day from tomorrow (project timezone) that has no items yet, by the date the
+// planner gave them (plannedSlot once the publish job has given an item its real posting time). Only a label
+// for ids and the day's recipe now: items go online from the pile of approved items, not on this date.
+// The file keeps its name (target-week.json) and its shape; `days` holds just that one day.
 const { dayTarget } = await import('../days.mjs');
-const upcoming = await d.collection('items').find({ slot: { $gte: new Date(Date.now() - 2 * 864e5) } }, { projection: { slot: 1 } }).toArray();
-const T = dayTarget(upcoming.map(it => it.slot), { tz: P.timezone });
+const since = new Date(Date.now() - 2 * 864e5);
+const upcoming = await d.collection('items').find({ $or: [{ plannedSlot: { $gte: since } }, { plannedSlot: null, slot: { $gte: since } }] }, { projection: { slot: 1, plannedSlot: 1 } }).toArray();
+const T = dayTarget(upcoming.map(it => it.plannedSlot || it.slot), { tz: P.timezone });
 const target = { date: T.date, day: T.day, week: T.week, idPrefix: T.idPrefix, utcOffset: T.utcOffset,
   note: `Plan exactly this one day (${T.day} ${T.date}, ${P.timezone}). Item ids start with idPrefix, e.g. ${T.idPrefix}-verse; "week" is ${T.week}.`,
   days: [{ day: T.day, date: T.date, utcOffset: T.utcOffset }], daysAhead: T.daysAhead, plannedDays: T.plannedDays };
 writeFileSync(join(OUTD, 'target-week.json'), JSON.stringify(target, null, 2));
 if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, `date=${T.date}\n`);
-// Never plan more than 3 days ahead (the daily run keeps that lead; a second run would otherwise plan the day after).
-// The context is still written in full (a revise run needs it); only the planning steps are skipped.
-const skip = T.daysAhead > 3 && !process.env.PLAN_FORCE;
+// Plan a day every morning, unless enough is waiting already: PLAN_BACKLOG items still to be made or
+// reviewed, or PLAN_PILE approved items not yet online (about a week of posts). The context is still
+// written in full (a revise run needs it); only the planning steps are skipped.
+const PLAN_BACKLOG = 20, PLAN_PILE = 25;
+const backlog = await d.collection('items').countDocuments({ status: { $in: ['queued', 'rendering', 'review', 'changes'] } });
+const pile = await d.collection('items').countDocuments({ status: 'approved', postAt: null });
+const skip = (backlog >= PLAN_BACKLOG || pile >= PLAN_PILE) && !process.env.PLAN_FORCE;
 
 // Experiments: the scoreboard and the day's allocation (engine/experiments.mjs), the voices and
 // music that exist, and the voice budget for the day.
@@ -90,7 +97,7 @@ const history = historyFrom(await d.collection('items').find({ slot: { $gte: new
 writeFileSync(join(OUTD, 'history.json'), JSON.stringify({ note: `Do not repeat: a verse of the day never again; any shown verse not within ${VERSE_DAYS} days; a subject not within ${SUBJECT_WEEKS} weeks (app/praktisch: ${APP_SUBJECT_WEEKS}) and never twice in a week; a hook not (nearly) the same within ${HOOK_WEEKS} weeks. Newest first.`, items: history }, null, 2));
 console.log(`[${P.id}] target ${T.day} ${T.date} (${T.week}, ${T.daysAhead} days ahead); context: ${rows.length} items, ${history.length} in history, ${changes.length} changes, ${rejected.length} rejected, ${comments.length} comments, ${top.length} competitor posts`);
 if (skip) {
-  console.log(`[${P.id}] ${T.date} is ${T.daysAhead} days ahead - the coming days are planned already, no day to plan today`);
+  console.log(`[${P.id}] enough waiting (${backlog} to make or review, ${pile} approved on the pile) - no new day planned today`);
   if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
 }
 await heartbeat('plan', { day: T.date, items: rows.length, changes: changes.length });

@@ -109,16 +109,15 @@ if (storageConfigured()) {
   }
   if (gone) console.log(`removed ${gone} rejected items (media + item)`);
 }
-// Reminder (once a day): what waits for Alex's approval. Items go online when approved (the next free
-// time, engine/slots.mjs), so the planner's date does not matter - say how much is ready and how much is
-// already scheduled for the next 36 hours.
-const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] } }).sort({ createdAt: -1 }).toArray();
+// Reminder (once a day): what waits for Alex's approval, and how full the pile of approved items is
+// (every day the publish job takes the next ones from it; no dates).
+const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] } }).toArray();
 if (soon.length) {
   const { notify, studioLink } = await import('../notify.mjs');
-  const planned = await items.countDocuments({ status: STATUS.APPROVED, slot: { $gte: new Date(), $lte: new Date(Date.now() + 36 * 3600e3) } });
+  const pile = await items.countDocuments({ status: STATUS.APPROVED, postAt: null });
   const review = soon.filter(i => i.status === STATUS.REVIEW).length;
   await notify(`Wacht op je akkoord: ${review || soon.length} ${(review || soon.length) === 1 ? 'item' : 'items'}`, [
-    planned ? `Ingepland voor de komende 36 uur: ${planned}. Wat je goedkeurt, gaat de eerstvolgende vrije tijd online.` : 'Voor de komende 36 uur staat nog niets ingepland. Wat je goedkeurt, gaat de eerstvolgende vrije tijd online.',
+    pile ? `Op de stapel goedgekeurd: ${pile}. Wat je goedkeurt, komt erbij en gaat vanzelf online.` : 'De stapel goedgekeurde items is leeg: zonder goedkeuring gaat er niets online.',
     soon.some(i => i.status === STATUS.CHANGES) ? 'Een paar wachten op aanpassingen door Claude.' : 'Keur goed of wijs af in de studio.'],
     studioLink(''), { replaces: 'Wacht op je akkoord' });
 }

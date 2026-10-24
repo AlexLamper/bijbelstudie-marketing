@@ -48,7 +48,7 @@ without a prefix. Every other project uses its `envPrefix` from `project.json`, 
 
 ## How it runs
 
-- **Every morning** 04:00 UTC: Plan day (Claude, one project after the other) plans the first day from tomorrow without content (at most 3 days ahead; on Mondays also the week report) -> import -> render -> you get "<Project>: <dag> staat klaar".
+- **Every morning** 04:00 UTC: Plan day (Claude, one project after the other) plans one day of content unless enough is waiting already (on Mondays also the week report) -> import -> render -> you get "<Project>: Klaar om te keuren". What you approve goes on the pile and goes online by itself.
 - **Studio**: approve, "Aanpassen" with a comment, fix a caption yourself, "Nu plaatsen", "Opnieuw renderen", or remove.
   "Aanpassingen naar Claude" -> revised within 30 min (the Publish job starts Revise and Render when the studio asks).
 - **Reminders**: one notice a day when posts for the next 36 hours still wait for approval, or when approved posts wait for an account link.

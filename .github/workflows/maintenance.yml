@@ -1,13 +1,11 @@
 # By hand: one-off engine jobs that change data (each is idempotent).
 #   set-subjects - subjects from projects/<id>/content/subjects.json into older items (no-repeat check)
 #   week-status  - print a week's items, statuses and review comments (args: the week, e.g. 2026-W45)
-#   reslot-approved - give every approved item that has not gone out the next free posting time from now,
-#                  in the order they were approved (engine/slots.mjs; args: --dry-run to only print)
 name: Maintenance
 on:
   workflow_dispatch:
     inputs:
-      task: { description: 'Job', required: true, type: choice, options: [set-subjects, week-status, reslot-approved] }
+      task: { description: 'Job', required: true, type: choice, options: [set-subjects, week-status] }
       args: { description: 'Arguments for the job', required: false, default: '' }
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
 permissions: { contents: read, issues: write }

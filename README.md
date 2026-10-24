@@ -8,10 +8,10 @@ Mornings    per project: Claude (planner/PLAN.md + projects/<id>/plan.md) reads 
             -> the specs of one day (the first day from tomorrow without content, at most 3 days
             ahead), comment replies, on Mondays the week report
             validate -> import to the project's Mongo database -> render (Playwright + ffmpeg,
-            voice via ElevenLabs/Google TTS) -> Vercel Blob -> "<Project>: <dag> staat klaar"
+            voice via ElevenLabs/Google TTS) -> Vercel Blob -> "<Project>: Klaar om te keuren"
 Studio      pick a project, approve / comment / reject (comments -> "Aanpassingen naar Claude" -> Revise)
 Every 30m   approved items whose time has come -> Instagram, Facebook, YouTube Shorts, TikTok
-            (approving gives an item the next free posting time: lib/postingSlots.ts)
+            (approving puts an item on the pile; every posting time takes the next one of its type)
 Daily       metrics, followers, new users, new comments; competitors on Mondays; rejected items
             removed a day after the rejection (a short record stays for the planner)
 ```

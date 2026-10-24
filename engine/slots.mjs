@@ -1,7 +1,8 @@
-// When an approved item goes online (engine copy of the studio's lib/postingSlots.ts - keep the two
-// the same). Items are posted on approval, not on the planner's date: an approved item gets the next
-// free posting time from now, in the project's time zone, one item per time per day. A time is taken
-// when another approved, published or partly published item already has it.
+// The posting rhythm. Alex approves items onto one pile (no dates); every day each posting time below
+// takes the next approved item of its type from the pile, the one approved longest ago first, and the
+// publish job (engine/cli/publish-due.mjs) posts it. One item per time per day, in the project's time zone.
+// A time stays open for WINDOW_MIN minutes, so a publish run that comes a little late still uses it, and
+// an item approved in the evening can still go out at 19:30 that same evening.
 //   verse-still                                   07:00
 //   post-spotlight / post-statement / carousel    12:00
 //   reels that go to instagram/facebook ("main")  19:30
@@ -14,8 +15,7 @@ export const POSTING_TIMES = {
   main: ['19:30'],
 };
 
-/** Statuses whose slot blocks that time for other items. */
-export const TAKES_SLOT = ['approved', 'published', 'partial'];
+export const WINDOW_MIN = 180;
 
 export function slotGroup(kind, platforms = []) {
   if (kind === 'verse-still') return 'verse';
@@ -73,23 +73,6 @@ export function isoWeekOf({ y, m, d }) {
   return `${yy}-W${pad(w)}`;
 }
 
-const minuteKey = x => Math.floor(new Date(x).getTime() / 60000);
-
-/** The next free posting time after `now`: { at, iso, week, date, time }. */
-export function nextFreeSlot(kind, platforms, taken, { now = new Date(), tz = 'Europe/Amsterdam', maxDays = 366 } = {}) {
-  const times = POSTING_TIMES[slotGroup(kind, platforms)];
-  const busy = new Set(); for (const x of taken) if (x != null) busy.add(minuteKey(x));
-  const today = localDate(now, tz);
-  for (let k = 0; k < maxDays; k++) {
-    const date = addDays(today, k);
-    for (const time of times) {
-      const at = zonedTime(date, time, tz);
-      if (at.getTime() > now.getTime() && !busy.has(minuteKey(at))) return { at, iso: isoWithOffset(at, tz), week: isoWeekOf(date), date, time };
-    }
-  }
-  throw new Error(`no free posting time in the next ${maxDays} days`);
-}
-
 const WEEKDAY = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
 const MONTH = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
 
@@ -99,8 +82,19 @@ export function localDay(at, tz) {
   return `${WEEKDAY[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} ${MONTH[m - 1]}`;
 }
 
-/** $set fields for a scheduled item: the slot itself, and the week it now belongs to. */
-export const slotFields = slot => ({ slot: slot.at, 'spec.slot': slot.iso, week: slot.week, 'spec.week': slot.week });
+/** Posting times that are open now: today's times from `at` until WINDOW_MIN minutes later. [{ group, time, at, iso, week }] */
+export function openTimes({ now = new Date(), tz = 'Europe/Amsterdam' } = {}) {
+  const today = localDate(now, tz); const out = [];
+  for (const [group, times] of Object.entries(POSTING_TIMES)) for (const time of times) {
+    const at = zonedTime(today, time, tz);
+    if (at.getTime() <= now.getTime() && now.getTime() < at.getTime() + WINDOW_MIN * 60e3) out.push({ group, time, at, iso: isoWithOffset(at, tz), week: isoWeekOf(today) });
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
 
-/** The history event that records the posting time (local time in the note). */
-export const scheduledEvent = (slot, tz, at) => ({ at, event: 'scheduled', note: `${localDay(slot.at, tz)} ${slot.time}` });
+/** When Alex approved an item (latest approval; older items: from their history). */
+export function approvedAt(it) {
+  if (it.approvedAt) return +new Date(it.approvedAt);
+  const ev = (it.history || []).filter(h => h.event === 'approve' || h.event === 'approve-all').map(h => +new Date(h.at));
+  return ev.length ? Math.max(...ev) : +new Date(it.updatedAt || it.createdAt || 0);
+}

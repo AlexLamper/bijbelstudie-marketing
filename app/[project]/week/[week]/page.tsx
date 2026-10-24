@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 const SCHEDULED = ['approved', 'published', 'partial'];
 
 // One week of items. What is approved or online is grouped by the day it goes out; what still waits
-// for a decision has no date yet (approving gives it the next free posting time), so it is listed first.
+// for a decision has no date (approving puts it on the pile, lib/postingSlots.ts), so it is listed first.
 export default async function Week({ params }: { params: Promise<{ project: string; week: string }> }) {
   const { project, week } = await params;
   const tz = getProject(project)?.timezone || DEFAULT_TZ;
