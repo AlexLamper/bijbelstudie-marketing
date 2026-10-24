@@ -13,98 +13,89 @@ Paths here (`brand/`, `content/`) are inside this project folder, `projects/bijb
 
 ## Recipe (per day)
 
-The planner plans one day per run (the day in `content/context/target-week.json`). Every day:
+The planner plans one day per run (the day in `content/context/target-week.json`). What Alex chose on
+24 Oct 2026 (also in `project.json`: `formatsAllowed`, `stylesAllowed`, `style3dAllowed`, `recipe`,
+`narratorOnly`; the validator holds you to it):
 
-| What | Per day | Slot | Platforms |
+| What | Per day | Slot (label) | Platforms |
 |---|---|---|---|
-| `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook |
-| Main reel | 1 | 19:30 | instagram, facebook, tiktok, youtube |
-| Extra test reels | 2 | 12:30 and 17:00 | tiktok, youtube |
-| Feed post | 1 on Tue, Thu, Sat and Sun only | 12:00 | instagram, facebook |
+| `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook (never tiktok/youtube) |
+| Story reels (`reel-story` or `reel-3d`) | 2 (`recipe.reelsPerDay`) | 19:30 and 19:35 | instagram, facebook, tiktok, youtube (always all four) |
 
-Over a week that is 7 daily verses, 7 main reels, 14 extras and 4 feed posts. The feed days are also
-in the engine (`engine/experiments.mjs` `FEED_DAYS`): change both together. Which formats fill the reel
-and feed slots comes from `allocation.json` (`mainReels.format`, `extraReels.format`, `feedPosts.format`;
-`feedPosts.slots` is 0 on the other days). Main reels get what works best (the account's face on
-Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<format short>`, with
-`-a`/`-b` for the two extras, e.g. `2026-w46-tue-quiz-a` (`idPrefix` already holds the week and the day).
+No feed posts, no other formats. Alex approves onto a pile; one reel a day goes out at 19:30 on every
+platform and the verse at 07:00 (`engine/slots.mjs`), so the `slot` is only a label. Which of the two
+formats fills the reel slots comes from `allocation.json` (`mainReels.format`). Ids: `<idPrefix>-verse`,
+`<idPrefix>-story` / `<idPrefix>-film` (`-b` for a second of the same), e.g. `2026-w46-tue-film`.
 
-## Formats
+## Formats (only these; Alex, 24 Oct: "you should not use the other ones anymore")
 
-- **reel-explainer** - voice over hook + 3-9 lines, verse cards and app screens. See Reel rules.
-- **reel-story** - a narrated story with animated scenes: `map` for journeys and places (keys from
-  `engine/render/data/places.json`, in route order), `timeline` for a sequence with years (only broadly
-  accepted dates; write "ca. 1000 v.Chr." when approximate), `text`, `verse`, `photo`, `stat` (a number
-  that counts up: `value` like "12" or "1500+" and a `label`; `text` = small source line; say the number
-  in the line), `tree` (a family line of 2-6 `name`s with short `note`s, each appears when its name is
-  spoken), `compare` (two cards, `left`/`right` with a `title` and 1-3 short `points`; `text` = optional
-  heading) and `word` (a Hebrew or Greek word in its own script with `translit` and a broadly accepted
-  `meaning`, optional `verse`; say the word in the line). 5-7 scenes, one per spoken line. Great for
-  persons, journeys, periods and "how did we get this book".
-- **reel-3d** - a 3D animated film: characters (`cast`, looks from `engine/render/3d/catalog.json`)
-  acting in 3D sets (`slaapkamer`, `woonkamer`, `zee`, `woestijn`, `stad`, `heuvels`, and `kaart` = a 3D
-  map with a route and a travelling caravan), shot by shot. Each shot is ONE line: the narrator (`say`,
-  voice = `voice`) or a character (`by` + `line`, voice = that cast member's `voice`), or a silent `hold`
-  of 1-4 s. Per shot: `set`, `time`, `weather` (zee), `camera`, `on`, `actors` (`at` a spot of the set,
-  optional `to` = walks there, `do` = action, `mood`, `face`), and optionally `text` (place/time label),
-  `verse` (verse card), `app` (the app full size on a phone) or `screen` (what the phone in a hand shows).
-  6-12 shots, 30-55 s. `style3d` = the look (see Traits). Kinds of 3D films to make - vary them:
-  - **Bijbelverhaal (most of them)**: a Bible story told by ONE calm narrator, shown in the world where it
-    happens (Alex: "displaying the Bible story visually"). The world and the action carry the film, the
-    people are small in it: cameras `establish` (first shot), `aerial`, `wide`, `track` (someone walking,
-    carrying), `sky` (stars, storm, the moment of a promise), `top`, `low`; at most one `medium`, no
-    `close`. A silent `hold` of 2 s (often `sky`) gives a story room to breathe. When the narrator reads a
-    `verse` card, `say` is exactly that verse's SV text. Examples: De verloren zoon, de barmhartige
-    Samaritaan, Jakob in Bethel, Rebekka bij de put, Abraham en de sterren, Filippus en de kamerling,
-    Paulus' schipbreuk. Facts only from the chapter; end with the app on that chapter or the end card.
-  - **Reis op de kaart**: `kaart` shots for a journey (places in travel order) between story shots, or a
-    whole film of map shots (Paulus' reizen). Alex likes the map stories best.
-  - **Herkenbare situatie (skit)**: now and then - someone today reads the Bible, gets stuck, asks a
-    friend, who shows how BijbelStudie explains it (phone shot + `app`). Real confusion from a real verse.
-  Voices (Alex, 24 Oct): ONE calm voice per film, at most two (the validator fails 3+). Use the narrator
-  (`voice` male or female, `voiceStyle` `rustig`); a character line (`by` + `line`) only when it really
-  adds something. Music only `calm`, `reflective` or `cinematic` (no happy/upbeat music).
-  Screens (Alex, 24 Oct): what a video shows must match what it says. For a Bible chapter use the live
-  page `web:bijbel/<boek>/<hoofdstuk>` (e.g. `web:bijbel/handelingen/27`, `web:bijbel/1-samuel/17`) or
-  `web:bijbelboeken/<boek>`; the app screenshots only show what `assets/screenshots/screens.json` says
-  (Deuteronomium 2, Filippenzen 2 and 4) - never one of those for another chapter. The validator checks it.
-  Never show Jesus or God as a figure (narrate about them instead), no angels as figures, no violence on
-  screen (tell it, show the aftermath: someone lying in the `berm`).
-  Useful spots: `heuvels` `pad-ver` -> `pad-boven` -> `pad` -> `pad-dichtbij` (a walk down the path;
-  `pad-ver` to `pad-dichtbij` is long, the walker is still walking when the shot ends), `berm` (lying by the
-  path) + `berm-naast` (kneeling beside), `beek` (a river, water), `kudde`; `woestijn` `bron` + `bron-2`
-  (a spring/well among the palms), `verte` (far away, arriving), `kampvuur`, `tent` (also an inn).
-  `do: carry` with `holds` (`kruik`, `steen`, `lam`, `mand`) also works while walking.
-  Walking (`to`): only between spots on the same ground - not up to `trap` or `muur` (raised), not between
-  the deck and the hold (`ruim`, `ruim-staan` are a separate room below deck). Lying (`ruim`, `bed-liggen`,
-  `berm`): use `wide`, `top` or `two-shot`, not `close`.
-  Skits in portrait video: put the people of a conversation close to each other (adjacent spots), start
-  with a `wide` or `push-in`, `two-shot`/`over-shoulder` for dialog, `phone` when the app is in a hand.
-- **reel-kinetic** - big words appearing line by line. 2-8 lines of max ~8 words, one thought per line,
-  `emphasis` = the one word that carries it. Works with and without voice (test both) and with music.
-- **reel-quiz** - a question Bible readers can answer, 3-4 plausible options, the answer straight from
-  the Bible text, `explain` in one or two sentences, `verseRef` for the verse it rests on. Caption invites answers in the comments.
-  Facts only; no trick questions about translations or denominations.
-- **reel-list** - "N dingen die je niet wist over ..." with 3-6 items, each a fact from the text with
-  `verse`. Use `say` for the spoken version when it differs from the short title.
-- **reel-verse** - like the daily verse; may be read aloud (`voice`) - test both.
-- **reel-demo** - hook + 2-5 app screens with one benefit each.
-- **carousel** - 5-8 slides for Instagram/Facebook: `cover` (the hook), then `point`/`text`/`verse`/
-  `screen` slides; give saveable value ("bewaar dit"); the CTA slide is added automatically.
-- **post-spotlight** / **post-statement** - see Feed posts.
+Every reel tells a Bible story (Alex: "the storytelling videos are going to do the best"), with ONE calm
+narrator: `voice` `male` or `female` (the two default voices Alex picked), `voiceStyle` `rustig`, no
+character lines. Music only `calm`, `reflective` or `cinematic`. Never show Jesus, God or angels as a
+figure (narrate about them), no violence on screen (tell it, show the aftermath).
+
+- **reel-story** (`style` `dark` only) - the map story, Alex's favourite: "the style with the map is
+  amazing". A narrated story told on a dark relief map of the Bible lands; the map stays on screen the
+  whole video (dimmed behind text and verse scenes). Alex found the first ones "too minimalistic, not
+  filled up enough" - so fill every map scene:
+  - `title` (top-level, max 34): the story's name on a chip at the top ("Jona en de grote vis").
+  - per scene `ref`: the passage of that line ("Jona 1:3", "Handelingen 27:14-20"), shown under the title.
+  - `places` (keys from `engine/render/data/places.json`, in route order; one place = a pin). With 2+
+    places set `travel` (`lopen`, `schip`, `kameel`): a walker/ship/camel rides the route and a chip counts
+    the kilometres (as the crow flies) - only when someone really travels that way.
+  - `marks`: 1-3 drawn icons beside a place, each appearing when its word is spoken (`cue`, else the icon's
+    name): `schip`, `storm`, `vis`, `golven`, `ark`, `stad`, `tempel`, `tent`, `berg`, `put`, `vuur`,
+    `kroon`, `zwaard`, `schapen`, `ster`, `graan`, `toren`, `rol`, `kruis`. `at` = one of the scene's
+    places (default the last), `side` (n, ne, e, se, s, sw, w, nw) only when it matters (sea things are put
+    on the sea, the rest on land, automatically). Use them for what happens there: a storm and a big fish
+    off Joppe, a tent at Bethel, a city at Ninevé, a well at Haran.
+  - At least 3 `map` scenes (the validator checks); `verse` and `text` scenes between them are fine; also
+    `timeline`, `tree`, `word` when they help. Never `photo` (Alex: a picture that suddenly appears breaks it).
+  - 5-7 scenes, one spoken line each, 30-50 s. The map, the routes and the icons carry the story: every
+    scene should show something new happening on the map.
+- **reel-3d** (`style3d` `stickman` or `getekend` only) - a Bible story as an animated 2D film (drawn by
+  `templates/film2d.js`): `cast`, sets (`slaapkamer`, `woonkamer`, `zee`, `woestijn`, `stad`, `heuvels`,
+  `kaart` = the map with a route), shot by shot. Each shot is ONE narrator line (`say`) or a silent `hold`
+  of 1-4 s. Per shot: `set`, `time`, `weather` (zee), `camera`, `on`, `actors` (`at` a spot, optional `to`
+  = walks there, `do`, `mood`, `face`, `holds`, `base`), optionally `text` (place/time label) or `verse`
+  (verse card; `say` is then exactly that verse's SV text). 6-12 shots, 30-55 s.
+  Alex (24 Oct): details must be right - depth, realism, who does what. So: the world and the action
+  carry the film, people small in it (cameras `establish` first, `aerial`, `wide`, `track`, `sky`, `top`,
+  `low`; at most one `medium`, no `close`); a silent `hold` of 2 s gives a story room to breathe; at most 4
+  people in a film; in a wide shot keep everyone within about 900 units of each other.
+  What people can do (2D looks): `do` `carry`/`give`/`help` with `holds` (`kruik`, `steen`, `lam`, `mand`,
+  `brood`, `vis`, `buidel`, `olie`), `help` (leans over someone, best kneeling at their head),
+  `embrace` (two people close, both with `face`), `bow` (with `base: "kneel"`, room in front), `weep`,
+  `raise` (both hands up), `pray`, `point`, `talk`, `sleep`; `mood` `verdrietig` while lying gives half-closed
+  eyes; `base: "ride"` = sits on a donkey (with `to` the donkey walks along: "zette hem op zijn eigen
+  dier"). Lying (`berm`, `bed-liggen`, `ruim`): `wide`, `top` or `two-shot`.
+  Useful spots: `heuvels` `pad-ver` -> `pad-boven` -> `pad` -> `pad-dichtbij` (a walk down the path),
+  `berm` (lying by the path) + `berm-naast` (kneeling at his head), `beek` (river), `kudde`; `woestijn`
+  `bron` + `bron-2` (a spring among the palms), `verte` (far away, arriving), `kampvuur`, `tent` (also an
+  inn). Walking (`to`): only between spots on the same ground - not up to `trap` or `muur`, not between the
+  deck and the hold (`ruim`, `ruim-staan`). Pattern for a rescue (Samaritaan): the wounded man at `berm`
+  (mood `verdrietig`); the helper `pad-boven` -> `berm-naast`, then `do: "help"`, `holds: "olie"`, `face`
+  the man; later the man rides.
+  Facts only from the chapter; end with the end card (or the app on that chapter: `web:bijbel/<boek>/<n>`).
+  Screens must match what is said: for a Bible chapter the live page `web:bijbel/<boek>/<hoofdstuk>` or
+  `web:bijbelboeken/<boek>`; the app screenshots only show what `assets/screenshots/screens.json` says.
+- **verse-still** - the daily verse (see Daily verse rules), every day, Instagram and Facebook only.
+
+Not made any more (Alex, 24 Oct): reel-explainer, reel-kinetic, reel-quiz, reel-list, reel-verse,
+reel-demo, carousel, post-spotlight, post-statement, reel-story in light/photo, and reel-3d in the 3D looks
+(lowpoly, rond, toon, blok, klei, silhouet, papier) and the poster looks (schets, stift, krijt).
 
 ## Traits (what each item tests)
 
-- `voice`: a key from `voices.json` (`male`/`female` = the default voices, others = the test set);
-  leave it out for no voice (only where the format allows; explainers and stories always speak).
+- `voice`: `male` or `female` (the two default voices Alex picked; `voices.json` lists what exists). One
+  narrator per video. (Alex: when several people speak, test-set voices may join - not used now, `narratorOnly`.)
 - `voiceStyle`: `rustig` only (Alex wants calm voices, not sharp ones; project.json `voiceStylesAllowed`). `captions`: `karaoke` (word by
   word), `block` or `none` - for voiced explainers, lists and stories.
 - `music`: a mood from `voices.json` `musicMoods` (only those exist), else leave it out.
-- `style`: `light`, `dark` or `photo` (reels and carousels).
-- `style3d` (reel-3d): `lowpoly` (faceted triangles, flat colours), `rond` (smooth toy look), `toon`
-  (cartoon, outlines), `blok` (everything blocks), `klei` (claymation), `silhouet` (shadow play against a
-  dusk sky - strong for evening and night stories), `papier` (storybook paper), and two 2D looks drawn by templates/film2d.js from the same spec: `getekend` (hand-drawn, muted and dark, round-headed figures, handwritten type) and `stickman` (flat vector stick figures with black heads, colourful skies, heavy type). Alex wants many styles tried:
-  follow the `style3d` target in allocation.json, and vary it from day to day (`performance.json`).
+- `style`: `dark` (reel-story).
+- `style3d` (reel-3d): `getekend` (hand-drawn, muted, round-headed figures, handwritten type) or `stickman`
+  (flat vector stick figures with black heads, colourful skies, heavy type). Follow the `style3d` target
+  in allocation.json and alternate them.
 - `experiment.hook` and `experiment.topic` on every item (`topic`: boek, persoon, context, woord,
   thema, vers, app, praktisch).
 - When you repeat a winner, change one thing (another verse, another hook line) - not everything.
@@ -114,10 +105,9 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
 
 - **Formats, looks, voices, music, subtitles, hooks, topics:** divided by `allocation.json` (Thompson
   sampling on fair scores, see `engine/experiments.mjs`). You follow it; you do not pick winners yourself.
-- **Feed posts:** `experiment.feedType` = `spotlight`, `statement` or `carousel`.
 - **Post times:** none to plan. The `slot` you write is only a label: Alex approves onto a pile and every
-  posting time takes the next approved item of its type (verse 07:00, feed post 12:00, extra reels 12:30/17:00,
-  main reel 19:30; `engine/slots.mjs`), so a time test in the spec has no effect - do not plan one.
+  posting time takes the next approved item of its type (verse 07:00, one reel 19:30 on every platform;
+  `engine/slots.mjs`), so a time test in the spec has no effect - do not plan one.
 - **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" in its caption: plan it when no item of the target's ISO week has it yet (see `performance.json`).
 
 ## Daily verse rules
@@ -129,12 +119,9 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
 
 ## Alex's favourites
 
-Alex likes the animated formats most: `reel-3d` (3D animated films with characters - he asked for
-"a lot more" of these and for many different styles), `reel-story` (his favourite are the map stories)
-and `reel-kinetic`. `project.json` `experimentPriors` gives them a head start in the allocation (3D the
-most), so they get most main slots until the numbers say otherwise; the other formats keep being tested
-in the extras. Put your best work into these: real motion in every scene, a strong first second, no
-static slides, a story with a turn.
+The map story (`reel-story` dark) and the story films in `stickman` and `getekend`. `project.json`
+`experimentPriors` gives them a head start; between the two, the numbers decide over time. Put your best
+work into every one: real motion in every scene, a strong first second, no static frames, a story with a turn.
 
 ## No repeats
 
@@ -155,15 +142,10 @@ Alex does not want repetitive videos. The validator (and the import after it) en
 ## Reel rules
 
 - **Hook first:** the first line must stop the scroll in under 2 seconds. Use the hook types in the brand rules.
-- **reel-explainer:** 25-40 seconds spoken (about 70-110 words over hook + lines). One idea per reel. Lines are spoken Dutch: short sentences, no brackets, write numbers as words when spoken. Attach `verse` when you quote scripture (the screen shows exact SV text; the voice may paraphrase in modern Dutch - say "staat er" not a fake quote). Attach a `screenshot` when the line is about the app. Facts only from the verse itself, `brand/product.md`, the app's own context texts, or broadly accepted background (author, place, time). No denominational disputes, no doctrine claims a church would argue about. Last line points to BijbelStudie naturally.
-- **reel-demo:** a hook + 3-4 scenes, each one benefit tied to a real screen (see `brand/visual.md` table). Captions are short and concrete.
-- **reel-verse:** like the daily verse, but a different verse.
+- Spoken Dutch: short sentences, no brackets, numbers as words. Facts only from the chapter, `brand/product.md`
+  or broadly accepted background (author, place, time). No denominational disputes. When you quote scripture,
+  show the `verse` (exact SV text); the voice may paraphrase in modern Dutch ("staat er", not a fake quote).
 - Every reel ends with the approved end card; set `endCard.headline` to the benefit of that reel (max ~30 chars), `button` "Download gratis".
-
-## Feed test posts
-
-- `post-spotlight`: one feature, one benefit. Headline = the pain or question, sub = how BijbelStudie answers it, with a real number or fact from `brand/product.md`.
-- `post-statement`: one strong sentence in the brand voice (relief, recognition, a fresh angle on Bible reading). Sub optional, short.
 
 ## Captions (all items)
 

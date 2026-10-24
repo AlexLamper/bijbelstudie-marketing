@@ -148,10 +148,11 @@ export function capAllocation(alloc, rows, cap) {
 }
 
 /** Everything that can be tested (the catalogue), given the voices and music that exist. */
-export function catalogue({ voices = ['male', 'female'], moods = [], voiceStyles = null } = {}) {
+export function catalogue({ voices = ['male', 'female'], moods = [], voiceStyles = null, formats = null, postFormats = null, styles = null, styles3d = null, narratorOnly = false } = {}) {
+  const only = (list, allowed) => list.filter(v => !allowed || allowed.includes(v));   // project.json limits (formatsAllowed, ...)
   return {
-    format: REEL_KINDS.filter(k => RENDERABLE.includes(k)), postFormat: POST_KINDS.filter(k => RENDERABLE.includes(k)),
-    style: STYLES, style3d: STYLES3D, voice: [...voices, 'dialoog', 'geen'], voiceStyle: VOICE_STYLES.filter(v => !voiceStyles || voiceStyles.includes(v)),
+    format: only(REEL_KINDS.filter(k => RENDERABLE.includes(k)), formats), postFormat: only(POST_KINDS.filter(k => RENDERABLE.includes(k)), postFormats),
+    style: only(STYLES, styles), style3d: only(STYLES3D, styles3d), voice: narratorOnly ? voices : [...voices, 'dialoog', 'geen'], voiceStyle: VOICE_STYLES.filter(v => !voiceStyles || voiceStyles.includes(v)),
     music: ['none', ...MOODS.filter(m => m !== 'none' && moods.includes(m))], captions: CAPTIONS,
     hook: HOOKS, topic: TOPICS,
   };
@@ -176,7 +177,7 @@ export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPos
   const tol = n => formatTolerance(n) ? 'within 1' : 'exactly';
   return {
     recipe: { mainPerDay, extraPerDay, feedPosts, days },
-    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(share(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => b.pBest - a.pBest), Math.ceil(main * .55)) },
+    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: fmt.length ? capAllocation(share(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => b.pBest - a.pBest), Math.ceil(main * .55)) : {} },
     extraReels: { slots: extra, platforms: 'tiktok, youtube', format: share(fmt, extra, .5) },
     feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: share(board.postFormat, feedPosts, .35) },
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)

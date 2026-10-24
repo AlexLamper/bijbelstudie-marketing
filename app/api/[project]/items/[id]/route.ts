@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
 import { getProject } from '@/lib/projects';
+import { postPlatforms } from '@/lib/postingSlots';
 
 const NEXT: Record<string, string> = { approve: 'approved', changes: 'changes', reject: 'rejected', reset: 'review' };
 const LONG_DASH = /[–—]/;
@@ -67,6 +68,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ projec
     if (item.status === 'approved') return NextResponse.json({ ok: true, status, message: 'Staat al op de stapel.' });
     if (['queued', 'rendering'].includes(item.status)) return NextResponse.json({ error: 'Wordt nog gemaakt - keur hem goed als hij klaar is.' }, { status: 409 });
     update.$set.approvedAt = at; update.$unset = { postAt: '' };
+    update.$set['spec.platforms'] = postPlatforms(item.kind, getProject(project)!.platforms);
     await db.collection('items').updateOne({ _id: id as any }, update);
     return NextResponse.json({ ok: true, status, message: 'Goedgekeurd - hij staat op de stapel en gaat vanzelf online.' });
   }

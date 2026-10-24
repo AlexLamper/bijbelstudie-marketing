@@ -44,6 +44,8 @@
     stift: { drawn: 1, poster: 1, pal: 'stickman', font: '"Patrick Hand", "Inter", sans-serif', title: '"Patrick Hand", "Inter", sans-serif', lw: 5, charLine: '#2d2b36', skin: '#ffd8bd', eye: '#2d2b36', ink: '#2d2b36', paper: '#fbf9f3', tool: 'stift' },
     krijt: { drawn: 1, poster: 1, pal: 'getekend', font: '"Patrick Hand", "Inter", sans-serif', title: '"Patrick Hand", "Inter", sans-serif', lw: 5, charLine: '#eeeadf', skin: '#e9e3d4', eye: '#eeeadf', ink: '#eeeadf', paper: '#28342f', tool: 'krijt' },
   };
+  // accents in the app's colour (project theme accent #0d9488): light on dark grounds, deep on paper, quiet in the drawn look
+  const TEAL = { light: '#2dd4bf', mid: '#14b8a6', deep: '#0d9488', drawn: '#5fcfc1' };
   /** Mute a colour toward grey (the drawn look keeps colours quiet). */
   function mute(hex, k = .45, toward = '#6f6a62') {
     const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const a = p(hex), b = p(toward);
@@ -76,7 +78,9 @@
   // rig sizes (local units, feet at y = 0, facing +x)
   const R = { hip: 165, sh: 318, head: 400, hr: 66, thigh: 86, shin: 82, upper: 78, fore: 72 };
 
-  /** One figure: an SVG group, posed each frame by update(state). */
+  /** One figure: an SVG group, posed each frame by update(state).
+   *  g (place + scale) holds a contact shadow and the pose group (turned flat for 'lie'); a figure with base
+   *  'ride' sits on a donkey drawn in the same group, so the two move as one. */
   function makeActor(parent, lookKey, S, P, seed) {
     const L = PEOPLE[lookKey] || PEOPLE['man-modern'];
     const draw = S.drawn;
@@ -85,7 +89,10 @@
     const top = L.top ? dk(L.top) : robe, bottom = L.bottom ? dk(L.bottom) : (robe2 || robe);
     const skin = S.skin, line = S.charLine, lw = S.lw;
     const g = sv('g', { 'data-actor': 1 }, parent);
-    const body = sv('g', {}, g);
+    // the contact shadow on the ground (outside the pose group: it stays flat, under the feet or the body)
+    const shadow = sv('ellipse', { cx: 0, cy: 0, rx: 75, ry: 13, fill: '#000', opacity: S.poster ? 0 : P.dark ? .34 : .2, 'data-nohaze': 1 }, g);
+    const pose = sv('g', {}, g);
+    const body = sv('g', {}, pose);
     // limbs: a tube (outline + fill) in the drawn look, one dark stroke for stickman
     const limb = (fill, w) => {
       const grp = sv('g', {}, body);
@@ -95,7 +102,24 @@
       return { grp, set: d => { o.setAttribute('d', d); f.setAttribute('d', d); } };
     };
     const legFill = robe ? skin : bottom, armFill = draw ? (robe || top) : null;
-    const legB = limb(legFill, 26), legF = limb(legFill, 26), armB = limb(armFill || skin, 24);
+    const legB = limb(legFill, 26);
+    // the donkey (base 'ride'): between the rider's far leg and near leg
+    const ass = sv('g', { visibility: 'hidden' }, body);
+    const assC = draw ? mute('#8f8578', .3) : '#8d8782', assD = draw ? mute('#5f574d', .3) : '#5e5853', assL = draw ? mute('#d8d0c2', .3) : '#d9d3c9', st0 = draw ? { stroke: line, 'stroke-width': lw * .8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' } : {};
+    const assLegs = [[-84, 0], [-58, 1], [72, 1], [98, 0]].map(([x, near]) => ({ x, near, n: sv('path', { fill: 'none', stroke: near ? assC : assD, 'stroke-width': 17, 'stroke-linecap': 'round' }, ass) }));
+    if (draw) assLegs.forEach(l => { const o = l.n.cloneNode(); o.setAttribute('stroke', line); o.setAttribute('stroke-width', 17 + lw * 2); ass.insertBefore(o, l.n); l.o = o; });
+    const assTail = sv('path', { fill: 'none', stroke: assD, 'stroke-width': 8, 'stroke-linecap': 'round' }, ass);
+    sv('ellipse', { cx: 6, cy: -168, rx: 128, ry: 54, fill: assC, ...st0 }, ass);
+    sv('ellipse', { cx: 6, cy: -138, rx: 92, ry: 22, fill: assL, opacity: .55 }, ass);
+    const assHead = sv('g', {}, ass);
+    sv('path', { d: 'M92 -200 Q130 -232 160 -262 L196 -236 Q160 -196 118 -150 Z', fill: assC, ...st0 }, assHead);
+    for (const [x, r] of [[166, -14], [184, 6]]) sv('path', { d: `M${x} -262 Q${x - 10} -318 ${x + 4} -350 Q${x + 18} -318 ${x + 12} -262 Z`, fill: assC, ...st0, transform: `rotate(${r} ${x} -262)` }, assHead);
+    sv('ellipse', { cx: 204, cy: -238, rx: 50, ry: 27, fill: assC, ...st0, transform: 'rotate(32 204 -238)' }, assHead);
+    sv('ellipse', { cx: 232, cy: -220, rx: 20, ry: 16, fill: assL, transform: 'rotate(32 232 -220)' }, assHead);
+    sv('circle', { cx: 196, cy: -252, r: 5, fill: '#141416' }, assHead);
+    sv('path', { d: 'M100 -214 Q130 -244 158 -268', fill: 'none', stroke: assD, 'stroke-width': 12, 'stroke-linecap': 'round' }, assHead);   // mane
+    sv('path', { d: 'M-40 -224 L54 -224 L58 -192 L-44 -192 Z', fill: draw ? mute('#7a3b34', .3) : '#a8432f', ...st0 }, ass);           // the saddle cloth
+    const legF = limb(legFill, 26), armB = limb(armFill || skin, 24);
     const handB = sv('circle', { r: draw ? 15 : 13, fill: draw ? skin : '#f2efe8', stroke: line, 'stroke-width': lw }, body);
     // torso / robe
     const torso = sv('path', { fill: robe || top, stroke: line, 'stroke-width': lw, 'stroke-linejoin': 'round' }, body);
@@ -110,19 +134,23 @@
     sv('path', { d: 'M0 -12 L0 22', stroke: draw ? '#8a8270' : '#b8ad95', 'stroke-width': 2 }, book);
     const phoneP = sv('g', { visibility: 'hidden' }, props);
     sv('rect', { x: -15, y: -28, width: 30, height: 56, rx: 6, fill: '#15161a', stroke: line, 'stroke-width': lw * .6 }, phoneP);
-    const glow = sv('rect', { x: -11, y: -23, width: 22, height: 46, rx: 3, fill: draw ? '#cfe3e6' : '#bfe9ff' }, phoneP);
+    sv('rect', { x: -11, y: -23, width: 22, height: 46, rx: 3, fill: draw ? '#cfe3e6' : '#bfe9ff' }, phoneP);
     if (!draw) sv('circle', { r: 70, fill: 'url(#f2d-phoneglow)', opacity: .7 }, phoneP);
     const scrollP = sv('g', { visibility: 'hidden' }, props);
     sv('rect', { x: -40, y: -20, width: 80, height: 40, fill: '#efe2c2', stroke: line, 'stroke-width': lw * .6 }, scrollP);
     for (const x of [-42, 42]) sv('rect', { x: x - 6, y: -25, width: 12, height: 50, rx: 6, fill: '#7a5634' }, scrollP);
-    const held = {};
-    const h1 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-22 30 Q-36 0 -16 -20 L-12 -34 L12 -34 L16 -20 Q36 0 22 30 Z', fill: '#b8693f', stroke: line, 'stroke-width': lw * .7 }, h1); held.kruik = h1;
-    const h2 = sv('g', { visibility: 'hidden' }, props); sv('rect', { x: -40, y: -24, width: 80, height: 48, rx: 4, fill: '#c8b38c', stroke: line, 'stroke-width': lw * .7 }, h2); held.steen = h2;
-    const h3 = sv('g', { visibility: 'hidden' }, props); sv('ellipse', { cx: 0, cy: 0, rx: 44, ry: 28, fill: '#f3efe4', stroke: line, 'stroke-width': lw * .7 }, h3); sv('circle', { cx: 42, cy: -14, r: 16, fill: '#d9cdb8', stroke: line, 'stroke-width': lw * .6 }, h3); held.lam = h3;
-    const h4 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-36 -8 L36 -8 L28 26 L-28 26 Z', fill: '#b08a55', stroke: line, 'stroke-width': lw * .7 }, h4); for (const x of [-16, 4, 22]) sv('ellipse', { cx: x, cy: -14, rx: 14, ry: 9, fill: '#d9a35c' }, h4); held.mand = h4;
+    const held = {}; const hs = { stroke: line, 'stroke-width': lw * .7 };
+    const h1 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-22 30 Q-36 0 -16 -20 L-12 -34 L12 -34 L16 -20 Q36 0 22 30 Z', fill: '#b8693f', ...hs }, h1); held.kruik = h1;
+    const h2 = sv('g', { visibility: 'hidden' }, props); sv('rect', { x: -40, y: -24, width: 80, height: 48, rx: 4, fill: '#c8b38c', ...hs }, h2); held.steen = h2;
+    const h3 = sv('g', { visibility: 'hidden' }, props); sv('ellipse', { cx: 0, cy: 0, rx: 44, ry: 28, fill: '#f3efe4', ...hs }, h3); sv('circle', { cx: 42, cy: -14, r: 16, fill: '#d9cdb8', stroke: line, 'stroke-width': lw * .6 }, h3); held.lam = h3;
+    const h4 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-36 -8 L36 -8 L28 26 L-28 26 Z', fill: '#b08a55', ...hs }, h4); for (const x of [-16, 4, 22]) sv('ellipse', { cx: x, cy: -14, rx: 14, ry: 9, fill: '#d9a35c' }, h4); held.mand = h4;
+    const h5 = sv('g', { visibility: 'hidden' }, props); sv('ellipse', { cx: 0, cy: 0, rx: 34, ry: 22, fill: '#d29a55', ...hs }, h5); sv('path', { d: 'M-18 -6 Q0 -14 18 -6', fill: 'none', stroke: '#a26a32', 'stroke-width': 4 }, h5); held.brood = h5;
+    const h6 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-40 0 Q-10 -24 26 -4 L44 -18 L42 18 L26 4 Q-10 24 -40 0 Z', fill: draw ? '#9aa6ad' : '#a9c1cf', ...hs }, h6); sv('circle', { cx: -26, cy: -3, r: 3.5, fill: '#141416' }, h6); held.vis = h6;
+    const h7 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-22 -14 Q-30 22 0 26 Q30 22 22 -14 Q0 -6 -22 -14 Z', fill: '#8a6a3c', ...hs }, h7); sv('path', { d: 'M-16 -14 L-4 -28 L6 -14 L18 -26', fill: 'none', stroke: '#6a4a24', 'stroke-width': 5, 'stroke-linecap': 'round' }, h7); held.buidel = h7;
+    const h8 = sv('g', { visibility: 'hidden' }, props); sv('path', { d: 'M-14 -30 L14 -30 L12 -12 Q24 0 20 22 Q0 32 -20 22 Q-24 0 -12 -12 Z', fill: draw ? '#7f8f6a' : '#7fae6a', ...hs }, h8); sv('rect', { x: -9, y: -40, width: 18, height: 12, rx: 3, fill: '#6a4a2a' }, h8); held.olie = h8;
     const staff = L.staff ? sv('path', { fill: 'none', stroke: draw ? '#5b4430' : '#6e4f33', 'stroke-width': 11, 'stroke-linecap': 'round' }, body) : null;
     // head
-    const head = sv('g', {}, g);
+    const head = sv('g', {}, pose);
     const back = sv('g', {}, head);    // hair / veil behind the head
     if (L.head === 'veil') sv('path', { d: `M${-R.hr - 14} 10 Q${-R.hr - 18} ${-R.hr - 20} 0 ${-R.hr - 18} Q${R.hr + 18} ${-R.hr - 20} ${R.hr + 14} 10 L${R.hr + 30} 120 L${-R.hr - 34} 120 Z`, fill: dk(L.cloth), stroke: line, 'stroke-width': lw }, back);
     if (L.head === 'long') sv('path', { d: `M${-R.hr} -10 Q${-R.hr - 10} 90 ${-R.hr + 6} 110 L${R.hr - 6} 110 Q${R.hr + 10} 90 ${R.hr} -10 Z`, fill: dk(L.hair), stroke: line, 'stroke-width': lw }, back);
@@ -144,29 +172,41 @@
     // face (looks toward +x, slightly)
     const face = sv('g', {}, head);
     const eyeC = S.eye;
+    // a beard follows the jaw, from the ear round the chin, and leaves the mouth free (a filled crescent under
+    // the mouth read as a wide open mouth); a dark beard on stickman's black head is left out
+    if (L.beard) {
+      const bc = draw ? mute(L.beard, .3, '#8a7a66') : (L.beard === '#ededea' ? '#ededea' : null);
+      if (bc) sv('path', { d: L.longBeard ? 'M-50 -2 Q-62 62 -8 100 Q16 116 36 94 Q62 62 58 14 L50 18 Q46 46 22 52 Q4 56 -14 46 Q-34 32 -38 -4 Z'
+        : 'M-50 -2 Q-58 44 -18 72 Q16 92 48 60 Q62 40 58 14 L50 18 Q46 46 22 52 Q4 56 -14 46 Q-34 32 -38 -4 Z', fill: bc, stroke: line, 'stroke-width': lw * .7, 'stroke-linejoin': 'round' }, face);
+      if (bc) sv('path', { d: 'M-2 22 Q12 16 28 22', fill: 'none', stroke: bc, 'stroke-width': 9, 'stroke-linecap': 'round' }, face);   // moustache
+    }
     const eyes = [-8, 28].map(x => { const e = sv('g', { transform: `translate(${x} -6)` }, face); const ball = draw ? sv('circle', { r: 8, fill: eyeC }, e) : sv('rect', { x: -8, y: -11, width: 16, height: 22, rx: 8, fill: eyeC }, e); const lid = sv('rect', { x: -12, y: -16, width: 24, height: 0, fill: skin }, e); return { e, ball, lid }; });
     const brows = [-8, 28].map(x => sv('path', { fill: 'none', stroke: S.eye, 'stroke-width': draw ? 6 : 5, 'stroke-linecap': 'round' }, face));
     const mouthC = S.flat ? '#f4f2ec' : S.name === 'krijt' ? '#1d2622' : '#2b1714';
     const mouth = sv('path', { fill: mouthC, stroke: S.eye, 'stroke-width': draw ? 4 : 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, face);
-    if (L.beard) {
-      const bc = draw ? dk(L.beard) : (L.beard === '#ededea' ? '#ededea' : '#050507');
-      const long = L.longBeard;
-      if (!draw && bc === '#050507') { /* a dark beard disappears on the black head: leave it out */ }
-      else sv('path', { d: long ? 'M-30 12 Q-26 78 14 104 Q44 76 50 14 Q10 34 -30 12 Z' : 'M-34 16 Q-28 54 10 64 Q44 52 48 16 Q8 34 -34 16 Z', fill: bc, stroke: line, 'stroke-width': lw * .8, 'stroke-linejoin': 'round' }, face);
-    }
     if (L.glasses) for (const x of [-8, 28]) sv('circle', { cx: x, cy: -6, r: 15, fill: 'none', stroke: S.eye, 'stroke-width': 4 }, face);
     const blinkAt = (() => { const r = rng(seed + 'blink'); return Array.from({ length: 60 }, (_, i) => i * 3.1 + r() * 2.2); })();
     const idle = wave(seed + 'idle'), gest = wave(seed + 'gest');
 
+    // depth: the further away (smaller), the more the figure takes on the colour of the distance
+    const hazeC = hexOf(P.far) || '#808080'; let hazeK = 0; let hazeEls = null;
+    function haze(k) {
+      if (k === hazeK) return; hazeK = k;
+      if (!hazeEls) hazeEls = [...g.querySelectorAll('*')].filter(e => !e.hasAttribute('data-nohaze')).map(e => ({ e, f: hexOf(e.getAttribute('fill')), s: hexOf(e.getAttribute('stroke')) })).filter(o => o.f || o.s);
+      for (const o of hazeEls) { if (o.f) o.e.setAttribute('fill', k ? mute(o.f, k, hazeC) : o.f); if (o.s) o.e.setAttribute('stroke', k ? mute(o.s, k, hazeC) : o.s); }
+    }
+
     const pt = (x, y, a, l) => [x + Math.sin(a) * l, y + Math.cos(a) * l];
     let jit = () => 0;
     const seg3 = (a, b, c) => `M${r1(a[0] + jit())} ${r1(a[1] + jit())} L${r1(b[0] + jit())} ${r1(b[1] + jit())} L${r1(c[0] + jit())} ${r1(c[1] + jit())}`;
+    const wS = draw ? 58 : 44, wH = draw ? 64 : 46;   // half widths of the shoulders and hips
 
     /** state: { x, y, s, dir, base, action, mood, talk, walk: {ph, amt, run}, holds, seat, t } */
     function update(st) {
       const t = st.t, act = st.action || 'idle', base = st.base || 'stand', mood = st.mood || 'neutraal';
+      const lie = base === 'lie', ride = base === 'ride';
       if (st.boil) { const jr2 = rng(seed + 'b' + st.boil); jit = () => (jr2() - .5) * 4; } else jit = () => 0;
-      let hipY = -R.hip, lean = 0, bob = 0, headTilt = 0, headY = 0;
+      let hipY = -R.hip, lean = 0, bob = 0, headTilt = 0, headY = 0, legDx = [-8, 8];
       let lh = [0.06, 0], rh = [-0.06, 0];          // [hip angle, knee bend]
       let la = [0.12, 0.15], ra = [-0.1, 0.15];      // [shoulder angle, elbow bend] (far arm "l", near arm "r")
       const breathe = Math.sin(t * 2.1) * 3;
@@ -178,8 +218,15 @@
         la = [-sw * .4 * k * run, .3 + (run > 1 ? 1 : 0)]; ra = [sw * .4 * k * run, .3 + (run > 1 ? 1 : 0)];
         bob = -Math.abs(Math.cos(ph)) * 8 * k; lean = .05 * k * run;
       }
-      if (base === 'sit') { hipY = -(st.seat ?? 95); lh = [1.5, 1.5]; rh = [1.4, 1.45]; }
-      if (base === 'kneel') { hipY = -92; lh = [0.05, 1.55]; rh = [-0.05, 1.55]; }
+      // sitting: thighs forward, shins down, hands in the lap
+      if (base === 'sit') { hipY = -(st.seat ?? 95); lh = [1.5, 1.5]; rh = [1.4, 1.45]; la = [.62, .62]; ra = [.55, .7]; bob = breathe * .5; }
+      // kneeling on one knee: the far knee on the ground with its shin behind, the near foot planted in front
+      if (base === 'kneel') { hipY = -98; lh = [0.12, 1.66]; rh = [1.32, 1.36]; bob = breathe * .5; }
+      // lying on the back: legs on the ground (one knee drawn up), one hand on the chest, the other along the side
+      if (lie) { lh = [0.5, 1.02]; rh = [0.04, 0.08]; la = [0.6, 2.0]; ra = [-0.22, 0.12]; legDx = [-(wS - 14), -(wS - 20)]; bob = breathe * .4; }
+      // riding the donkey: astride its back, legs hanging down its side, hands on the reins
+      if (ride) { hipY = -212; lh = [0.62, 0.72]; rh = [0.55, 0.62]; la = [0.95, 0.95]; ra = [0.9, 0.9]; lean = .06; bob = st.walk ? -Math.abs(Math.sin(st.walk.ph)) * 6 * st.walk.amt : breathe * .3; }
+      const kneel = base === 'kneel';
       // actions
       switch (act) {
         case 'read': case 'scroll': la = [0.95, 1.1]; ra = [0.85, 1.15]; headTilt = .28; break;
@@ -196,29 +243,68 @@
         case 'carry': la = [0.95, 0.75]; ra = [0.9, 0.8]; break;
         case 'fear': la = [0.7, 2.1]; ra = [0.75, 2.1]; bob += Math.sin(t * 30) * 2; break;
         case 'sleep': headTilt = .1; break;
+        // bend over someone (lying or sitting) and tend to them: lean in, both hands down to them, slow work
+        case 'help': { const w2 = Math.sin(t * 2.4) * .06; lean += kneel ? .3 : .42; la = [0.62 + w2, 0.42]; ra = [0.5 - w2, 0.36]; headTilt = .4; break; }
+        // hold something out to someone (with 'holds': it is in the near hand)
+        case 'give': ra = [1.32, 0.22]; la = [0.3, 0.45]; lean += .06; headTilt = .06; break;
+        // arms around someone in front (stand close to them, facing them)
+        case 'embrace': la = [1.5, 1.05]; ra = [1.38, 1.15]; lean += .12; headTilt = .14; break;
+        // bow down: kneeling, the face to the ground and hands flat in front; standing, a deep bow
+        case 'bow': lean += kneel ? 1.12 : .55; headTilt = .55; la = [1.35, 0.15]; ra = [1.25, 0.2]; break;
+        // weep: hands over the face, head down, shoulders shaking a little
+        case 'weep': la = [0.9, 2.3]; ra = [0.98, 2.35]; headTilt = .4; bob += Math.sin(t * 7) * 1.6; break;
+        // raise both hands (praise, a blessing, Moses' hands over the battle)
+        case 'raise': la = [1.78, 0.14]; ra = [2.24, 0.08]; headTilt = -.32; break;   // forward and up, clear of the head
         default: break;
       }
-      if (st.talk > 0 && ['idle', 'talk', 'shrug'].includes(act)) { const g1 = gest(t * 1.3), g2 = gest(t * 1.1 + 7); ra = [0.35 + .35 * Math.max(0, g1), 0.9 + .4 * g2]; if (g2 > .1) la = [0.2 + .25 * g2, 0.6]; }
-      const moodLean = mood === 'verdrietig' ? .1 : mood === 'bang' ? -.04 : 0;
-      lean += moodLean; headTilt += mood === 'verdrietig' ? .22 : 0;
+      if (st.talk > 0 && ['idle', 'talk', 'shrug'].includes(act) && !lie) { const g1 = gest(t * 1.3), g2 = gest(t * 1.1 + 7); ra = [0.35 + .35 * Math.max(0, g1), 0.9 + .4 * g2]; if (g2 > .1 && !ride) la = [0.2 + .25 * g2, 0.6]; }
+      const moodLean = lie ? 0 : mood === 'verdrietig' ? .1 : mood === 'bang' ? -.04 : 0;
+      lean += moodLean; headTilt += mood === 'verdrietig' && !lie ? .22 : 0;
       // joints (local, facing +x)
       const hip = [0, hipY + bob * .5], shoulder = [Math.sin(lean) * (R.sh - R.hip), hipY - (R.sh - R.hip) * Math.cos(lean) + bob];
       const legPts = ([a, kb], dx) => { const h = [hip[0] + dx, hip[1]]; const k = pt(h[0], h[1], a, R.thigh); const f = pt(k[0], k[1], a - kb, R.shin); return [h, k, f]; };
-      const armPts = ([a, eb], dx) => { const s = [shoulder[0] + dx, shoulder[1] + 6]; const e = pt(s[0], s[1], a, R.upper); const h = pt(e[0], e[1], a + eb, R.fore); return [s, e, h]; };
-      const LB = legPts(lh, -8), LF = legPts(rh, 8), AB = armPts(la, -10), AF = armPts(ra, 10);
+      const armPts = ([a, eb], dx) => { const s = [shoulder[0] + dx, shoulder[1] + 6]; const e = pt(s[0], s[1], a + lean * .6, R.upper); const h = pt(e[0], e[1], a + lean * .6 + eb, R.fore); return [s, e, h]; };
+      const LB = legPts(lh, legDx[0]), LF = legPts(rh, legDx[1]), AB = armPts(la, -10), AF = armPts(ra, 10);
       legB.set(seg3(...LB)); legF.set(seg3(...LF)); armB.set(seg3(...AB)); armF.set(seg3(...AF));
       handB.setAttribute('cx', r1(AB[2][0])); handB.setAttribute('cy', r1(AB[2][1])); handF.setAttribute('cx', r1(AF[2][0])); handF.setAttribute('cy', r1(AF[2][1]));
-      // torso: a bean from the shoulders to the hips (modern) or a robe down to the shins (biblical)
+      // torso: a bean from the shoulders to the hips (modern) or a robe (biblical) that drapes as the body is posed
       const sx = shoulder[0], sy = shoulder[1], hx = hip[0], hy = hip[1];
-      const wS = draw ? 58 : 44, wH = draw ? 64 : 46;
+      const top0 = `M${r1(sx - wS)} ${r1(sy + 8)} Q${r1(sx)} ${r1(sy - 22)} ${r1(sx + wS)} ${r1(sy + 8)}`;
       if (robe) {
-        const sitting = base === 'sit' || base === 'kneel';
-        const len = L.short ? 70 : sitting ? 20 : 120; const flare = base === 'walk' ? Math.sin(st.walk.ph * 2) * 6 : 0;
-        const bx = sitting ? hx + 40 : hx, by = hy + len;
-        torso.setAttribute('d', `M${r1(sx - wS)} ${r1(sy + 8)} Q${r1(sx)} ${r1(sy - 22)} ${r1(sx + wS)} ${r1(sy + 8)} L${r1(bx + wH + 18 + flare)} ${r1(by)} Q${r1(bx)} ${r1(by + 12)} ${r1(bx - wH - 18 + flare)} ${r1(by)} Z`);
-        hem.setAttribute('d', `M${r1(bx - wH - 12 + flare)} ${r1(by - 8)} Q${r1(bx)} ${r1(by + 4)} ${r1(bx + wH + 12 + flare)} ${r1(by - 8)}`);
+        let d, hd;
+        if (base === 'sit' || ride) {
+          // over the thighs to just past the knee; the shins come out below
+          const K = LF[1], dn = ride ? 1 : 0;
+          d = `${top0} L${r1(hx + wH * .8)} ${r1(hy - 30)} L${r1(K[0] + 10 - dn * 14)} ${r1(K[1] - 30 + dn * 6)} Q${r1(K[0] + 36)} ${r1(K[1] - 6)} ${r1(K[0] + 26)} ${r1(K[1] + 34)} L${r1(K[0] - 34)} ${r1(K[1] + 40)} Q${r1(hx - 10)} ${r1(hy + 44)} ${r1(hx - wH - 6)} ${r1(hy + 22)} Z`;
+          hd = `M${r1(K[0] - 30)} ${r1(K[1] + 34)} L${r1(K[0] + 22)} ${r1(K[1] + 28)}`;
+        } else if (kneel) {
+          // over the raised front thigh to the knee and a little below it; behind, down to the knee on the ground
+          const K = LF[1], Fb = LB[2];
+          d = `${top0} L${r1(hx + wH * .8)} ${r1(hy - 26)} L${r1(K[0] + 4)} ${r1(K[1] - 30)} Q${r1(K[0] + 36)} ${r1(K[1] - 8)} ${r1(K[0] + 26)} ${r1(K[1] + 40)} L${r1(hx + 6)} ${r1(-2)} L${r1(Fb[0] - 6)} ${r1(-2)} Q${r1(hx - wH - 22)} ${r1(hy + 44)} ${r1(hx - wH - 4)} ${r1(hy - 6)} Z`;
+          hd = `M${r1(K[0] + 22)} ${r1(K[1] + 34)} L${r1(hx + 8)} -8 L${r1(Fb[0])} -8`;
+        } else if (lie) {
+          // lying: the back stays flat on the ground (no flare behind), the front falls over the legs
+          const by = hy + (L.short ? 70 : 128);
+          d = `${top0} L${r1(hx + wH * .78)} ${r1(hy)} L${r1(hx + 6)} ${r1(by)} L${r1(hx - wS)} ${r1(by)} L${r1(hx - wS)} ${r1(hy)} Z`;
+          hd = `M${r1(hx - wS + 6)} ${r1(by - 8)} L${r1(hx + 2)} ${r1(by - 8)}`;
+        } else {
+          const len = L.short ? 70 : 120; const flare = base === 'walk' ? Math.sin(st.walk.ph * 2) * 6 : 0;
+          const by = hy + len;
+          d = `${top0} L${r1(hx + wH + 18 + flare)} ${r1(by)} Q${r1(hx)} ${r1(by + 12)} ${r1(hx - wH - 18 + flare)} ${r1(by)} Z`;
+          hd = `M${r1(hx - wH - 12 + flare)} ${r1(by - 8)} Q${r1(hx)} ${r1(by + 4)} ${r1(hx + wH + 12 + flare)} ${r1(by - 8)}`;
+        }
+        torso.setAttribute('d', d); hem.setAttribute('d', hd);
       } else {
-        torso.setAttribute('d', `M${r1(sx - wS)} ${r1(sy + 10)} Q${r1(sx)} ${r1(sy - 22)} ${r1(sx + wS)} ${r1(sy + 10)} L${r1(hx + wH)} ${r1(hy + 6)} Q${r1(hx)} ${r1(hy + 20)} ${r1(hx - wH)} ${r1(hy + 6)} Z`);
+        torso.setAttribute('d', `${top0} L${r1(hx + wH)} ${r1(hy + 6)} Q${r1(hx)} ${r1(hy + 20)} ${r1(hx - wH)} ${r1(hy + 6)} Z`);
+      }
+      // the donkey under a rider: legs walk when the rider travels, the tail and ears move
+      ass.setAttribute('visibility', ride ? 'visible' : 'hidden');
+      if (ride) {
+        const ph = st.walk ? st.walk.ph * .9 : 0, amt = st.walk ? st.walk.amt : 0;
+        assLegs.forEach((l, i) => { const a = Math.sin(ph + (i % 2 ? Math.PI : 0) + (i > 1 ? 1.2 : 0)) * .34 * amt; const kx = l.x + Math.sin(a) * 70, ky = -140 + Math.cos(a) * 70; const fx = kx + Math.sin(a * .5) * 70, fy = ky + Math.cos(a * .5) * 70;
+          const dd = `M${l.x} -140 L${r1(kx)} ${r1(ky)} L${r1(fx)} ${r1(Math.min(0, fy))}`; l.n.setAttribute('d', dd); if (l.o) l.o.setAttribute('d', dd); });
+        assTail.setAttribute('d', `M-118 -186 Q${r1(-150 + Math.sin(t * 2.2) * 8)} -150 ${r1(-146 + Math.sin(t * 2.2 + .6) * 14)} -96`);
+        assHead.setAttribute('transform', `rotate(${r1(Math.sin(ph * 2) * 2.5 * amt + Math.sin(t * .8) * 1.2)} 110 -180)`);
       }
       // props in hand
       const handMid = [(AB[2][0] + AF[2][0]) / 2, (AB[2][1] + AF[2][1]) / 2];
@@ -226,26 +312,36 @@
       show(book, act === 'read', [handMid[0] + 6, handMid[1] - 10], -8);
       show(scrollP, act === 'scroll', [handMid[0] + 6, handMid[1] - 10], -6);
       show(phoneP, act === 'phone' || act === 'show-phone', [AF[2][0] + 4, AF[2][1] - 18], act === 'phone' ? -20 : 0);
-      for (const [k, n] of Object.entries(held)) show(n, act === 'carry' && k === (st.holds || 'mand'), [handMid[0] + 8, handMid[1] - 8]);
-      if (staff) { const hb = AB[2]; staff.setAttribute('d', `M${r1(hb[0] + 4)} ${r1(hb[1] - 90)} L${r1(hb[0] + 4)} ${r1(Math.min(0, hb[1] + 160))}`); staff.setAttribute('visibility', ['carry', 'read', 'scroll', 'pray', 'row'].includes(act) || base === 'lie' ? 'hidden' : 'visible'); }
-      // head
-      const hdx = shoulder[0] + Math.sin(lean) * 70, hdy = shoulder[1] - (R.head - R.sh) + headY;
-      head.setAttribute('transform', `translate(${r1(hdx)} ${r1(hdy)}) rotate(${r1(headTilt * 57)})`);
+      const item = st.holds || (act === 'carry' ? 'mand' : null);
+      for (const [k, n] of Object.entries(held)) {
+        const on = k === item && (act === 'carry' || act === 'give' || act === 'help' || (st.holds && ['idle', 'talk', 'point'].includes(act)));
+        const at = act === 'carry' ? [handMid[0] + 8, handMid[1] - 8] : act === 'help' ? [AF[2][0] + 10, AF[2][1] + 4] : act === 'give' ? [AF[2][0] + 22, AF[2][1] - 6] : [AF[2][0] + 6, AF[2][1] + 14];
+        show(n, on, at);
+      }
+      if (staff) { const hb = AB[2]; staff.setAttribute('d', `M${r1(hb[0] + 4)} ${r1(hb[1] - 90)} L${r1(hb[0] + 4)} ${r1(Math.min(0, hb[1] + 160))}`); staff.setAttribute('visibility', ['carry', 'read', 'scroll', 'pray', 'row', 'help', 'give', 'embrace', 'bow', 'weep', 'raise'].includes(act) || lie || ride || kneel || base === 'sit' ? 'hidden' : 'visible'); }
+      // head: on the line of the spine (it follows a deep bow); lying, it rests on the ground
+      const neck = R.head - R.sh;
+      const hdx = shoulder[0] + Math.sin(lean) * neck + (lie ? R.hr - wS - 2 : 0), hdy = shoulder[1] - Math.cos(lean) * neck + headY;
+      head.setAttribute('transform', `translate(${r1(hdx)} ${r1(hdy)}) rotate(${r1((headTilt + lean * .5) * 57)})`);
       // face: mood, blink, talking
       const blink = blinkAt.some(b => t >= b && t < b + .12) || act === 'sleep';
-      const lidK = blink ? 1 : mood === 'nadenkend' || mood === 'verdrietig' ? .35 : mood === 'boos' ? .3 : 0;
+      const lidK = blink ? 1 : mood === 'nadenkend' || mood === 'verdrietig' ? (lie ? .7 : .35) : mood === 'boos' ? .3 : 0;
       eyes.forEach(({ ball, lid }) => { lid.setAttribute('height', r1(lidK * 26)); ball.setAttribute('transform', mood === 'verrast' || mood === 'bang' ? 'scale(1.25)' : ''); });
       const br = { neutraal: [0, 0], blij: [-.15, -2], verward: [.35, -4], nadenkend: [.25, 0], verrast: [-.2, -10], bang: [-.35, -8], verdrietig: [-.4, 0], boos: [.5, 2] }[mood] || [0, 0];
       brows.forEach(b => b.setAttribute('visibility', draw || ['boos', 'verrast', 'bang', 'verdrietig', 'verward'].includes(mood) ? 'visible' : 'hidden'));
       brows.forEach((b, i) => { const x = i ? 28 : -8, side = i ? 1 : -1; const tilt = br[0] * (i ? 1 : -1) * (mood === 'verward' && i ? -1 : 1); b.setAttribute('d', `M${x - 13} ${-28 + br[1] + tilt * 10 * side} L${x + 13} ${-28 + br[1] - tilt * 10 * side}`); });
       const open = cl(st.talk || 0) * 14;
-      const smile = mood === 'blij' ? 10 : mood === 'verdrietig' || mood === 'bang' ? -8 : mood === 'boos' ? -5 : 2;
+      const smile = mood === 'blij' ? 10 : mood === 'verdrietig' || mood === 'bang' ? -8 : mood === 'boos' ? -5 : act === 'weep' ? -8 : 2;
       if (open > 1 || mood === 'verrast') { const o = Math.max(open, mood === 'verrast' ? 12 : 0); mouth.setAttribute('d', `M2 30 Q12 ${r1(30 - 3)} 22 30 Q12 ${r1(30 + o * 1.6)} 2 30 Z`); }
       else mouth.setAttribute('d', `M0 30 Q12 ${30 + smile} 24 30`);
       mouth.setAttribute('fill', open > 1 || mood === 'verrast' ? mouthC : 'none');
-      // place
-      const lie = base === 'lie';
-      g.setAttribute('transform', `translate(${r1(st.x)} ${r1(st.y)}) scale(${r1(st.s * st.dir * 1000) / 1000} ${r1(st.s * 1000) / 1000})${lie ? ` translate(${-R.hip + 40} -26) rotate(-90 0 ${-R.hip})` : ''}`);
+      // the shadow on the ground, sized to how the body meets it
+      const sh = lie ? [-(R.head - R.hip) / 2 + 20, 250, 20] : ride ? [10, 160, 18] : base === 'sit' ? [40, 100, 15] : kneel ? [-10, 100, 15] : base === 'walk' ? [0, 66 + 8 * Math.abs(Math.sin(st.walk.ph)), 12] : [0, 74, 13];
+      shadow.setAttribute('cx', sh[0]); shadow.setAttribute('rx', r1(sh[1])); shadow.setAttribute('ry', sh[2]);
+      // place: lying, the pose turns flat with the back on the ground (head toward -x)
+      pose.setAttribute('transform', lie ? `translate(0 ${R.hip - wS - (draw ? lw / 2 : 0)}) rotate(-90 0 ${-R.hip})` : '');
+      g.setAttribute('transform', `translate(${r1(st.x)} ${r1(st.y)}) scale(${r1(st.s * st.dir * 1000) / 1000} ${r1(st.s * 1000) / 1000})`);
+      if (!S.poster) haze(Math.round(cl((.9 - st.s) / .5) * 5) / 10);
     }
     return { g, update, look: L };
   }
@@ -290,7 +386,7 @@
     return t => list.forEach(o => o.c.setAttribute('transform', `translate(${r1(o.x + o.v * t)} ${o.y}) scale(${o.s})`));
   }
   function palm(g, S, P, x, y, h = 360, seed = 1) {
-    const r = rng('palm' + seed); const p = sv('g', { transform: `translate(${x} ${y})` }, g); const lean = (r() - .5) * 60;
+    const r = rng('palm' + seed); const p = sv('g', { transform: `translate(${x} ${y})`, 'data-y': y }, g); const lean = (r() - .5) * 60;
     sv('path', { d: `M-12 0 Q${lean * .4} ${-h * .5} ${lean} ${-h} L${lean + 16} ${-h} Q${lean * .4 + 18} ${-h * .5} 12 0 Z`, fill: fillC(S, '#8a6a46'), ...strokeOf(S, P, .8) }, p);
     const top = sv('g', { transform: `translate(${lean + 8} ${-h})` }, p);
     for (let i = 0; i < 7; i++) { const a = -2.9 + i * .82 + (r() - .5) * .2, L = 120 + r() * 50; const ex = Math.cos(a) * L, ey = Math.sin(a) * L * .55 + 40;
@@ -298,14 +394,14 @@
     return { node: top, sway: t => top.setAttribute('transform', `translate(${lean + 8} ${-h}) rotate(${r1(Math.sin(t * .9 + seed) * 2.5)})`) };
   }
   function olive(g, S, P, x, y, s = 1, seed = 1) {
-    const r = rng('olive' + seed); const p = sv('g', { transform: `translate(${x} ${y}) scale(${s})` }, g);
+    const r = rng('olive' + seed); const p = sv('g', { transform: `translate(${x} ${y}) scale(${s})`, 'data-y': y }, g);
     sv('path', { d: 'M-16 0 Q-24 -80 -6 -140 L10 -140 Q24 -80 16 0 Z', fill: fillC(S, '#6e5536'), ...strokeOf(S, P, .8) }, p);
     for (const [cx, cy, rr] of [[-60, -170, 70], [40, -190, 80], [-10, -240, 76], [80, -140, 56], [-90, -130, 50]]) sv('circle', { cx: cx + (r() - .5) * 20, cy, r: rr, fill: fillC(S, '#7c9a4e'), ...strokeOf(S, P, .7) }, p);
     return p;
   }
-  function rock(g, S, P, x, y, w = 120, h = 70) { return sv('path', { d: `M${x - w / 2} ${y} Q${x - w / 2 - 6} ${y - h * .7} ${x - w * .1} ${y - h} Q${x + w * .35} ${y - h * 1.05} ${x + w / 2} ${y - h * .3} L${x + w / 2 + 4} ${y} Z`, fill: fillC(S, '#9c958a', .3), ...strokeOf(S, P, .8) }, g); }
+  function rock(g, S, P, x, y, w = 120, h = 70) { return sv('path', { 'data-y': y, d: `M${x - w / 2} ${y} Q${x - w / 2 - 6} ${y - h * .7} ${x - w * .1} ${y - h} Q${x + w * .35} ${y - h * 1.05} ${x + w / 2} ${y - h * .3} L${x + w / 2 + 4} ${y} Z`, fill: fillC(S, '#9c958a', .3), ...strokeOf(S, P, .8) }, g); }
   function sheep(g, S, P, x, y, s = 1, seed = 1, dir = 1) {
-    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s * dir} ${s})` }, g); const wool = S.drawn ? '#e3ddcf' : '#f4f1ea', face = S.drawn ? '#3a3631' : '#1b1b1f';
+    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s * dir} ${s})`, 'data-y': y }, g); const wool = S.drawn ? '#e3ddcf' : '#f4f1ea', face = S.drawn ? '#3a3631' : '#1b1b1f';
     for (const lx of [-34, -14, 18, 36]) sv('path', { d: `M${lx} -20 L${lx} 0`, stroke: face, 'stroke-width': 9, 'stroke-linecap': 'round' }, p);
     const bodyG = sv('g', {}, p);
     for (const [cx, cy, rr] of [[-30, -50, 30], [0, -60, 34], [28, -50, 30], [0, -36, 34], [-24, -32, 24], [26, -32, 24]]) sv('circle', { cx, cy, r: rr, fill: wool, ...strokeOf(S, P, .55) }, bodyG);
@@ -313,7 +409,7 @@
     return { p, headN, ph: rng('sheep' + seed)() * 6, update: t => headN.setAttribute('transform', `translate(0 ${r1(Math.max(0, Math.sin(t * .7 + seed)) * 26)})`) };
   }
   function fire(g, S, x, y, s = 1) {
-    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s})` }, g);
+    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s})`, 'data-y': y }, g);
     glowDot(p, 0, -30, 260, '#ffb15a', S.flat ? .85 : .5);
     for (const a of [-.5, 0, .5]) sv('rect', { x: -60, y: -10, width: 120, height: 18, rx: 9, fill: '#5a3d26', transform: `rotate(${a * 30})` }, p);
     const fl = [sv('path', { fill: '#ff8a3a', 'data-dyn': 1 }, p), sv('path', { fill: '#ffd36a', 'data-dyn': 1 }, p)];
@@ -321,14 +417,14 @@
       f.setAttribute('d', `M${-w} 0 Q${-w - 4} ${r1(-hgt * .5)} ${r1(sw)} ${r1(-hgt)} Q${w + 4} ${r1(-hgt * .5)} ${w} 0 Z`); });
   }
   function tent(g, S, P, x, y, w = 360, h = 220, c = '#6b4f3a', c2 = '#8a6a4f') {
-    const p = sv('g', { transform: `translate(${x} ${y})` }, g);
+    const p = sv('g', { transform: `translate(${x} ${y})`, 'data-y': y }, g);
     sv('path', { d: `M${-w / 2} 0 L${-w * .32} ${-h} L${w * .32} ${-h} L${w / 2} 0 Z`, fill: fillC(S, c), ...strokeOf(S, P) }, p);
     for (let i = 1; i < 6; i++) sv('path', { d: `M${-w * .32 + i * w * .107} ${-h} L${-w / 2 + i * w / 6} 0`, stroke: fillC(S, c2), 'stroke-width': 10, fill: 'none' }, p);
     sv('path', { d: `M${-w * .12} 0 L${-w * .06} ${-h * .55} L${w * .06} ${-h * .55} L${w * .12} 0 Z`, fill: '#1c1512' }, p);
     return p;
   }
   function camel(g, S, P, x, y, s = 1, sitting = false, dir = 1) {
-    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s * dir} ${s})` }, g); const c = fillC(S, '#c49a62'), st = strokeOf(S, P, .8);
+    const p = sv('g', { transform: `translate(${x} ${y}) scale(${s * dir} ${s})`, 'data-y': y }, g); const c = fillC(S, '#c49a62'), st = strokeOf(S, P, .8);
     if (!sitting) for (const lx of [-70, -40, 40, 70]) sv('path', { d: `M${lx} -110 L${lx + 4} 0`, stroke: S.drawn ? (S.ink || P.line) : c, 'stroke-width': 16, 'stroke-linecap': 'round' }, p);
     const by = sitting ? -40 : -120;
     sv('path', { d: `M-110 ${by} Q-120 ${by - 60} -60 ${by - 70} Q-30 ${by - 130} 0 ${by - 70} Q30 ${by - 120} 60 ${by - 70} Q110 ${by - 60} 100 ${by} Z`, fill: c, ...st }, p);
@@ -337,7 +433,7 @@
     return p;
   }
   function house(g, S, P, x, y, w, h, c = '#d9c19a', lit = false) {
-    const p = sv('g', { transform: `translate(${x} ${y})` }, g);
+    const p = sv('g', { transform: `translate(${x} ${y})`, 'data-y': y }, g);
     sv('rect', { x: -w / 2, y: -h, width: w, height: h, fill: fillC(S, c, .35), ...strokeOf(S, P) }, p);
     sv('rect', { x: -w / 2 - 10, y: -h - 16, width: w + 20, height: 18, fill: fillC(S, shade(c, -.15), .35), ...strokeOf(S, P, .8) }, p);
     sv('path', { d: `M${-w * .12} 0 L${-w * .12} ${-h * .45} Q0 ${-h * .55} ${w * .12} ${-h * .45} L${w * .12} 0 Z`, fill: fillC(S, '#6b4a33'), ...strokeOf(S, P, .7) }, p);
@@ -354,7 +450,8 @@
       spots: {
         heuvel: { x: 640, y: 1040, s: .62, dir: 1 }, 'pad-ver': { x: 930, y: 1020, s: .5, dir: 1 }, 'pad-boven': { x: 1020, y: 1190, s: .78, dir: 1 },
         pad: { x: 1110, y: GY, s: 1, dir: -1 }, 'pad-dichtbij': { x: 1230, y: 1470, s: 1.15, dir: -1 },
-        berm: { x: 940, y: GY + 10, s: 1, dir: 1, base: 'lie' }, 'berm-naast': { x: 1080, y: GY + 12, s: 1, dir: -1, base: 'kneel' },
+        berm: { x: 880, y: GY + 14, s: 1, dir: -1, base: 'lie' }, 'berm-naast': { x: 1250, y: GY + 4, s: 1, dir: -1, base: 'kneel' },
+        veld: { x: 850, y: GY + 6, s: 1, dir: 1 },   // in the open, facing 'pad': far enough apart to talk, give or bow
         kudde: { x: 470, y: 1330, s: .95, dir: 1 }, boom: { x: 1500, y: 1330, s: .95, dir: -1, base: 'sit', seat: 70 }, rots: { x: 300, y: 1410, s: 1.02, dir: 1, base: 'sit', seat: 80 }, beek: { x: 1640, y: 1430, s: 1.05, dir: -1 },
       },
       cx: 1000,
@@ -386,8 +483,9 @@
     woestijn: {
       spots: {
         tent: { x: 520, y: 1350, s: .95, dir: 1 }, midden: { x: 900, y: GY, s: 1, dir: 1 }, links: { x: 700, y: 1400, s: 1.02, dir: 1 }, rechts: { x: 1180, y: 1390, s: 1.01, dir: -1 },
-        kampvuur: { x: 860, y: 1440, s: 1.05, dir: 1, base: 'sit', seat: 60 }, verte: { x: 1300, y: 1050, s: .42, dir: -1 },
+        kampvuur: { x: 790, y: 1440, s: 1.05, dir: 1, base: 'sit', seat: 60 }, verte: { x: 1300, y: 1050, s: .42, dir: -1 },
         bron: { x: 1640, y: 1390, s: 1, dir: 1 }, 'bron-2': { x: 1500, y: 1360, s: .98, dir: 1 },
+        'bron-3': { x: 1400, y: 1394, s: 1.01, dir: -1 },   // by the well, facing 'rechts' (giving water to someone there)
       },
       cx: 950,
       build(g, S, P, { time, seed }) {
@@ -406,7 +504,7 @@
         const palms = [palm(L.main, S, P, 1760, 1380, 380, 1), palm(L.main, S, P, 1930, 1400, 330, 2), palm(L.mid, S, P, 1620, 1120, 260, 3), palm(L.mid, S, P, 120, 1140, 280, 4)];
         ups.push(t => palms.forEach(p => p.sway(t)));
         ups.push(fire(L.main, S, 960, 1460, .9));
-        for (const [x, y] of [[620, 1360], [1080, 1330]]) sv('ellipse', { cx: x, cy: y, rx: 26, ry: 34, fill: fillC(S, '#b9714a'), ...strokeOf(S, P, .6) }, L.main);   // jars
+        for (const [x, y] of [[620, 1360], [1080, 1330]]) sv('ellipse', { 'data-y': y + 34, cx: x, cy: y, rx: 26, ry: 34, fill: fillC(S, '#b9714a'), ...strokeOf(S, P, .6) }, L.main);   // jars
         return t => ups.forEach(u => u(t));
       },
     },
@@ -434,12 +532,12 @@
         sv('path', { d: 'M-400 1250 L2600 1250 L2600 3600 L-400 3600 Z', fill: fillC(S, '#cdb48a', .45), ...strokeOf(S, P, .8) }, L.main);
         sv('path', { d: 'M960 1140 L1040 1140 L1400 1700 L600 1700 Z', fill: fillC(S, '#bfa57c', .45), opacity: .7 }, L.main);
         // market stall and a well in front
-        const stall = sv('g', { transform: 'translate(1420 1400)' }, L.main);
+        const stall = sv('g', { transform: 'translate(1420 1400)', 'data-y': 1400 }, L.main);
         sv('rect', { x: -110, y: -120, width: 220, height: 90, fill: fillC(S, '#8a6a46'), ...strokeOf(S, P) }, stall);
         for (let i = 0; i < 5; i++) sv('path', { d: `M${-130 + i * 52} -220 L${-78 + i * 52} -220 L${-78 + i * 52} -180 L${-130 + i * 52} -180 Z`, fill: i % 2 ? '#f4ede0' : fillC(S, '#c0392b'), ...strokeOf(S, P, .6) }, stall);
         for (const x of [-100, 100]) sv('path', { d: `M${x} -180 L${x} 0`, stroke: S.drawn ? (S.ink || P.line) : '#6b4a33', 'stroke-width': 10 }, stall);
         for (const [x, c] of [[-60, '#e67e22'], [-20, '#c0392b'], [30, '#f1c40f'], [70, '#27ae60']]) sv('circle', { cx: x, cy: -132, r: 18, fill: fillC(S, c), ...strokeOf(S, P, .5) }, stall);
-        const well = sv('g', { transform: 'translate(560 1430)' }, L.main); sv('path', { d: 'M-70 0 L-70 -70 L70 -70 L70 0 Z', fill: fillC(S, '#a99677', .35), ...strokeOf(S, P) }, well);
+        const well = sv('g', { transform: 'translate(560 1430)', 'data-y': 1430 }, L.main); sv('path', { d: 'M-70 0 L-70 -70 L70 -70 L70 0 Z', fill: fillC(S, '#a99677', .35), ...strokeOf(S, P) }, well);
         palm(L.mid, S, P, 760, 1250, 300, 5); const pl = palm(L.main, S, P, 140, 1500, 420, 6); ups.push(t => pl.sway(t));
         if (lit) for (const x of [700, 1260]) glowDot(L.main, x, 1180, 160, '#ffb35a', S.flat ? .7 : .35);
         return t => ups.forEach(u => u(t));
@@ -448,7 +546,7 @@
     zee: {
       spots: {
         boeg: { x: 1330, y: 1270, s: .95, dir: 1 }, mast: { x: 930, y: 1300, s: .95, dir: 1 }, achtersteven: { x: 560, y: 1250, s: .95, dir: 1 }, reling: { x: 1150, y: 1300, s: .95, dir: 1 },
-        dek: { x: 780, y: 1300, s: .95, dir: 1 }, ruim: { x: 900, y: 1470, s: .7, dir: 1, base: 'lie' }, 'ruim-staan': { x: 1080, y: 1490, s: .7, dir: -1 },
+        dek: { x: 780, y: 1300, s: .95, dir: 1 }, ruim: { x: 980, y: 1448, s: .58, dir: 1, base: 'lie' }, 'ruim-staan': { x: 1120, y: 1448, s: .3, dir: -1 },
       },
       cx: 950,
       build(g, S, P, { time, weather, seed }) {
@@ -459,13 +557,17 @@
         ups.push(clouds(L.sky, S, P, seed, storm ? 9 : 4, 150, 700, storm ? (S.flat ? '#2a3354' : '#26272c') : time === 'avond' ? '#f6b08a' : '#ffffff'));
         const sea = { dag: '#3f8fc4', avond: '#5a4a78', nacht: '#16224a' }[time], sea2 = shade(sea, -.2);
         const seaC = S.drawn ? mute(sea, .5) : sea, seaC2 = S.drawn ? mute(sea2, .5) : sea2;
-        const waveRow = (layer, y, amp, c, sp, ph) => { const p = sv('path', { fill: c, ...strokeOf(S, P, .6), 'data-dyn': 1 }, layer); return t => { let d = `M-600 3600 L-600 ${y}`; for (let x = -600; x <= 2700; x += 50) d += ` L${x} ${r1(y + Math.sin(x * .012 + t * sp + ph) * amp + Math.sin(x * .031 - t * sp * 1.3) * amp * .35)}`; p.setAttribute('d', d + ' L2700 3600 Z'); }; };
+        // a row of waves; in a storm with white foam on the crests
+        const waveRow = (layer, y, amp, c, sp, ph) => { const p = sv('path', { fill: c, ...strokeOf(S, P, .6), 'data-dyn': 1 }, layer);
+          const foam = storm ? sv('path', { fill: 'none', stroke: S.drawn ? '#d8d4c8' : '#e8f1ff', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-dasharray': '38 46', opacity: .55, 'data-dyn': 1 }, layer) : null;
+          return t => { let crest = ''; for (let x = -600; x <= 2700; x += 50) crest += ` L${x} ${r1(y + Math.sin(x * .012 + t * sp + ph) * amp + Math.sin(x * .031 - t * sp * 1.3) * amp * .35)}`;
+            p.setAttribute('d', `M-600 3600 L-600 ${y}${crest} L2700 3600 Z`); if (foam) { foam.setAttribute('d', 'M' + crest.slice(2)); foam.setAttribute('stroke-dashoffset', r1(-t * 90)); } }; };
         ups.push(waveRow(L.far, 1180, storm ? 26 : 8, seaC2, storm ? 1.6 : .7, 1));
         // the ship (side view, a cut-away hold below deck)
         const shipG = sv('g', {}, L.main);
         const hull = 'M380 1280 L1460 1280 Q1430 1500 1260 1560 L600 1560 Q440 1500 380 1280 Z';
         sv('path', { d: hull, fill: fillC(S, '#8a5a33'), ...strokeOf(S, P) }, shipG);
-        sv('path', { d: 'M560 1360 L1300 1360 L1260 1520 L620 1520 Z', fill: fillC(S, '#3a2a1e'), ...strokeOf(S, P, .7) }, shipG);   // the hold
+        sv('path', { d: 'M560 1318 L1300 1318 L1284 1450 L590 1450 Z', fill: fillC(S, '#3a2a1e'), ...strokeOf(S, P, .7) }, shipG);   // the hold
         for (let x = 420; x < 1440; x += 80) sv('path', { d: `M${x} 1300 L${x + 30} 1300`, stroke: S.drawn ? (S.ink || P.line) : '#5b3a20', 'stroke-width': 6 }, shipG);
         sv('rect', { x: 920, y: 520, width: 22, height: 770, fill: fillC(S, '#6e4f33'), ...strokeOf(S, P, .8) }, shipG);
         const sail = sv('path', { fill: S.drawn ? mute('#e9e2cf', .3) : '#f2ece0', ...strokeOf(S, P), 'data-dyn': 1 }, shipG);
@@ -475,7 +577,8 @@
         for (const [x1, x2] of [[930, 420], [940, 1450]]) sv('path', { d: `M${x1} 540 L${x2} 1280`, stroke: S.drawn ? (S.ink || P.line) : '#3a2a1e', 'stroke-width': 3, fill: 'none' }, shipG);
         ups.push(t => { const bil = storm ? Math.sin(t * 1.3) * 22 : Math.sin(t * .8) * 6; const sw = storm ? 40 : 14; sail.setAttribute('d', `M950 560 Q${r1(1180 + sw * Math.sin(t * 2))} 760 950 ${r1(1060 + bil * .2)} Z`);
           stripes.forEach((s, i) => { const y0 = 620 + i * 140; s.setAttribute('d', `M950 ${y0} Q${r1(1100 + sw * .7 * Math.sin(t * 2))} ${y0 + 50} 950 ${y0 + 80} Z`); });
-          L.main.setAttribute('data-roll', r1(bil)); });
+          // the ship and everyone on it pitch with the waves (hard in a storm)
+          L.main.setAttribute('transform', storm ? `rotate(${r1(bil * .12)} 950 1420) translate(0 ${r1(bil * .5)})` : `translate(0 ${r1(bil * .6)})`); });
         ups.push(waveRow(L.front, 1500, storm ? 40 : 12, seaC, storm ? 2 : .9, 3));
         if (storm) {
           const rain = sv('g', { 'data-dyn': 1 }, L.front); const rr = rng(seed + 'rain'); const drops = Array.from({ length: 140 }, () => ({ x: -200 + rr() * 2400, y: rr() * 2400, l: 40 + rr() * 40, n: sv('path', { stroke: S.drawn ? '#8a8f99' : '#b8c9ff', 'stroke-width': 3, opacity: .55 }, rain) }));
@@ -486,7 +589,7 @@
       },
     },
     slaapkamer: {
-      spots: { bed: { x: 430, y: 1360, s: 1, dir: 1, base: 'sit', seat: 105 }, 'bed-liggen': { x: 400, y: 1290, s: 1, dir: 1, base: 'lie' }, bureau: { x: 900, y: 1370, s: 1, dir: 1, base: 'sit', seat: 100 }, midden: { x: 680, y: GY, s: 1, dir: 1 }, deur: { x: 1150, y: GY, s: 1, dir: -1 }, raam: { x: 560, y: 1370, s: .98, dir: 1 } },
+      spots: { bed: { x: 430, y: 1360, s: 1, dir: 1, base: 'sit', seat: 105 }, 'bed-liggen': { x: 420, y: 1262, s: 1, dir: 1, base: 'lie' }, bureau: { x: 900, y: 1370, s: 1, dir: 1, base: 'sit', seat: 100 }, midden: { x: 680, y: GY, s: 1, dir: 1 }, deur: { x: 1150, y: GY, s: 1, dir: -1 }, raam: { x: 560, y: 1370, s: .98, dir: 1 } },
       cx: 700,
       build(g, S, P, { time }) {
         const L = layersOf(g); const night = time !== 'dag';
@@ -503,8 +606,8 @@
         const bed = sv('g', { transform: 'translate(380 1380)' }, L.main);
         sv('rect', { x: -260, y: -260, width: 30, height: 260, rx: 10, fill: fillC(S, '#5a4636'), ...strokeOf(S, P) }, bed);
         sv('rect', { x: -250, y: -120, width: 470, height: 90, rx: 18, fill: fillC(S, '#e8e1d2', .3), ...strokeOf(S, P) }, bed);
-        sv('path', { d: 'M-90 -130 Q60 -160 220 -125 L220 -40 L-90 -40 Z', fill: fillC(S, '#4f6f9a'), ...strokeOf(S, P) }, bed);
         sv('rect', { x: -230, y: -165, width: 120, height: 50, rx: 22, fill: fillC(S, '#f1ece2', .3), ...strokeOf(S, P, .8) }, bed);
+        sv('path', { d: 'M-80 -150 Q60 -176 224 -140 L232 -36 L-84 -36 Z', fill: fillC(S, '#4f6f9a'), ...strokeOf(S, P), transform: 'translate(380 1380)', 'data-y': 1290 }, L.main);   // the blanket: over whoever lies in the bed
         const ns = sv('g', { transform: 'translate(-20 1380)' }, L.main); sv('rect', { x: -70, y: -150, width: 140, height: 150, rx: 8, fill: fillC(S, '#4a3a2e'), ...strokeOf(S, P) }, ns);
         sv('rect', { x: -50, y: -200, width: 100, height: 50, rx: 10, fill: '#141416', ...strokeOf(S, P, .7) }, ns);
         sv('text', { x: 0, y: -165, 'text-anchor': 'middle', 'font-family': 'Inter', 'font-weight': 700, 'font-size': 30, fill: '#e04848' }, ns).textContent = '6:30';
@@ -566,10 +669,10 @@
     const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
     const sc = Math.min(760 / Math.max(x1 - x0, 1), 720 / Math.max(y1 - y0, 1), 1.6);
     const C = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, s: Math.max(sc, .05) };
-    const route = sv('path', { 'data-dyn': 1, fill: 'none', stroke: draw ? '#c94b40' : '#ffffff', 'stroke-width': draw ? 7 : 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': draw ? '22 14' : null }, g);
+    const route = sv('path', { 'data-dyn': 1, fill: 'none', stroke: draw ? TEAL.deep : TEAL.light, 'stroke-width': draw ? 7 : 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': draw ? '22 14' : null }, g);
     const routeGlow = draw ? null : sv('path', { 'data-dyn': 1, fill: 'none', stroke: '#ffffff', 'stroke-width': 22, opacity: .25, 'stroke-linecap': 'round', filter: 'url(#f2d-soft)' }, g);
     if (routeGlow) g.insertBefore(routeGlow, route);
-    const pins = pts.map(() => { const p = sv('g', { 'data-dyn': 1 }, g); sv('circle', { r: 16, fill: draw ? '#c94b40' : '#f5c84b', stroke: draw ? '#141416' : '#ffffff', 'stroke-width': 5 }, p); return p; });
+    const pins = pts.map(() => { const p = sv('g', { 'data-dyn': 1 }, g); sv('circle', { r: 16, fill: draw ? TEAL.deep : TEAL.mid, stroke: draw ? '#141416' : '#ffffff', 'stroke-width': 5 }, p); return p; });
     const traveler = sv('g', { 'data-dyn': 1 }, g);
     const labels = svgLabels ? pts.map(p => { const n = sv('text', { 'data-dyn': 1, 'font-family': 'Patrick Hand', 'font-size': 52, fill: S.ink || '#141416', 'paint-order': 'stroke', stroke: S.paper || '#ffffff', 'stroke-width': 10, 'stroke-linejoin': 'round' }, g); n.textContent = p.name.toUpperCase(); return n; }) : null;
     if (draw) { sv('circle', { r: 14, fill: '#ebe6d9', stroke: '#141416', 'stroke-width': 4, cy: -38 }, traveler); sv('path', { d: 'M0 -24 L0 0', stroke: '#141416', 'stroke-width': 6 }, traveler); }
@@ -807,11 +910,12 @@
       for (const a of s.actors || []) {
         const sp = def.spots[a.at]; if (!sp) throw new Error(`spot "${a.at}" is not in set ${s.set}`);
         let x = sp.x, y = sp.y, sc = sp.s, dir = sp.dir || 1, base = a.base || sp.base || 'stand', seat = sp.seat, walk = null;
+        const riding = a.base === 'ride';
         if (a.to) {
           const to = def.spots[a.to]; if (!to) throw new Error(`spot "${a.to}" is not in set ${s.set}`);
           const dist = Math.hypot((to.x - x) / ((sp.s + to.s) / 2), (to.y - y) * 2.2), dur = Math.max(.6, dist / 230);
           const k = cl((t - s.start - .1) / dur);
-          if (k < 1) { const e = sm(k) * .15 + k * .85; dir = to.x >= x ? 1 : -1; x = lerp(x, to.x, e); y = lerp(y, to.y, e); sc = lerp(sc, to.s, e); base = 'walk'; walk = { ph: (t - s.start) * 7.5, amt: Math.min(1, Math.min(k, 1 - k) * 10) }; }
+          if (k < 1) { const e = sm(k) * .15 + k * .85; dir = to.x >= x ? 1 : -1; x = lerp(x, to.x, e); y = lerp(y, to.y, e); sc = lerp(sc, to.s, e); base = riding ? 'ride' : 'walk'; walk = { ph: (t - s.start) * (riding ? 5.4 : 6.2), amt: Math.min(1, Math.min(k, 1 - k) * 10) }; }
           else { x = to.x; y = to.y; sc = to.s; dir = to.dir || 1; base = a.base || to.base || 'stand'; seat = to.seat; }
         }
         out2.push({ a, x, y, s: sc, dir, base, seat, walk });
@@ -856,11 +960,11 @@
     /* overlays */
     const hook = el('div', 'abs'); css(hook, { left: '70px', width: '940px', top: '210px', textAlign: draw ? 'left' : 'center', color: '#fff', fontFamily: S.title, fontWeight: draw ? 400 : 900, zIndex: 3,
       fontSize: (draw ? fit(spec.hook, [[22, 108], [36, 94], [60, 78]], 940) : fit(spec.hook, [[22, 96], [36, 84], [60, 68]], 940)) + 'px', lineHeight: draw ? 1.02 : 1.04, letterSpacing: draw ? '0' : '-2px', textWrap: 'balance',
-      textShadow: draw ? '0 4px 0 rgba(0,0,0,.35)' : '0 8px 28px rgba(0,0,0,.55)', WebkitTextStroke: draw ? '0' : '10px rgba(8,10,16,.9)', paintOrder: 'stroke fill' });
+      textShadow: draw ? '0 4px 0 rgba(0,0,0,.35), 0 0 22px rgba(10,10,14,.75), 0 0 6px rgba(10,10,14,.6)' : '0 8px 28px rgba(0,0,0,.55)', WebkitTextStroke: draw ? '0' : '10px rgba(8,10,16,.9)', paintOrder: 'stroke fill' });
     if (POSTER) css(hook, { color: S.ink, textShadow: 'none', textAlign: 'left', width: '900px', left: '90px', top: '250px', padding: '30px 40px', boxSizing: 'border-box', background: S.paper, border: `6px solid ${S.ink}`, borderRadius: '8px', boxShadow: '0 14px 30px rgba(0,0,0,.18)' });
     if (draw) hook.textContent = spec.hook;
-    else { const words = spec.hook.split(/\s+/); const n = Math.min(3, Math.max(1, Math.round(words.length / 3))); hook.innerHTML = esc(words.slice(0, -n).join(' ')) + (words.length > n ? ' ' : '') + `<span style="color:#f5c84b">${esc(words.slice(-n).join(' '))}</span>`; }
-    const label = el('div', 'abs'); css(label, draw ? { left: '70px', top: '120px', color: 'rgba(235,230,217,.75)', fontFamily: S.font, fontSize: '40px', letterSpacing: '3px', textTransform: 'uppercase', zIndex: 3, opacity: 0 }
+    else { const words = spec.hook.split(/\s+/); const n = Math.min(3, Math.max(1, Math.round(words.length / 3))); hook.innerHTML = esc(words.slice(0, -n).join(' ')) + (words.length > n ? ' ' : '') + `<span style="color:${TEAL.light}">${esc(words.slice(-n).join(' '))}</span>`; }
+    const label = el('div', 'abs'); css(label, draw ? { left: '70px', top: '120px', color: 'rgba(235,230,217,.9)', textShadow: '0 0 14px rgba(10,10,14,.8), 0 2px 0 rgba(0,0,0,.4)', fontFamily: S.font, fontSize: '40px', letterSpacing: '3px', textTransform: 'uppercase', zIndex: 3, opacity: 0 }
       : { left: '70px', top: '120px', color: 'rgba(255,255,255,.85)', fontFamily: 'Inter', fontWeight: 800, fontSize: '30px', letterSpacing: '6px', textTransform: 'uppercase', zIndex: 3, opacity: 0, textShadow: '0 2px 12px rgba(0,0,0,.5)' });
     const cap = subtitles(segs, spec.captions || 'karaoke', { top: 1500 });
     shots.forEach(s => {
@@ -868,7 +972,7 @@
         const card = el('div', 'abs'); css(card, POSTER ? { left: '80px', width: '920px', top: '330px', boxSizing: 'border-box', padding: '40px 48px', borderRadius: '6px', background: S.name === 'krijt' ? '#323f39' : '#fffdf6', border: `5px solid ${S.ink}`, boxShadow: '0 18px 40px rgba(0,0,0,.22)', zIndex: 3, opacity: 0 } : draw ? { left: '70px', width: '940px', top: '330px', boxSizing: 'border-box', padding: '36px 44px', borderRadius: '10px', background: 'rgba(20,20,22,.88)', border: '3px solid rgba(235,230,217,.55)', zIndex: 3, opacity: 0 }
           : { left: '70px', width: '940px', top: '330px', boxSizing: 'border-box', padding: '38px 46px', borderRadius: '30px', background: 'rgba(10,14,28,.72)', backdropFilter: 'blur(6px)', boxShadow: '0 24px 60px rgba(0,0,0,.4)', zIndex: 3, opacity: 0 });
         if (POSTER) { const tape = el('div', 'abs', card); css(tape, { left: '380px', top: '-26px', width: '160px', height: '46px', background: S.name === 'krijt' ? 'rgba(240,236,224,.35)' : 'rgba(232,214,160,.75)', transform: 'rotate(-3deg)' }); }
-        el('div', '', card, vref(s.verseData.ref)).style.cssText = POSTER ? `font-family:${S.font};font-size:36px;letter-spacing:3px;color:${S.name === 'stift' ? '#d9534f' : S.name === 'krijt' ? '#f0c96a' : '#9a3a2c'};margin-bottom:12px` : draw ? `font-family:${S.font};font-size:34px;letter-spacing:3px;color:#e0b45c;margin-bottom:14px` : 'font-weight:800;font-size:26px;letter-spacing:3px;color:#f5c84b;margin-bottom:16px';
+        el('div', '', card, vref(s.verseData.ref)).style.cssText = POSTER ? `font-family:${S.font};font-size:36px;letter-spacing:3px;color:${S.name === 'krijt' ? TEAL.light : TEAL.deep};margin-bottom:12px` : draw ? `font-family:${S.font};font-size:34px;letter-spacing:3px;color:${TEAL.drawn};margin-bottom:14px` : `font-weight:800;font-size:26px;letter-spacing:3px;color:${TEAL.light};margin-bottom:16px`;
         el('div', draw ? '' : 'serif', card, esc(s.verseData.text)).style.cssText = POSTER ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 44 : 50}px;line-height:1.2;color:${S.ink}` : draw ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 42 : 48}px;line-height:1.22;color:#ebe6d9` : `font-size:${s.verseData.text.length > 150 ? 36 : 42}px;line-height:1.38;color:#fff`;
         s.card = card;
       }
@@ -897,7 +1001,14 @@
       for (const st of states) {
         const a = w.actors[st.a.id]; a.g.setAttribute('display', 'inline');
         const speaking = s.by === st.a.id && T <= s.end;
-        a.update({ t: T, boil: bo, x: st.x, y: st.y, s: st.s * .92, dir: st.dir, base: st.walk ? 'walk' : st.base, action: st.walk && st.a.do !== 'carry' ? 'idle' : (st.a.do || 'idle'), mood: st.a.mood, talk: speaking ? mouth(s.seg, T) : 0, walk: st.walk, holds: st.a.holds, seat: st.seat });
+        a.update({ t: T, boil: bo, x: st.x, y: st.y, s: st.s * .92, dir: st.dir, base: st.walk && st.base !== 'ride' ? 'walk' : st.base, action: st.walk && st.base !== 'ride' && st.a.do !== 'carry' ? 'idle' : (st.a.do || 'idle'), mood: st.a.mood, talk: speaking ? mouth(s.seg, T) : 0, walk: st.walk, holds: st.a.holds, seat: st.seat });
+      }
+      // depth: people and upright set pieces (data-y = where they stand) in order, the nearest drawn last
+      if (!POSTER) {
+        const main = w.g._layers.main;
+        if (!w.upright) w.upright = [...main.children].filter(n => n.hasAttribute('data-y')).map(n => ({ n, y: +n.getAttribute('data-y') }));
+        const list = [...w.upright, ...states.map(st => ({ n: w.actors[st.a.id].g, y: st.y + .5 }))].sort((p, q) => p.y - q.y);
+        for (const o of list) main.appendChild(o.n);
       }
       if (w.update) w.update(T);
       const c = shoot(s, Math.min(T, s.end), states);

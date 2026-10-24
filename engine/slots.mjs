@@ -3,23 +3,29 @@
 // publish job (engine/cli/publish-due.mjs) posts it. One item per time per day, in the project's time zone.
 // A time stays open for WINDOW_MIN minutes, so a publish run that comes a little late still uses it, and
 // an item approved in the evening can still go out at 19:30 that same evening.
-//   verse-still                                   07:00
-//   post-spotlight / post-statement / carousel    12:00
-//   reels that go to instagram/facebook ("main")  19:30
-//   reels only on tiktok/youtube ("extra")        12:30, 17:00
+// Alex, 24 Oct: the verse of the day only on Instagram and Facebook; every reel he approves on all platforms,
+// one a day.
+//   verse-still                                   07:00   instagram, facebook
+//   post-spotlight / post-statement / carousel    12:00   instagram, facebook (none are planned now)
+//   reels                                         19:30   every platform of the project
 
 export const POSTING_TIMES = {
   verse: ['07:00'],
   feed: ['12:00'],
-  extra: ['12:30', '17:00'],
-  main: ['19:30'],
+  reel: ['19:30'],
 };
+
+/** The platforms an item goes to when it is posted: reels everywhere, the rest only where images live. */
+export function postPlatforms(kind, projectPlatforms) {
+  if (kind.startsWith('reel-')) return [...projectPlatforms];
+  return projectPlatforms.filter(p => p === 'instagram' || p === 'facebook');
+}
 
 export const WINDOW_MIN = 180;
 
-export function slotGroup(kind, platforms = []) {
+export function slotGroup(kind) {
   if (kind === 'verse-still') return 'verse';
-  if (kind.startsWith('reel-')) return platforms.some(p => p === 'instagram' || p === 'facebook') ? 'main' : 'extra';
+  if (kind.startsWith('reel-')) return 'reel';
   return 'feed';
 }
 

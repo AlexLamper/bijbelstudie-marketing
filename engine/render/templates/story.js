@@ -20,12 +20,164 @@
 
   /** Colours for the map and accents, per look (photo uses the dark map). */
   const palette = L => L.dark ? {
-    sea: '#0c1c22', land: '#1d343a', coast: 'rgba(153,246,228,.32)', river: 'rgba(94,234,212,.28)', grid: 'rgba(255,255,255,.04)', seaName: 'rgba(204,251,241,.36)',
+    sea: '#0c1c22', land: '#1d343a', coast: 'rgba(153,246,228,.34)', river: 'rgba(94,234,212,.5)', grid: 'rgba(255,255,255,.04)', seaName: 'rgba(204,251,241,.4)',
+    shallow: '#5eead4', regionName: 'rgba(230,255,250,.30)', riverName: 'rgba(153,246,228,.62)',
     ground: 'var(--panel)', label: '#fff', halo: 'rgba(8,18,22,.94)', acc: 'color-mix(in srgb, var(--accent) 52%, #fff)', pinRing: '#fff',
   } : {
     sea: '#e2f0ee', land: '#ffffff', coast: 'rgba(15,118,110,.38)', river: 'rgba(13,148,136,.34)', grid: 'rgba(15,118,110,.07)', seaName: 'rgba(15,118,110,.55)',
+    shallow: '#0d9488', regionName: 'rgba(15,118,110,.32)', riverName: 'rgba(15,118,110,.6)',
     ground: 'var(--surface)', label: 'var(--ink)', halo: 'rgba(255,255,255,.96)', acc: 'var(--accent)', pinRing: '#fff',
   };
+
+
+  /* ---------- the fuller map (Alex, 24 Oct: "not filled up enough"): shaded relief, region and river names,
+     the story's other places, drawn story icons, a travel icon on the route, chips and a locator ---------- */
+  const RELIEF = { src: 'data/relief.png', lon0: -4, lat0: 54, step: .05, max: 5800, up: 2 };
+  let terrainP = null;
+  /** The relief as a shaded, tinted image (data URL) of the whole map box, at 2x the grid (smoother slopes); once per page. */
+  function terrain(m) {
+    return terrainP ||= new Promise((ok, bad) => {
+      const im = new Image();
+      im.onload = () => {
+        const w0 = im.naturalWidth, h0 = im.naturalHeight, U = RELIEF.up, w = w0 * U, h = h0 * U;
+        const c = document.createElement('canvas'); c.width = w0; c.height = h0;
+        const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+        const src = g.getImageData(0, 0, w0, h0).data; const z0 = new Float32Array(w0 * h0);
+        for (let i = 0; i < z0.length; i++) { const v = src[i * 4] / 255; z0[i] = v * v * RELIEF.max; }
+        const z = new Float32Array(w * h);   // bilinear 2x
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+          const fx = Math.min(w0 - 1.001, x / U), fy = Math.min(h0 - 1.001, y / U), x0 = Math.floor(fx), y0 = Math.floor(fy), u = fx - x0, v = fy - y0, i = y0 * w0 + x0;
+          z[y * w + x] = (z0[i] * (1 - u) + z0[i + 1] * u) * (1 - v) + (z0[i + w0] * (1 - u) + z0[i + w0 + 1] * u) * v;
+        }
+        c.width = w; c.height = h; const img = g.createImageData(w, h); const o = img.data;
+        const alt = 42 * Math.PI / 180, L = [-Math.cos(alt) * Math.SQRT1_2, -Math.cos(alt) * Math.SQRT1_2, Math.sin(alt)];   // light from the north-west
+        const EX = 7, dyM = RELIEF.step / U * 111000;
+        const base = [29, 52, 58], lit = [96, 138, 136], dark = [7, 19, 23], high = [74, 92, 88];
+        for (let y = 0; y < h; y++) {
+          const lat = RELIEF.lat0 - y * RELIEF.step / U, dxM = dyM * Math.cos(lat * Math.PI / 180);
+          for (let x = 0; x < w; x++) {
+            const i = y * w + x, xl = x ? i - 1 : i, xr = x < w - 1 ? i + 1 : i, yu = y ? i - w : i, yd = y < h - 1 ? i + w : i;
+            const zx = EX * (z[xr] - z[xl]) / ((xr - xl) * dxM || 1), zy = EX * (z[yd] - z[yu]) / (((yd - yu) / w) * dyM || 1);
+            const n = 1 / Math.hypot(zx, zy, 1); const s = (-zx * L[0] - zy * L[1] + L[2]) * n - L[2];   // >0 lit, <0 shadow
+            const e = Math.min(1, Math.sqrt(z[i] / 2600));
+            for (let k = 0; k < 3; k++) {
+              let c0 = base[k] + (high[k] - base[k]) * e * .55;
+              c0 += s > 0 ? (lit[k] - c0) * Math.min(1, s * 2.2) : (dark[k] - c0) * Math.min(1, -s * 2.4);
+              o[i * 4 + k] = c0;
+            }
+            o[i * 4 + 3] = 255;
+          }
+        }
+        g.putImageData(img, 0, 0);
+        const url = c.toDataURL('image/png');
+        // the glow: the land, blurred twice (wide and faint, narrow and brighter), teal, with the land itself cut out
+        const ux = RELIEF.step / U * m.proj.cos * m.proj.k, uy = RELIEF.step / U * m.proj.k;   // map units per pixel
+        const land = new Path2D(m.land);
+        const mask = document.createElement('canvas'); mask.width = w; mask.height = h; const mg = mask.getContext('2d');
+        mg.setTransform(1 / ux, 0, 0, 1 / uy, 0, 0); mg.fillStyle = '#fff'; mg.fill(land);
+        const gc = document.createElement('canvas'); gc.width = w; gc.height = h; const gg = gc.getContext('2d');
+        for (const [b, a] of [[14, .55], [5, .5], [1.6, .55]]) { gg.filter = `blur(${b}px)`; gg.globalAlpha = a; gg.drawImage(mask, 0, 0); }
+        gg.filter = 'none'; gg.globalAlpha = 1;
+        gg.globalCompositeOperation = 'source-in'; gg.fillStyle = '#5eead4'; gg.fillRect(0, 0, w, h);
+        gg.globalCompositeOperation = 'destination-out'; gg.drawImage(mask, 0, 0);
+        ok({ url, glow: gc.toDataURL('image/png'), w, h, ux, uy });
+      };
+      im.onerror = () => bad(new Error('reel-story: engine/render/data/relief.png did not load'));
+      im.src = RELIEF.src;
+    });
+  }
+
+  // Region and river names that hold for every Bible era (geography, not states); shown within a view width range (degrees)
+  const REGIONS = [
+    { name: 'EGYPTE', lon: 29.6, lat: 26.2, range: [7, 60] }, { name: 'SINAÏ', lon: 33.9, lat: 29.3, size: .78, range: [4, 30] },
+    { name: 'ARABIË', lon: 44.5, lat: 24.6, range: [9, 60] }, { name: 'MESOPOTAMIË', lon: 43.4, lat: 33.4, range: [7, 60] },
+    { name: 'KLEIN-AZIË', lon: 32.8, lat: 39.1, range: [7, 60] }, { name: 'GRIEKENLAND', lon: 21.9, lat: 39.4, size: .8, range: [6, 50] },
+    { name: 'ITALIË', lon: 14.6, lat: 41.6, size: .8, rotate: -40, range: [8, 60] },
+    { name: 'Kreta', lon: 24.9, lat: 34.75, size: .62, italic: true, range: [2, 26] }, { name: 'Cyprus', lon: 33.25, lat: 34.62, size: .62, italic: true, range: [2, 26] },
+    { name: 'Nijl', lon: 31.75, lat: 27.0, rotate: -78, size: .62, italic: true, river: true, range: [3, 30] },
+    { name: 'Eufraat', lon: 40.75, lat: 34.75, rotate: 28, size: .62, italic: true, river: true, range: [3, 30] },
+    { name: 'Tigris', lon: 43.95, lat: 35.35, rotate: 60, size: .62, italic: true, river: true, range: [3, 30] },
+    { name: 'Jordaan', lon: 35.72, lat: 32.25, rotate: -84, size: .56, italic: true, river: true, range: [.8, 6] },
+  ];
+
+  // Story icons, drawn as line art on a 100x100 box. A part: d, fill (teal | warm | light), w (stroke), kind (flash | rain | blink)
+  const FILLS = { teal: 'color-mix(in srgb, var(--accent) 62%, #0b1a1f)', warm: '#e07a45', light: '#d9f7f1', dark: '#0b1a1f' };
+  const ICONS = {
+    schip: { sea: true, word: 'schip', parts: [{ d: 'M8 60H92L80 78H20Z', fill: 'teal' }, { d: 'M48 60V14' }, { d: 'M50 17C74 27 76 46 50 56Z', fill: 'light' }, { d: 'M48 14L60 18L48 22' }, { d: 'M6 88Q15 83 24 88T42 88T60 88T78 88T96 88', w: 3 }] },
+    storm: { sea: true, word: 'storm', parts: [{ d: 'M24 54C12 54 10 38 22 35C22 22 40 18 46 28C52 16 74 18 74 34C88 34 90 54 76 54Z', fill: 'teal' }, { d: 'M55 48L43 70H53L47 92L67 63H57L63 48Z', fill: 'light', kind: 'flash' }, { d: 'M28 62L24 74M37 64L33 76M74 62L70 74M82 60L78 72', w: 3, kind: 'rain' }] },
+    vis: { sea: true, word: 'vis', parts: [{ d: 'M10 50C26 28 56 26 70 44L90 30L84 50L90 70L70 56C56 74 26 72 10 50Z', fill: 'teal' }, { d: 'M20 46a3 3 0 1 0 6 0a3 3 0 1 0 -6 0' }, { d: 'M34 40C38 46 38 54 34 60' }, { d: 'M44 34L52 22L58 37' }, { d: 'M6 30a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M12 20a2 2 0 1 0 4 0a2 2 0 1 0 -4 0', w: 2.5, kind: 'blink' }] },
+    golven: { sea: true, word: 'water', parts: [{ d: 'M8 36Q20 26 32 36T56 36T80 36T94 33' }, { d: 'M8 56Q20 46 32 56T56 56T80 56T94 53' }, { d: 'M8 76Q20 66 32 76T56 76T80 76T94 73' }] },
+    ark: { sea: true, word: 'ark', parts: [{ d: 'M6 58H94L82 78H18Z', fill: 'teal' }, { d: 'M28 58V42H72V58', fill: 'light' }, { d: 'M24 42L50 28L76 42' }, { d: 'M44 46H56V53H44Z' }, { d: 'M4 88Q14 82 24 88T44 88T64 88T84 88T96 86', w: 3 }] },
+    stad: { word: 'stad', parts: [{ d: 'M12 84V52H22V44H30V52H40V36H46V28H54V36H60V52H70V44H78V52H88V84Z', fill: 'teal' }, { d: 'M44 84V71C44 63 56 63 56 71V84' }, { d: 'M26 60V66M74 60V66M50 44V50', w: 3 }] },
+    tempel: { word: 'tempel', parts: [{ d: 'M50 14L88 34H12Z', fill: 'teal' }, { d: 'M14 38H86' }, { d: 'M22 40V76M36 40V76M50 40V76M64 40V76M78 40V76' }, { d: 'M10 80H90M16 87H84' }] },
+    tent: { word: 'tent', parts: [{ d: 'M10 80L50 24L90 80Z', fill: 'teal' }, { d: 'M42 80L50 58L58 80' }, { d: 'M50 24L45 13M50 24L56 13' }, { d: 'M4 84H96', w: 3 }] },
+    berg: { word: 'berg', parts: [{ d: 'M6 82L36 30L52 54L64 40L94 82Z', fill: 'teal' }, { d: 'M27 45L36 30L45 45L39 41L33 47Z', fill: 'light' }, { d: 'M58 48L64 40L72 52', w: 3 }] },
+    put: { word: 'put', parts: [{ d: 'M24 56H76V84H24Z', fill: 'teal' }, { d: 'M24 66H76M24 76H76M42 56V66M58 66V76M40 76V84M60 76V84', w: 2.5 }, { d: 'M30 56V22M70 56V22' }, { d: 'M22 25L50 11L78 25' }, { d: 'M50 19V40M44 40H56L54 48H46Z' }] },
+    vuur: { word: 'vuur', parts: [{ d: 'M50 86C28 82 26 58 40 44C40 56 48 58 48 58C44 42 54 28 52 12C70 26 78 48 72 66C70 78 62 86 50 86Z', fill: 'warm', kind: 'flame' }, { d: 'M50 84C42 80 42 68 48 60C50 68 56 66 56 66C60 74 58 82 50 84Z', fill: 'light', kind: 'flame' }, { d: 'M24 92L76 84M24 84L76 92', w: 3.5 }] },
+    kroon: { word: 'koning', parts: [{ d: 'M14 74L20 32L36 50L50 24L64 50L80 32L86 74Z', fill: 'teal' }, { d: 'M14 83H86' }, { d: 'M46 61a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M29 64a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M65 64a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', w: 2.5, kind: 'blink' }] },
+    zwaard: { word: 'strijd', parts: [{ d: 'M20 18L68 66' }, { d: 'M58 74L76 56' }, { d: 'M70 70L84 84', w: 6 }, { d: 'M80 18L32 66' }, { d: 'M24 56L42 74' }, { d: 'M30 70L16 84', w: 6 }] },
+    schapen: { word: 'schapen', parts: [{ d: 'M28 66C18 66 18 52 26 50C24 40 38 36 44 42C50 34 64 36 66 44C76 42 82 54 74 60C76 68 66 70 62 66Z', fill: 'light' }, { d: 'M74 48C82 44 90 50 86 58C84 62 78 62 74 58', fill: 'teal' }, { d: 'M34 66V80M44 68V80M58 68V80M66 66V80' }] },
+    ster: { word: 'ster', parts: [{ d: 'M50 10L60 38L90 38L66 56L75 86L50 68L25 86L34 56L10 38L40 38Z', fill: 'light' }, { d: 'M86 8V22M79 15H93', w: 3, kind: 'blink' }] },
+    graan: { word: 'graan', parts: [{ d: 'M50 92V30M40 92C40 62 36 52 30 42M60 92C60 62 64 52 70 42' }, { d: 'M50 30C44 24 46 14 50 10C54 14 56 24 50 30ZM50 48C42 46 40 36 44 32C50 34 52 42 50 48ZM50 48C58 46 60 36 56 32C50 34 48 42 50 48ZM30 42C24 38 24 28 28 24C34 28 34 36 30 42ZM70 42C76 38 76 28 72 24C66 28 66 36 70 42Z', fill: 'teal' }] },
+    toren: { word: 'toren', parts: [{ d: 'M16 86H84V74H76V62H68V50H60V38H54V28H46V38H40V50H32V62H24V74H16Z', fill: 'teal' }, { d: 'M46 86V78H54V86', w: 3 }] },
+    rol: { word: 'boek', parts: [{ d: 'M27 22H73V78H27Z', fill: 'light' }, { d: 'M20 14H80V22H20ZM20 78H80V86H20Z', fill: 'teal' }, { d: 'M35 36H65M35 46H65M35 56H58M35 66H62', w: 3 }] },
+    kruis: { word: 'kruis', parts: [{ d: 'M50 12V84M30 34H70', w: 6 }, { d: 'M12 90Q50 72 88 90', w: 3.5 }] },
+    lopen: { word: 'lopen', travel: true, parts: [{ d: 'M43 18a7 7 0 1 0 14 0a7 7 0 1 0 -14 0', fill: 'light' }, { d: 'M50 26L47 54' }, { d: 'M49 32L38 46M49 32L60 42' }, { d: 'M47 54L37 78M47 54L59 78', kind: 'stride' }, { d: 'M63 28V84', w: 3 }] },
+    kameel: { word: 'kameel', travel: true, parts: [{ d: 'M18 56C18 42 28 38 34 44C38 32 48 32 52 44C56 38 64 42 66 50L74 34C76 29 85 29 85 35L81 40L77 57C75 63 67 65 60 63H30C23 63 18 61 18 56Z', fill: 'teal' }, { d: 'M28 63V86M36 63V86M58 63V86M66 63V86', kind: 'stride' }, { d: 'M18 54L12 64', w: 3 }] },
+  };
+  const ICON_NAMES = Object.keys(ICONS);
+  const SIDES = { n: [0, -1], ne: [.75, -.75], e: [1, 0], se: [.75, .75], s: [0, 1], sw: [-.75, .75], w: [-1, 0], nw: [-.75, -.75] };
+
+  /** An icon (box div with a soft glow and the line art: halos, fills, lines), to be shown with drawIcon(). */
+  function makeIcon(parent, name, size) {
+    const I = ICONS[name]; const box = el('div', 'abs', parent); css(box, { left: 0, top: 0, width: size + 'px', height: size + 'px', opacity: 0 });
+    const glow = el('div', 'abs', box); const gs = size * 1.9;
+    css(glow, { left: (size - gs) / 2 + 'px', top: (size - gs) / 2 + 'px', width: gs + 'px', height: gs + 'px', borderRadius: '50%', background: 'radial-gradient(closest-side, color-mix(in srgb, var(--accent) 30%, transparent), transparent)' });
+    const svg = svgEl('svg', { width: size, height: size, viewBox: '0 0 100 100' }, box); svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible';
+    const inner = svgEl('g', {}, svg); const halos = svgEl('g', {}, inner), fills = svgEl('g', {}, inner), lines = svgEl('g', {}, inner);
+    const attrs = { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+    const parts = I.parts.map(p => {
+      const w = p.w || 4.2;
+      const halo = svgEl('path', { d: p.d, ...attrs }, halos); halo.style.cssText = `stroke:rgba(5,14,18,.9);stroke-width:${w + 6}`;
+      const fill = p.fill ? svgEl('path', { d: p.d }, fills) : null; if (fill) fill.style.cssText = `fill:${FILLS[p.fill]};opacity:0`;
+      const line = svgEl('path', { d: p.d, ...attrs }, lines); line.style.cssText = `stroke:#effffc;stroke-width:${w}`;
+      const len = Math.max(1, line.getTotalLength());
+      for (const q of [halo, line]) q.style.strokeDasharray = `${len} ${len}`;
+      return { p, halo, fill, line, len };
+    });
+    return { box, glow, inner, parts, name, size, flip: false };
+  }
+  /** Draw an icon at time t: k = how far it has been drawn (0..1), o = opacity, T = its own clock for the idle motion. */
+  function drawIcon(ic, k, o, T) {
+    ic.box.style.opacity = o; if (o <= 0) return;
+    const n = ic.parts.length;
+    ic.parts.forEach((pt, j) => {
+      const a = j / n * .55, u = inout(clamp((k - a) / .5));
+      const done = u >= 1;
+      if (pt.p.kind === 'rain' && done) { for (const q of [pt.halo, pt.line]) { q.style.strokeDasharray = '7 9'; q.style.strokeDashoffset = r1(-(T * 46) % 16); } }
+      else { if (pt.p.kind === 'rain') for (const q of [pt.halo, pt.line]) q.style.strokeDasharray = `${pt.len} ${pt.len}`; for (const q of [pt.halo, pt.line]) q.style.strokeDashoffset = r1(pt.len * (1 - u)); }
+      let po = 1;
+      if (pt.p.kind === 'flash' && done) { const f = (T * 1.7) % 2.3; po = f < .12 || (f > .24 && f < .32) ? 1 : .35; }
+      if (pt.p.kind === 'blink' && done) po = .55 + .45 * Math.sin(T * 3.1 + j);
+      pt.line.style.opacity = pt.halo.style.opacity = u > 0 ? po : 0;
+      if (pt.fill) pt.fill.style.opacity = out(clamp((k - a - .3) / .35)) * (pt.p.kind === 'flash' ? po : .92);
+    });
+    const name = ic.name; let tf = '';
+    if (name === 'schip' || name === 'ark') tf = `translate(0 ${r1(3 * Math.sin(T * 1.7 + 1))}) rotate(${r1(4 * Math.sin(T * 1.7))} 50 70)`;
+    else if (name === 'vis') tf = `translate(${r1(7 * Math.sin(T * 1.1))} ${r1(3 * Math.sin(T * 2.2))}) rotate(${r1(3 * Math.sin(T * 1.1 + .6))} 50 50)`;
+    else if (name === 'vuur') tf = `translate(50 90) scale(${(1 - .03 * Math.sin(T * 7.3)).toFixed(3)} ${(1 + .07 * Math.sin(T * 9.1)).toFixed(3)}) translate(-50 -90)`;
+    else if (name === 'ster') tf = `translate(50 50) scale(${(1 + .05 * Math.sin(T * 2.6)).toFixed(3)}) translate(-50 -50)`;
+    else if (name === 'golven') tf = `translate(${r1(5 * Math.sin(T * 1.3))} 0)`;
+    else if (ICONS[name].travel) tf = `translate(0 ${r1(-Math.abs(3 * Math.sin(T * 6)))})`;
+    else tf = `translate(0 ${r1(2.5 * Math.sin(T * 1.2))})`;
+    if (ic.flip) tf = `translate(100 0) scale(-1 1) ${tf}`;
+    ic.inner.setAttribute('transform', tf);
+    ic.glow.style.opacity = .85 + .15 * Math.sin(T * 1.6);
+  }
+  /** Great-circle distance in km. */
+  const km = (a, b) => { const R = 6371, rad = Math.PI / 180, dl = (b.lat - a.lat) * rad, dn = (b.lon - a.lon) * rad;
+    const h = Math.sin(dl / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+  const kmText = v => { const r = v >= 1000 ? Math.round(v / 50) * 50 : Math.round(v / 10) * 10; return String(r).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); };
 
   /* ---------- map: projection, camera, base layer ---------- */
   const FALLBACK = { proj: { lonMin: -4, latMax: 54, lat0: 34, cos: Math.cos(34 * Math.PI / 180), k: 200 }, size: [10612, 8400], land: '', lakes: '', rivers: '', seas: [] };
@@ -69,10 +221,14 @@
     const line = (d, st) => { const p = svgEl('path', { d, 'vector-effect': 'non-scaling-stroke', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }); Object.assign(p.style, st); return p; };
     cam.appendChild(line(grid, { fill: 'none', stroke: P.grid, strokeWidth: 1.5 }));
     const g = svgEl('g', { mask: 'url(#story-my)' }, svgEl('g', { mask: 'url(#story-mx)' }, cam));
-    g.appendChild(line(m.land, { fill: P.land, stroke: P.coast, strokeWidth: 1.6 }));
+    const glow = svgEl('image', { x: 0, y: 0, preserveAspectRatio: 'none' }, g); glow.style.display = 'none';   // shallow water along the coasts (a raster: wide strokes of the coast cost seconds per frame)
+    g.appendChild(line(m.land, { fill: P.land, stroke: 'none' }));
+    svgEl('path', { d: m.land }, svgEl('clipPath', { id: 'story-land' }, defs));
+    const relief = svgEl('image', { x: 0, y: 0, preserveAspectRatio: 'none', 'clip-path': 'url(#story-land)' }, g); relief.style.display = 'none';
+    const land = line(m.land, { fill: 'none', stroke: P.coast, strokeWidth: 1.6 }); g.appendChild(land);
     if (m.lakes) g.appendChild(line(m.lakes, { fill: P.sea, stroke: P.coast, strokeWidth: 1.2 }));
-    if (m.rivers) g.appendChild(line(m.rivers, { fill: 'none', stroke: P.river, strokeWidth: 2.2 }));
-    return c => cam.setAttribute('transform', `translate(${r1(CX - c.x * c.s)} ${r1(CY - c.y * c.s)}) scale(${c.s.toFixed(5)})`);
+    if (m.rivers) g.appendChild(line(m.rivers, { fill: 'none', stroke: P.river, strokeWidth: 2.6 }));
+    return { relief, glow, land, setCam: c => cam.setAttribute('transform', `translate(${r1(CX - c.x * c.s)} ${r1(CY - c.y * c.s)}) scale(${c.s.toFixed(5)})`) };
   }
 
   /** When each pin appears: when its name is spoken, else spread over the line; carried-over pins are already there. */
@@ -196,22 +352,39 @@
     const runs = []; segs.forEach((s, i) => { if (s.show !== 'map') return; const r = runs[runs.length - 1]; if (r && r[r.length - 1] === i - 1) r.push(i); else runs.push([i]); });
     const preview = runs.length > 0;                                 // the hook sits on the first map's region, zoomed out and dimmed
     const mapFirst = runs[0]?.[0] === 1;                             // ...and when the map comes next, the camera flies on in from there
-    let mapLayer = null, setCam = null, overlay = null, shade = null, seaNames = [];
+    let mapLayer = null, setCam = null, overlay = null, shade = null, seaNames = [], regionNames = [], bm = null, clouds = [], ctxPlaces = [];
     const mapScenes = {};
+    // every place of the story: the locator shows them all, and the map keeps them as faint context when they are not the scene's pins
+    const storyKeys = [...new Set(segs.filter(s => s.show === 'map').flatMap(s => s.places || []))].filter(key => ctx.places[key]);
     if (runs.length) {
       mapLayer = el('div', 'abs full'); mapLayer.style.opacity = 0;
-      setCam = baseMap(mapLayer, P);
+      bm = baseMap(mapLayer, P); setCam = bm.setCam;
+      clouds = [0, 1, 2].map(() => { const c = el('div', 'abs', mapLayer); css(c, { left: 0, top: 0, width: '1150px', height: '760px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(1,7,9,.34), transparent)' }); return c; });
       seaNames = (m.seas || []).map(sn => {
         const e = el('div', 'abs serif', mapLayer, esc(sn.name));
         css(e, { left: 0, top: 0, whiteSpace: 'nowrap', fontStyle: 'italic', fontWeight: 500, fontSize: Math.round(34 * (sn.size || 1)) + 'px', letterSpacing: '3px', color: P.seaName });
         return { e, p: project(m, sn.lon, sn.lat), rot: sn.rotate || 0, w: 0, h: 0 };
       });
+      regionNames = REGIONS.map(rg => {
+        const e = el('div', 'abs' + (rg.italic ? ' serif' : ''), mapLayer, esc(rg.name));
+        css(e, { left: 0, top: 0, whiteSpace: 'nowrap', fontStyle: rg.italic ? 'italic' : 'normal', fontWeight: rg.italic ? 500 : 700, fontSize: Math.round(31 * (rg.size || 1)) + 'px',
+          letterSpacing: rg.italic ? '1px' : '8px', color: rg.river ? P.riverName : P.regionName });
+        return { e, p: project(m, rg.lon, rg.lat), rot: rg.rotate || 0, range: rg.range, w: 0, h: 0 };
+      });
       shade = el('div', 'abs full', mapLayer);   // the map melts into the ground at the top and under the subtitles
+      el('div', 'abs full', mapLayer).style.background = 'radial-gradient(ellipse 78% 62% at 50% 46%, transparent 52%, rgba(0,0,0,.42))';   // vignette
+      const ctxLayer = el('div', 'abs full', mapLayer);
+      ctxPlaces = storyKeys.map(key => {
+        const pl = ctx.places[key];
+        const dot = el('div', 'abs', ctxLayer); css(dot, { left: 0, top: 0, width: '16px', height: '16px', borderRadius: '50%', boxSizing: 'border-box', border: '3px solid rgba(255,255,255,.7)', background: 'color-mix(in srgb, var(--accent) 60%, transparent)' });
+        const lb = el('div', 'abs', ctxLayer, esc(pl.name)); css(lb, { left: 0, top: 0, whiteSpace: 'nowrap', fontWeight: 600, fontSize: '31px', color: 'rgba(255,255,255,.66)', webkitTextStroke: `7px ${P.halo}`, paintOrder: 'stroke fill' });
+        return { key, p: project(m, pl.lon, pl.lat), dot, lb, w: 0, h: 0 };
+      });
       const routeSvg = svgEl('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` }, mapLayer); routeSvg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible';
       overlay = el('div', 'abs full', mapLayer);
       for (const run of runs) run.forEach((i, ri) => {
         const s = segs[i];
-        const pts = s.places.map(key => { const pl = ctx.places[key]; return pl ? { key, name: pl.name, ...project(m, pl.lon, pl.lat) } : null; }).filter(Boolean);
+        const pts = s.places.map(key => { const pl = ctx.places[key]; return pl ? { key, name: pl.name, lon: pl.lon, lat: pl.lat, ...project(m, pl.lon, pl.lat) } : null; }).filter(Boolean);
         if (!pts.length) return;
         const prev = ri ? mapScenes[run[ri - 1]] : null;
         const carried = new Set(prev ? prev.pts.map(p => p.key).filter(key => pts.some(p => p.key === key)) : []);
@@ -233,7 +406,8 @@
           Object.assign(path.style, { stroke: P.acc, strokeWidth: 9 });
           const head = el('div', 'abs', overlay); css(head, { left: 0, top: 0, width: '24px', height: '24px', borderRadius: '50%', background: '#fff', boxShadow: `0 0 0 7px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 28px 6px color-mix(in srgb, var(--accent) 70%, transparent)` });
           const a0 = pops[j] + .1, b0 = pops[j + 1] - .03;
-          return { a, b, c, casing, path, head, t0: Math.max(a0, b0 - 1.15), t1: b0 };
+          const ic = s.travel ? makeIcon(overlay, s.travel, 92) : null;   // a ship, walker or camel rides the route
+          return { a, b, c, casing, path, head, ic, t0: Math.max(a0, b0 - (s.travel ? 2.0 : 1.15)), t1: b0 };
         });
         const size = pts.length === 1 ? 42 : 34;
         const pins = pts.map(p => {
@@ -245,7 +419,23 @@
             webkitTextStroke: `10px ${P.halo}`, paintOrder: 'stroke fill', textShadow: '0 2px 14px rgba(0,0,0,.35)' });
           return { p, rings, dot, label, off: null, w: 0, h: 0, r: size / 2 };
         });
-        mapScenes[i] = { i, run, ri, pts, cam, pops, legs, pins, carried, prev, runEnd: until(run[run.length - 1]) };
+        // story icons on the map (a storm on the sea, a city, a tent...), each when its word is spoken
+        const marks = (s.marks || []).map(mk => ({ mk, ic: makeIcon(overlay, mk.icon, 150), at: (mk.at && pts.find(p => p.key === mk.at)) || pts[pts.length - 1], off: { dx: 0, dy: -180 } }));
+        const mts = marks.length ? cueTimes(marks.map(x => x.mk.cue || ICONS[x.mk.icon].word), s, s.start + .5, s.start + s.dur * .72, .6, Math.max(s.start + .6, until(i) - 1)) : [];
+        marks.forEach((x, j) => { x.t = mts[j]; });
+        // a travelled route: a chip counts the distance as the route draws
+        let dist = null;
+        if (s.travel && pts.length > 1) {
+          const parts = pts.slice(1).map((b, j) => km(pts[j], b)); const total = parts.reduce((a, b) => a + b, 0);
+          const chip = el('div', 'abs', mapLayer); css(chip, { left: '64px', top: '1288px', display: 'flex', alignItems: 'center', gap: '16px', padding: '10px 28px 10px 14px', borderRadius: '24px', whiteSpace: 'nowrap',
+            background: 'color-mix(in srgb, var(--panel) 88%, transparent)', border: '2px solid color-mix(in srgb, var(--accent) 55%, transparent)', boxShadow: '0 10px 30px rgba(0,0,0,.35)', color: '#fff', fontWeight: 700, fontSize: '34px', opacity: 0 });
+          const hold = el('div', '', chip); css(hold, { position: 'relative', width: '64px', height: '64px', flex: 'none' });
+          const ic = makeIcon(hold, s.travel, 64); ic.glow.style.display = 'none';
+          el('span', '', chip, `${esc(pts[0].name)} &rarr; ${esc(pts[pts.length - 1].name)}`);
+          const num = el('span', '', chip); css(num, { color: '#99f6e4', fontVariantNumeric: 'tabular-nums' });
+          dist = { chip, ic, num, parts, total };
+        }
+        mapScenes[i] = { i, run, ri, pts, cam, pops, legs, pins, marks, dist, carried, prev, runEnd: until(run[run.length - 1]) };
       });
     }
     // which later scene in the run takes over a place (the earlier pin then hides)
@@ -256,7 +446,7 @@
     }
 
     /** Camera at time t: within a run it eases from scene to scene; the first scene zooms in from a wider view. */
-    const drift = (sc, t) => ({ ...sc.cam, s: sc.cam.s * (1 + .035 * prog(t, segs[sc.i].start, until(sc.i))) });
+    const drift = (sc, t) => ({ ...sc.cam, s: sc.cam.s * (1 + .035 * prog(t, segs[sc.i].start, until(sc.i)) + .006 * Math.max(0, t - until(sc.i))) });
     function cameraAt(t) {
       const list = runs.map(r => r.map(i => mapScenes[i]).filter(Boolean)).filter(r => r.length);
       let run = list[0]; if (!run) return fitCam([{ x: 0, y: 0 }], k);
@@ -285,6 +475,7 @@
         const route = sc.legs.flatMap(l => { const a = toScreen(cam, l.a), b = toScreen(cam, l.b), c = toScreen(cam, l.c);
           return Array.from({ length: 15 }, (_, q) => { const u = q / 14; return { x: (1 - u) ** 2 * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) ** 2 * a.y + 2 * (1 - u) * u * c.y + u * u * b.y }; }); });
         const boxes = pos.map(p => ({ x: p.x - 22, y: p.y - 22, w: 44, h: 44 }));
+        boxes.push({ x: 56, y: 268, w: 470, h: 110 }, { x: 696, y: 270, w: 232, h: 184 });   // title chip, locator
         sc.pins.forEach((pin, j) => {
           pin.w = pin.label.offsetWidth; pin.h = pin.label.offsetHeight;
           const { w, h } = pin; const p = pos[j]; const g = pin.r + 13, d = pin.r + 5;
@@ -303,7 +494,28 @@
           pin.off = { dx: best.dx, dy: best.dy }; boxes.push(best.b);
           pin.moved = !!before && (before.off.dx !== best.dx || before.off.dy !== best.dy);   // then the new label waits for the old one
         });
+        // story icons: beside their place where they hit nothing; sea things on the sea, the rest on land
+        const onLand = (x, y) => bm.land.isPointInFill(new DOMPoint(cam.x + (x - CX) / cam.s, cam.y + (y - CY) / cam.s));
+        sc.marks.forEach(mx => {
+          const p = toScreen(cam, mx.at); const Z = 150, I = ICONS[mx.mk.icon];
+          let best = null;
+          for (const sd of mx.mk.side ? [mx.mk.side] : Object.keys(SIDES)) for (const dist of [180, 255, 335]) {
+            const [ux, uy] = SIDES[sd]; const cx = p.x + ux * dist, cy = p.y + uy * dist;
+            const b = { x: cx - Z / 2, y: cy - Z / 2, w: Z, h: Z };
+            let score = dist / 6;   // close to its place first
+            score += 30 * (Math.max(0, SAFE.left - b.x) + Math.max(0, b.x + Z - SAFE.right) + Math.max(0, 380 - b.y) + Math.max(0, b.y + Z - 1270));
+            for (const o of boxes) score += overlap(b, o) / 5;
+            for (const q of route) if (q.x > b.x && q.x < b.x + Z && q.y > b.y && q.y < b.y + Z) score += 45;
+            const hits = [[0, 0], [-.32, -.32], [.32, -.32], [-.32, .32], [.32, .32]].map(([a, c]) => onLand(cx + a * Z, cy + c * Z));
+            const n = hits.filter(Boolean).length;
+            score += I.sea ? (hits[0] ? 60 : 0) + n * 10 : (5 - n) * 22;   // sea things: their middle on the water (a narrow gulf will do)
+            if (!best || score < best.score) best = { score, dx: cx - p.x, dy: cy - p.y, b };
+          }
+          mx.off = { dx: best.dx, dy: best.dy }; boxes.push(best.b);
+        });
       }
+      for (const rn of regionNames) { rn.w = rn.e.offsetWidth; rn.h = rn.e.offsetHeight; }
+      for (const cp of ctxPlaces) { cp.w = cp.lb.offsetWidth; cp.h = cp.lb.offsetHeight; }
     }
 
     /* ---- the other scenes */
@@ -640,10 +852,51 @@
       return { v, draw: t => { const k2 = prog(t, s.start - FADE, until(s.i) + FADE); ph.style.transform = `translate(${dir * 24 * (k2 - .5)}px, ${-14 * k2}px) scale(${1.06 + .08 * k2})`; } };
     });
 
+    const title = spec.title || spec.subject;
+    let titleEl = null;
+    if (title) {
+      titleEl = el('div', 'abs'); css(titleEl, { left: '64px', top: '280px', display: 'flex', alignItems: 'center', gap: '14px', opacity: 0 });
+      const bk = svgEl('svg', { width: 42, height: 42, viewBox: '0 0 100 100' }, titleEl);
+      for (const d of ['M50 26C40 18 24 16 10 18V80C24 78 40 80 50 88C60 80 76 78 90 80V18C76 16 60 18 50 26Z', 'M50 26V88'])
+        svgEl('path', { d, fill: 'none', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, bk).style.cssText = 'stroke:var(--accent);stroke-width:8';
+      el('div', '', titleEl, esc(title)).style.cssText = `font-weight:800;font-size:28px;letter-spacing:5px;text-transform:uppercase;color:${L.dark ? '#ccfbf1' : 'var(--accent-dark)'};text-shadow:0 2px 12px rgba(0,0,0,.45)`;
+    }
+    const refs = segs.map(s => {
+      if (!s.ref) return null;
+      const e = el('div', 'abs', null, esc(s.ref)); css(e, { left: title ? '120px' : '64px', top: title ? '330px' : '282px', fontWeight: 600, fontSize: '30px', color: L.dark ? 'rgba(255,255,255,.74)' : 'var(--ink-muted)', opacity: 0, textShadow: '0 2px 12px rgba(0,0,0,.45)' });
+      return e;
+    });
+    let loc = null;
+    if (runs.length && storyKeys.length) {   // a locator: the wider region, the story's places and where the camera is
+      const ll = storyKeys.map(key => ctx.places[key]); const lons = ll.map(p => p.lon), lats = ll.map(p => p.lat);
+      const LW = 214, LH = 164;
+      const span = Math.max(30, (Math.max(...lons) - Math.min(...lons)) * 1.6 + 10, ((Math.max(...lats) - Math.min(...lats)) * 1.6 + 8) * LW / LH / m.proj.cos);
+      const wU = span * m.proj.cos * k, hU = wU * LH / LW;
+      const c0 = project(m, (Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2);
+      const box = el('div', 'abs'); css(box, { left: '706px', top: '280px', width: LW + 'px', height: LH + 'px', borderRadius: '18px', overflow: 'hidden', boxSizing: 'border-box',
+        border: '2px solid rgba(204,251,241,.24)', background: P.sea, boxShadow: '0 12px 30px rgba(0,0,0,.4)', opacity: 0 });
+      const sv = svgEl('svg', { width: LW, height: LH, viewBox: `${r1(c0.x - wU / 2)} ${r1(c0.y - hU / 2)} ${r1(wU)} ${r1(hU)}` }, box); sv.style.cssText = 'position:absolute;left:0;top:0';
+      svgEl('path', { d: m.land, 'vector-effect': 'non-scaling-stroke' }, sv).style.cssText = `fill:#3a6168;stroke:rgba(153,246,228,.5);stroke-width:1`;
+      if (m.rivers) svgEl('path', { d: m.rivers, fill: 'none', 'vector-effect': 'non-scaling-stroke' }, sv).style.cssText = `stroke:${P.river};stroke-width:1`;
+      const rect = svgEl('rect', { 'vector-effect': 'non-scaling-stroke', rx: r1(6 * wU / LW) }, sv); rect.style.cssText = 'fill:color-mix(in srgb, var(--accent) 24%, transparent);stroke:#5eead4;stroke-width:2.5';
+      for (const p of ll) { const q = project(m, p.lon, p.lat); svgEl('circle', { cx: r1(q.x), cy: r1(q.y), r: r1(3.4 * wU / LW) }, sv).style.fill = '#fff'; }
+      const nn = el('div', 'abs', box); css(nn, { right: '10px', top: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', fontWeight: 800, fontSize: '18px', lineHeight: 1, color: 'rgba(255,255,255,.8)' });
+      const tri = el('div', '', nn); css(tri, { width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '10px solid rgba(255,255,255,.8)', marginBottom: '3px' });
+      el('div', '', nn, 'N');
+      loc = { box, rect };
+    }
     const subs = subtitles(segs, spec.captions || 'block');
     const end = endCard(spec);
 
-    return { width: W, height: H, duration, starts: segs.map(s => s.start), render(t) {
+    const ready = bm && L.dark ? terrain(m).then(async r => {
+      for (const [node, url] of [[bm.relief, r.url], [bm.glow, r.glow]]) {
+        const im = new Image(); im.src = url; await im.decode();   // decoded before the first frame is taken
+        node.setAttribute('href', url); node.setAttribute('width', r1(r.w * r.ux)); node.setAttribute('height', r1(r.h * r.uy)); node.style.display = 'inline';
+      }
+      bm.glow.style.opacity = .5;
+    }) : null;
+
+    return { width: W, height: H, duration, ready, starts: segs.map(s => s.start), render(t) {
       if (fonts.error) throw fonts.error;   // never render the Hebrew/Greek word as boxes
       if (L.bg) L.bg.style.transform = `scale(${1 + .06 * (t / duration)})`;
       // scene layers
@@ -663,9 +916,13 @@
           const last = r[r.length - 1]; const b = last === segs.length - 1 ? 0 : inout(prog(t, until(last) - FADE + .05, until(last) + .05));
           op = Math.max(op, (r === runs[0] && mapFirst ? lerp(dimIn, 1, a) : a) * (1 - b));
         }
+        op = Math.max(op, .36 * out(prog(t, .1, .8)));   // between map scenes the map stays, dimmed: never an empty screen
         mapLayer.style.opacity = op;
         if (op > 0) drawMap(t);
+        if (loc) loc.box.style.opacity = Math.min(1, op * 1.3) * out(prog(t, .3, .9));
       }
+      if (titleEl) { const q = out(prog(t, .15, .6)); set(titleEl, q, (1 - q) * 12); }
+      refs.forEach((e, i) => { if (e) e.style.opacity = vis(i, t).o; });
       subs(t);
       end(t, endStart);
     } };
@@ -679,16 +936,19 @@
       const g = a => `color-mix(in srgb, ${P.ground} ${a}%, transparent)`;
       shade.style.background = `linear-gradient(180deg, ${g(94)} 0, ${g(94)} ${r1(top0)}px, ${g(40)} ${r1(lerp(top0, top1, .45))}px, ${g(0)} ${r1(top1)}px, `
         + `${g(0)} ${r1(bot0)}px, ${g(50)} ${r1(lerp(bot0, bot1, .55))}px, ${g(86)} ${r1(bot1)}px, ${g(96)} 1920px)`;
-      const boxes = [];
+      clouds.forEach((c, j) => { const x = ((j * 770 + t * 24) % 2300) - 1150, y = 240 + j * 520 + 50 * Math.sin(t * .23 + j * 2); c.style.transform = `translate(${r1(x)}px, ${r1(y)}px)`; });
+      if (loc) { const y0 = 300, y1 = 1350; loc.rect.setAttribute('x', r1(cam.x - CX / cam.s)); loc.rect.setAttribute('y', r1(cam.y + (y0 - CY) / cam.s)); loc.rect.setAttribute('width', r1(W / cam.s)); loc.rect.setAttribute('height', r1((y1 - y0) / cam.s)); }
+      const boxes = []; const pinned = new Set(); let live = 0;
       for (const sc of Object.values(mapScenes)) {
         const st = segs[sc.i].start;
         const inK = t > sc.runEnd + .06 ? 0 : out(prog(t, st - .25, st + .1));   // only while its own run of map scenes shows
+        live = Math.max(live, t > sc.runEnd + .06 ? 0 : out(prog(t, st - .4, st + .1)) * (1 - inout(prog(t, sc.runEnd - FADE, sc.runEnd))));
         const hist = sc.next ? prog(t, segs[sc.next.i].start - .3, segs[sc.next.i].start + .05) : 0;
         const pos = sc.pts.map(p => toScreen(cam, p));
         sc.legs.forEach((l, j) => {
           const u = inout(prog(t, l.t0, l.t1));
           const show = u > 0 && inK > 0;
-          if (!show) { l.casing.style.opacity = 0; l.path.style.opacity = 0; l.head.style.opacity = 0; return; }
+          if (!show) { l.casing.style.opacity = 0; l.path.style.opacity = 0; l.head.style.opacity = 0; if (l.ic) l.ic.box.style.opacity = 0; return; }
           const a = pos[j], b = pos[j + 1], c = toScreen(cam, l.c);
           const q0 = { x: lerp(a.x, c.x, u), y: lerp(a.y, c.y, u) }, q1 = { x: lerp(c.x, b.x, u), y: lerp(c.y, b.y, u) }, e = { x: lerp(q0.x, q1.x, u), y: lerp(q0.y, q1.y, u) };
           const d = `M${r1(a.x)} ${r1(a.y)}Q${r1(q0.x)} ${r1(q0.y)} ${r1(e.x)} ${r1(e.y)}`;
@@ -696,6 +956,11 @@
           l.casing.setAttribute('d', d); l.path.setAttribute('d', d); l.casing.style.opacity = .5 * o; l.path.style.opacity = o;
           const ho = u < 1 ? inK * (1 - hist) * Math.min(1, u * 8, (1 - u) * 12) : 0;
           l.head.style.opacity = ho; l.head.style.transform = `translate(${r1(e.x - 12)}px, ${r1(e.y - 12)}px)`;
+          if (l.ic) {
+            const io = inK * (1 - hist) * Math.min(1, u * 6) * (1 - prog(t, l.t1 + .3, l.t1 + .8));
+            l.ic.flip = b.x < a.x; drawIcon(l.ic, 1, io, t);
+            if (io > 0) { l.ic.box.style.transform = `translate(${r1(e.x - 46)}px, ${r1(e.y - 46 - 60)}px)`; boxes.push({ x: e.x - 46, y: e.y - 106, w: 92, h: 92, o: io }); }
+          }
         });
         sc.pins.forEach((pin, j) => {
           const p = pos[j]; const pt = sc.pops[j];
@@ -718,8 +983,48 @@
           const lx = p.x + pin.off.dx, ly = p.y + pin.off.dy;
           pin.label.style.transform = `translate(${r1(lx)}px, ${r1(ly + (1 - lq) * 10)}px)`;
           if (lo > .02) boxes.push({ x: lx - 16, y: ly - 12, w: pin.w + 32, h: pin.h + 24, o: lo });
-          if (o > .02) boxes.push({ x: p.x - 30, y: p.y - 30, w: 60, h: 60, o });
+          if (o > .02) { boxes.push({ x: p.x - 30, y: p.y - 30, w: 60, h: 60, o }); pinned.add(pin.p.key); }
         });
+        sc.marks.forEach(mx => {
+          const p = toScreen(cam, mx.at); const o = inK * (1 - hist) * out(prog(t, mx.t - .1, mx.t + .3));
+          drawIcon(mx.ic, prog(t, mx.t, mx.t + 1.2), o, t - mx.t);
+          if (o > 0) {
+            const x = p.x + mx.off.dx - 75, y = p.y + mx.off.dy - 75;
+            mx.ic.box.style.transform = `translate(${r1(x)}px, ${r1(y)}px) scale(${(.82 + .18 * out(prog(t, mx.t - .1, mx.t + .5))).toFixed(3)})`;
+            boxes.push({ x, y, w: 150, h: 150, o });
+          }
+        });
+        if (sc.dist) {
+          const d = sc.dist, l0 = sc.legs[0]; const q = out(prog(t, l0.t0 - .2, l0.t0 + .3)); const o = inK * (1 - hist) * q;
+          d.chip.style.opacity = o;
+          if (o > 0) {
+            let sofar = 0; sc.legs.forEach((l, j) => { sofar += d.parts[j] * inout(prog(t, l.t0, l.t1)); });
+            d.num.textContent = `± ${kmText(sofar >= d.total - .5 ? d.total : sofar)} km`;
+            d.chip.style.transform = `translateY(${r1((1 - q) * 16)}px)`;
+            d.ic.flip = sc.pts[sc.pts.length - 1].x < sc.pts[0].x; drawIcon(d.ic, 1, 1, t);
+          }
+        }
+      }
+      // the story's other places: a faint dot and name, out of the way of everything above
+      for (const cp of ctxPlaces) {
+        const p = toScreen(cam, cp.p);
+        let o = pinned.has(cp.key) ? 0 : .9 * live;
+        const right = p.x + 18 + cp.w <= SAFE.right + 40;
+        const lb = { x: right ? p.x + 18 : p.x - 18 - cp.w, y: p.y - cp.h / 2, w: cp.w, h: cp.h };
+        if (p.x < 20 || p.x > W - 20 || p.y < 380 || p.y > 1300) o = 0;
+        for (const q of boxes) if (overlap(lb, q) > 0 || overlap({ x: p.x - 12, y: p.y - 12, w: 24, h: 24 }, q) > 0) o = Math.min(o, .9 * (1 - q.o));
+        cp.dot.style.opacity = cp.lb.style.opacity = o;
+        if (o > .02) { cp.dot.style.transform = `translate(${r1(p.x - 8)}px, ${r1(p.y - 8)}px)`; cp.lb.style.transform = `translate(${r1(lb.x)}px, ${r1(lb.y)}px)`; boxes.push({ ...lb, o: o * .8 }); }
+      }
+      // region and river names, each within its range of zoom
+      const vw = W / (cam.s * m.proj.cos * k);
+      for (const rn of regionNames) {
+        const p = toScreen(cam, rn.p); const b = { x: p.x - rn.w / 2, y: p.y - rn.h / 2, w: rn.w, h: rn.h };
+        let o = live * clamp((vw - rn.range[0]) / (rn.range[0] * .35)) * clamp((rn.range[1] - vw) / (rn.range[1] * .25));
+        for (const q of boxes) if (overlap(b, q) > 0) o = Math.min(o, 1 - q.o);
+        const cx = b.x + b.w / 2, cy = b.y + b.h / 2, hw = Math.abs(Math.cos(rn.rot * Math.PI / 180)) * b.w / 2 + 20, hh = Math.abs(Math.sin(rn.rot * Math.PI / 180)) * b.w / 2 + 20;
+        if (cx - hw < 30 || cx + hw > W - 30 || cy - hh < 390 || cy + hh > 1330) o = 0;   // whole, and clear of the chips and the subtitles
+        rn.e.style.opacity = o; if (o > 0) rn.e.style.transform = `translate(${r1(b.x)}px, ${r1(b.y)}px) rotate(${rn.rot}deg)`;
       }
       // sea names fade where a place label or pin needs the room
       for (const sn of seaNames) {

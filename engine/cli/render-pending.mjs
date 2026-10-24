@@ -2,7 +2,10 @@
 // When nothing is left to render, Alex gets one message: how many items wait for his review.
 import '../env.mjs';
 import { renderSpec, launch } from '../render/render.mjs';
-import { upload } from '../storage/index.mjs';
+import { upload, remove } from '../storage/index.mjs';
+import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { db, close, STATUS, heartbeat } from '../db.mjs';
 import { notify, studioLink } from '../notify.mjs';
 import { project } from '../project.mjs';
@@ -14,6 +17,15 @@ await (await import('../library.mjs')).loadVoices(d);     // voice test set for 
 // RENDER_MINUTES (default 140) so it ends inside its time limit; the next run picks up the rest.
 const WAITING = { $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, media: { $exists: false }, renderAttempts: { $not: { $gte: 3 } } }] };
 const stopAt = Date.now() + Number(process.env.RENDER_MINUTES || 140) * 60e3;
+// Storage first: when media cannot be stored (24 Oct: the Blob store was suspended over its limit), rendering
+// would only throw the work away. Then nothing is claimed, the items stay queued, and the run fails visibly.
+if (await items.countDocuments(WAITING)) {
+  try { const f = join(tmpdir(), `probe-${Date.now()}.txt`); writeFileSync(f, 'probe'); await remove([await upload(f, `${project().id}/probe/${Date.now()}.txt`)]); }
+  catch (e) {
+    console.error(`[${project().id}] media storage does not work (${e.message}) - nothing rendered, the items stay queued`);
+    await heartbeat('render', { rendered: 0, of: 0, error: `opslag: ${e.message}` }); await close(); process.exit(1);
+  }
+}
 const browser = await launch(); let ok = 0, n = 0;
 const claim = async () => { const r = await items.findOneAndUpdate(WAITING, { $set: { status: STATUS.RENDERING, renderStartedAt: new Date() }, $inc: { renderAttempts: 1 } }, { sort: { slot: 1 }, returnDocument: 'after' }); return r?.value !== undefined && r?.ok !== undefined ? r.value : r; };
 

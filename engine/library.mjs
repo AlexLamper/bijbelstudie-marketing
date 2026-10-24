@@ -32,7 +32,9 @@ export async function updateBoard(d, { seed } = {}) {
   const items = await d.collection('items').find({ publishedAt: { $gte: since } }).toArray();
   const voices = voiceKeys(await loadVoices(d));
   const rows = trials(items);
-  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods(), voiceStyles: project().voiceStylesAllowed }), { seed: seed ?? Math.floor(Date.now() / 864e5), priors: project().experimentPriors });
+  const P = project();
+  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods(), voiceStyles: P.voiceStylesAllowed, formats: P.formatsAllowed, postFormats: P.postFormatsAllowed, styles: P.stylesAllowed, styles3d: P.style3dAllowed, narratorOnly: P.narratorOnly }),
+    { seed: seed ?? Math.floor(Date.now() / 864e5), priors: P.experimentPriors });
   const doc = { board, trials: rows.length, items: new Set(rows.map(r => r.id)).size, voices, moods: musicMoods(), at: new Date() };
   await d.collection('experiments').updateOne({ _id: 'board' }, { $set: doc }, { upsert: true });
   return { ...doc, rows };

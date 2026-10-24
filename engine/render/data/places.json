@@ -310,6 +310,26 @@
    "name": "Jizreël",
    "lat": 32.556,
    "lon": 35.33
+  },
+  "karmel": {
+   "name": "Karmel",
+   "lat": 32.67,
+   "lon": 35.09
+  },
+  "horeb": {
+   "name": "Horeb",
+   "lat": 28.539,
+   "lon": 33.973
+  },
+  "raemses": {
+   "name": "Raämses",
+   "lat": 30.8,
+   "lon": 31.83
+  },
+  "schelfzee": {
+   "name": "Schelfzee",
+   "lat": 29.95,
+   "lon": 32.56
   }
  }
 }

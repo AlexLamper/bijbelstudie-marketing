@@ -1,0 +1,220 @@
+{
+ "id": "2026-w44-film-ruth",
+ "kind": "reel-3d",
+ "week": "2026-W44",
+ "slot": "2026-10-27T19:35:00+01:00",
+ "platforms": [
+  "instagram",
+  "facebook",
+  "tiktok",
+  "youtube"
+ ],
+ "caption": "Een vreemdelinge die restjes gerst opraapte - en in Gods verhaal een plek kreeg.\n\nLees Ruth 2 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+ "hashtags": [
+  "#ruth",
+  "#boaz",
+  "#bijbelverhaal",
+  "#bijbelstudie"
+ ],
+ "basedOn": "Ruth 1:22 (begin van de gersteoogst), 2:2-20 (SV): Ruth leest aren op het land van Boaz; blijf op mijn akker; zij viel op haar aangezicht; kom hier bij en eet van het brood; omtrent een efa gerst; hij is van onze lossers. Ruth 4:17 (David).",
+ "subject": "Ruth op het veld van Boaz",
+ "experiment": {
+  "hook": "verrassing",
+  "topic": "persoon"
+ },
+ "style3d": "stickman",
+ "music": "calm",
+ "voice": "male",
+ "voiceStyle": "rustig",
+ "captions": "karaoke",
+ "endCard": {
+  "headline": "Lees Ruth met uitleg.",
+  "button": "Download gratis"
+ },
+ "hook": "Ze raapte gerst op een vreemd veld. Het werd het begin van een koningsfamilie.",
+ "cast": [
+  {
+   "id": "ruth",
+   "look": "vrouw-bijbels",
+   "name": "Ruth"
+  },
+  {
+   "id": "boaz",
+   "look": "man-bijbels-2",
+   "name": "Boaz"
+  },
+  {
+   "id": "naomi",
+   "look": "oudere-vrouw",
+   "name": "Naomi"
+  }
+ ],
+ "shots": [
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "establish",
+   "text": "Bethlehem, gerstoogst",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "pad-ver",
+     "to": "pad-boven",
+     "do": "carry",
+     "holds": "mand"
+    }
+   ],
+   "say": "Ruth komt uit Moab. Met haar schoonmoeder Naomi woont ze nu in Bethlehem. Het is gerstoogst, en Ruth gaat aren rapen."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "track",
+   "on": "ruth",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "pad-boven",
+     "to": "pad",
+     "do": "carry",
+     "holds": "mand"
+    }
+   ],
+   "say": "Zonder het te weten komt ze op het land van Boaz, een familielid van Naomi's overleden man."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "boaz",
+     "at": "pad-ver",
+     "to": "pad"
+    },
+    {
+     "id": "ruth",
+     "at": "veld",
+     "base": "kneel",
+     "do": "carry",
+     "holds": "mand"
+    }
+   ],
+   "say": "Boaz komt uit de stad en ziet haar. Van wie is dat meisje, vraagt hij."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "boaz",
+     "at": "pad",
+     "do": "talk",
+     "face": "ruth"
+    },
+    {
+     "id": "ruth",
+     "at": "veld",
+     "base": "kneel",
+     "face": "boaz"
+    }
+   ],
+   "say": "Blijf op mijn land, zegt hij tegen Ruth. En als je dorst hebt, drink dan van het water van mijn knechten."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "veld",
+     "base": "kneel",
+     "do": "bow",
+     "face": "boaz"
+    },
+    {
+     "id": "boaz",
+     "at": "pad",
+     "face": "ruth"
+    }
+   ],
+   "say": "Ruth buigt diep. Waarom ben je zo goed voor mij, een vreemdelinge? Boaz heeft gehoord wat ze voor Naomi heeft gedaan."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "boaz",
+     "at": "pad",
+     "do": "give",
+     "holds": "brood",
+     "face": "ruth"
+    },
+    {
+     "id": "ruth",
+     "at": "veld",
+     "base": "kneel",
+     "face": "boaz"
+    }
+   ],
+   "say": "Bij het eten nodigt hij haar uit: kom, eet van het brood. En ze eet tot ze genoeg heeft."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "sky",
+   "verse": "Ruth 2:12",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "pad-dichtbij",
+     "do": "carry",
+     "holds": "mand"
+    }
+   ],
+   "say": "De HEERE vergelde u uw daad en uw loon zij volkomen, van den HEERE, den God Israels, onder wiens vleugelen gij gekomen zijt om toevlucht te nemen!"
+  },
+  {
+   "set": "stad",
+   "time": "avond",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "straat",
+     "to": "plein",
+     "do": "carry",
+     "holds": "mand"
+    },
+    {
+     "id": "naomi",
+     "at": "markt",
+     "do": "raise",
+     "face": "ruth"
+    }
+   ],
+   "say": "Die avond brengt ze bijna een efa gerst naar huis. Naomi zegt: die man is een losser van ons."
+  },
+  {
+   "set": "stad",
+   "time": "avond",
+   "camera": "aerial",
+   "app": "web:bijbel/ruth/2",
+   "actors": [
+    {
+     "id": "ruth",
+     "at": "plein"
+    },
+    {
+     "id": "naomi",
+     "at": "markt"
+    }
+   ],
+   "say": "Hoe het verder gaat, lees je in Ruth twee en drie, met uitleg bij elk vers, in BijbelStudie."
+  }
+ ]
+}

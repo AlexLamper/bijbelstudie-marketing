@@ -138,10 +138,13 @@ export const ReelList = z.object({
 
 // Narrated story with animated scenes: a map with a route, a timeline, a big line, a verse, a photo,
 // a counting number (stat), a family line (tree), two sides (compare) or a Hebrew/Greek word (word).
+export const STORY_ICONS = ['schip', 'storm', 'vis', 'golven', 'ark', 'stad', 'tempel', 'tent', 'berg', 'put', 'vuur', 'kroon', 'zwaard', 'schapen', 'ster', 'graan', 'toren', 'rol', 'kruis'];
+export const STORY_TRAVEL = ['lopen', 'schip', 'kameel'];
 export const ReelStory = z.object({
   ...base, ...reel, kind: z.literal('reel-story'),
   voice,
   hook: shortLine,
+  title: said(2, 34).optional(),                         // the story's name on a chip at the top ("Jona en de grote vis"); else the subject
   scenes: z.array(z.object({
     say: said(4, 220),
     show: z.enum(['map', 'timeline', 'text', 'verse', 'photo', 'stat', 'tree', 'compare', 'word']),
@@ -160,7 +163,14 @@ export const ReelStory = z.object({
     }).optional(),
     // word: an original-language word in its own script (Hebrew right to left), transliteration and meaning
     word: z.object({ original: z.string().min(1).max(24), lang: z.enum(['hebreeuws', 'grieks']), translit: said(1, 30), meaning: said(2, 80) }).optional(),
+    ref: z.string().min(3).max(28).regex(/^\S.*\s\d+(:\d+)?(-\d+(:\d+)?)?$/, 'ref like "Jona 1:3", "Jona 1:4-16", "Jona 3" or "1 Koningen 18:46-19:3"').optional(),   // the passage, small under the title
+    travel: z.enum(STORY_TRAVEL).optional(),            // map with 2+ places: a ship / walker / camel rides the route, a chip counts the km
+    // map: drawn icons beside a place (default the last), each when its word (cue, else the icon's name) is spoken
+    marks: z.array(z.object({ icon: z.enum(STORY_ICONS), at: place.optional(), side: z.enum(['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw']).optional(), cue: z.string().max(24).optional() })).min(1).max(3).optional(),
   }).superRefine((s, c) => {
+    if ((s.marks || s.travel) && s.show !== 'map') c.addIssue({ code: 'custom', message: 'marks and travel belong to a map scene', path: [s.marks ? 'marks' : 'travel'] });
+    if (s.travel && !(s.places?.length > 1)) c.addIssue({ code: 'custom', message: 'travel needs a route: 2+ places', path: ['travel'] });
+    for (const [j, mk] of (s.marks || []).entries()) if (mk.at && !s.places?.includes(mk.at)) c.addIssue({ code: 'custom', message: `marks[${j}].at must be one of this scene's places`, path: ['marks', j, 'at'] });
     if (s.show === 'map' && !s.places) c.addIssue({ code: 'custom', message: 'a map scene needs places', path: ['places'] });
     if (s.show === 'timeline' && !s.events) c.addIssue({ code: 'custom', message: 'a timeline scene needs events', path: ['events'] });
     if (s.show === 'verse' && !s.verse) c.addIssue({ code: 'custom', message: 'a verse scene needs verse', path: ['verse'] });

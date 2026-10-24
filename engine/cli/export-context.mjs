@@ -49,11 +49,14 @@ const { weekAllocation, FEED_DAYS } = await import('../experiments.mjs');
 const { elevenlabsBudget, voiceLibrary } = await import('../tts/index.mjs');
 const seed = Number(T.date.replace(/\D/g, ''));   // per day: a re-run for the same day gives the same draw
 const B = await updateBoard(d, { seed });
-const allocation = { date: T.date, day: T.day, week: T.week, ...weekAllocation(B.board, { days: 1, feedPosts: FEED_DAYS.includes(T.day) ? 1 : 0, seed: seed + 7919 }) };
+// project.json recipe (Alex, 24 Oct): reelsPerDay reels that all go to every platform, feedPosts 0 = no feed posts
+const R = project().recipe || {};
+const allocation = { date: T.date, day: T.day, week: T.week, ...weekAllocation(B.board, { days: 1, ...(R.reelsPerDay != null ? { mainPerDay: R.reelsPerDay, extraPerDay: 0 } : {}),
+  feedPosts: R.feedPosts === 0 ? 0 : FEED_DAYS.includes(T.day) ? 1 : 0, seed: seed + 7919 }) };
 const budget = await elevenlabsBudget();
 if (budget) {   // share of what is left this month that this day may use (days left until the reset)
   const daysLeft = budget.resetsAt ? Math.max(1, Math.ceil((new Date(budget.resetsAt) - Date.now()) / 864e5)) : 30;
-  allocation.voiceBudget = { charsForDay: Math.max(0, Math.floor(budget.left / daysLeft) - 100), leftThisMonth: budget.left, daysUntilReset: daysLeft, resetsAt: budget.resetsAt, note: 'Total spoken characters of all voiced items of this day must stay under charsForDay (the validator checks). Over budget: use formats without voice (reel-kinetic, reel-quiz, reel-list, reel-verse without voice, reel-demo).' };
+  allocation.voiceBudget = { charsForDay: Math.max(0, Math.floor(budget.left / daysLeft) - 100), leftThisMonth: budget.left, daysUntilReset: daysLeft, resetsAt: budget.resetsAt, note: 'Total spoken characters of all voiced items of this day must stay under charsForDay (the validator checks). Over budget: shorter narration, fewer scenes or shots.' };
 }
 writeFileSync(join(OUTD, 'allocation.json'), JSON.stringify(allocation, null, 2));
 if (!skip) await d.collection('experiments').updateOne({ _id: `allocation-${T.date}` }, { $set: { ...allocation, at: new Date() } }, { upsert: true });

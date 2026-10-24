@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongo';
 import { getProject } from '@/lib/projects';
+import { postPlatforms } from '@/lib/postingSlots';
 
 // Approve every item of a week that waits for review: they go on the pile in the planner's order
 // (the publish job takes from the pile every day, lib/postingSlots.ts).
@@ -15,7 +16,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
   for (const it of list) {
     const when = new Date(at + n);   // keeps the planner's order on the pile
     const r = await db.collection('items').updateOne({ _id: it._id, status: 'review' }, {
-      $set: { status: 'approved', approvedAt: when, updatedAt: when }, $unset: { postAt: '' },
+      $set: { status: 'approved', approvedAt: when, updatedAt: when, 'spec.platforms': postPlatforms(it.kind, getProject(project)!.platforms) }, $unset: { postAt: '' },
       $push: { history: { at: when, event: 'approve-all' } } as any,
     });
     if (r.modifiedCount) n++;

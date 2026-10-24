@@ -1,0 +1,225 @@
+{
+ "id": "2026-w44-film-abigail",
+ "kind": "reel-3d",
+ "week": "2026-W44",
+ "slot": "2026-10-28T19:35:00+01:00",
+ "platforms": [
+  "instagram",
+  "facebook",
+  "tiktok",
+  "youtube"
+ ],
+ "caption": "Ze had niemand om op te wachten. Dus ging ze zelf - met brood, wijn en de moed om te spreken.\n\nLees 1 Samuël 25 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+ "hashtags": [
+  "#abigail",
+  "#david",
+  "#1samuel",
+  "#bijbelverhaal",
+  "#bijbelstudie"
+ ],
+ "basedOn": "1 Samuël 25 (SV): Nabal scheert zijn schapen en weigert David brood; vierhonderd man met David; een jongen vertelt het Abigail; tweehonderd broden, wijn, vijf schapen, rozijnen, vijgen op ezels; zij viel voor David op haar aangezicht; gezegend zij de HEERE; trek op in vrede.",
+ "subject": "Abigaïl en David",
+ "experiment": {
+  "hook": "verrassing",
+  "topic": "persoon"
+ },
+ "style3d": "stickman",
+ "music": "cinematic",
+ "voice": "female",
+ "voiceStyle": "rustig",
+ "captions": "karaoke",
+ "endCard": {
+  "headline": "Lees 1 Samuël met uitleg.",
+  "button": "Download gratis"
+ },
+ "hook": "Vierhonderd gewapende mannen. Eén vrouw op een ezel hield ze tegen.",
+ "cast": [
+  {
+   "id": "abigail",
+   "look": "vrouw-bijbels-2",
+   "name": "Abigaïl"
+  },
+  {
+   "id": "david",
+   "look": "man-bijbels",
+   "name": "David"
+  },
+  {
+   "id": "nabal",
+   "look": "oude-man-bijbels",
+   "name": "Nabal"
+  },
+  {
+   "id": "knecht",
+   "look": "herder",
+   "name": "Een knecht"
+  }
+ ],
+ "shots": [
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "establish",
+   "text": "Karmel in Juda",
+   "actors": [
+    {
+     "id": "nabal",
+     "at": "kudde"
+    },
+    {
+     "id": "knecht",
+     "at": "heuvel"
+    }
+   ],
+   "say": "De rijke Nabal scheert zijn schapen. David en zijn mannen hebben zijn herders al die tijd beschermd, en vragen nu om wat eten."
+  },
+  {
+   "set": "heuvels",
+   "time": "dag",
+   "camera": "medium",
+   "on": "nabal",
+   "actors": [
+    {
+     "id": "nabal",
+     "at": "kudde",
+     "do": "shrug"
+    }
+   ],
+   "say": "Wie is David, zegt Nabal. Hij stuurt ze met lege handen weg."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "knecht",
+     "at": "pad-boven",
+     "to": "pad",
+     "do": "point"
+    },
+    {
+     "id": "abigail",
+     "at": "veld",
+     "face": "knecht",
+     "mood": "bang"
+    }
+   ],
+   "say": "Een knecht rent naar Nabals vrouw, Abigaïl. David komt eraan, met vierhonderd man."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "track",
+   "on": "abigail",
+   "actors": [
+    {
+     "id": "abigail",
+     "at": "pad-ver",
+     "to": "pad-boven",
+     "base": "ride"
+    }
+   ],
+   "say": "Snel laadt ze ezels vol: tweehonderd broden, wijn, vijf schapen, rozijnen en vijgen. Zelf rijdt ze David tegemoet."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "david",
+     "at": "pad-ver",
+     "to": "pad"
+    },
+    {
+     "id": "abigail",
+     "at": "veld",
+     "base": "ride",
+     "face": "david"
+    }
+   ],
+   "say": "Bij de heuvel ziet ze David en zijn mannen aankomen."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "abigail",
+     "at": "veld",
+     "base": "kneel",
+     "do": "bow",
+     "face": "david"
+    },
+    {
+     "id": "david",
+     "at": "pad",
+     "face": "abigail"
+    }
+   ],
+   "say": "Ze springt van haar ezel, valt voor David neer en buigt tot de grond. Laat mijn heer geen bloed vergieten, smeekt ze."
+  },
+  {
+   "set": "heuvels",
+   "time": "avond",
+   "camera": "wide",
+   "verse": "1 Samuël 25:32",
+   "actors": [
+    {
+     "id": "david",
+     "at": "pad",
+     "do": "raise",
+     "face": "abigail"
+    },
+    {
+     "id": "abigail",
+     "at": "veld",
+     "base": "kneel",
+     "face": "david"
+    }
+   ],
+   "say": "Toen zeide David tot Abigail: Gezegend zij de HEERE, de God Israels, Die u te dezen dage mij tegemoet gezonden heeft!"
+  },
+  {
+   "set": "heuvels",
+   "time": "nacht",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "abigail",
+     "at": "veld",
+     "base": "kneel",
+     "do": "give",
+     "holds": "brood",
+     "face": "david"
+    },
+    {
+     "id": "david",
+     "at": "pad",
+     "face": "abigail"
+    }
+   ],
+   "say": "David neemt aan wat ze gebracht heeft. Ga in vrede naar huis, zegt hij."
+  },
+  {
+   "set": "heuvels",
+   "time": "nacht",
+   "camera": "aerial",
+   "app": "web:bijbel/1-samuel/25",
+   "actors": [
+    {
+     "id": "david",
+     "at": "pad"
+    },
+    {
+     "id": "abigail",
+     "at": "veld",
+     "base": "kneel"
+    }
+   ],
+   "say": "Lees het hele verhaal in eerste Samuël vijfentwintig, met uitleg, in BijbelStudie."
+  }
+ ]
+}

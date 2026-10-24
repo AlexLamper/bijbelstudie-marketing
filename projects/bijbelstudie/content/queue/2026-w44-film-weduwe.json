@@ -1,0 +1,219 @@
+{
+ "id": "2026-w44-film-weduwe",
+ "kind": "reel-3d",
+ "week": "2026-W44",
+ "slot": "2026-10-26T19:35:00+01:00",
+ "platforms": [
+  "instagram",
+  "facebook",
+  "tiktok",
+  "youtube"
+ ],
+ "caption": "Een handvol meel en een beetje olie. Meer had ze niet - en ze gaf het weg.\n\nLees 1 Koningen 17 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+ "hashtags": [
+  "#elia",
+  "#1koningen",
+  "#bijbelverhaal",
+  "#bijbelstudie"
+ ],
+ "basedOn": "1 Koningen 17:8-16 (SV): God zendt Elia naar Sarfath bij Sidon; een weduwe raapt hout op bij de poort; water en een bete broods; een hand vol meel en een weinig olie; bak mij eerst een koekje; het meel van de kruik werd niet verteerd.",
+ "subject": "Elia en de weduwe van Sarfath",
+ "experiment": {
+  "hook": "verrassing",
+  "topic": "persoon"
+ },
+ "style3d": "stickman",
+ "music": "calm",
+ "voice": "female",
+ "voiceStyle": "rustig",
+ "captions": "karaoke",
+ "endCard": {
+  "headline": "Lees 1 Koningen met uitleg.",
+  "button": "Download gratis"
+ },
+ "hook": "Ze had nog één handvol meel. Toen vroeg een vreemde om brood.",
+ "cast": [
+  {
+   "id": "elia",
+   "look": "oude-man-bijbels",
+   "name": "Elia"
+  },
+  {
+   "id": "weduwe",
+   "look": "vrouw-bijbels-2",
+   "name": "De weduwe"
+  }
+ ],
+ "shots": [
+  {
+   "set": "stad",
+   "time": "dag",
+   "camera": "establish",
+   "text": "Sarfath, bij Sidon",
+   "actors": [
+    {
+     "id": "elia",
+     "at": "poort",
+     "to": "straat"
+    },
+    {
+     "id": "weduwe",
+     "at": "plein",
+     "base": "kneel"
+    }
+   ],
+   "say": "Het regent al lang niet meer. God stuurt de profeet Elia naar Sarfath, een stadje bij Sidon."
+  },
+  {
+   "set": "stad",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "elia",
+     "at": "straat",
+     "do": "talk",
+     "face": "weduwe"
+    },
+    {
+     "id": "weduwe",
+     "at": "plein",
+     "base": "kneel",
+     "face": "elia"
+    }
+   ],
+   "say": "Bij de stadspoort raapt een weduwe hout op. Elia vraagt haar om een beetje water."
+  },
+  {
+   "set": "stad",
+   "time": "dag",
+   "camera": "track",
+   "on": "weduwe",
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "plein",
+     "to": "markt",
+     "do": "carry",
+     "holds": "kruik"
+    },
+    {
+     "id": "elia",
+     "at": "straat"
+    }
+   ],
+   "say": "Als ze het gaat halen, roept hij haar na: breng ook een stukje brood mee."
+  },
+  {
+   "set": "stad",
+   "time": "dag",
+   "camera": "medium",
+   "on": "weduwe",
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "markt",
+     "holds": "olie",
+     "mood": "verdrietig",
+     "face": "elia"
+    },
+    {
+     "id": "elia",
+     "at": "plein"
+    }
+   ],
+   "say": "Maar ze heeft alleen nog een handvol meel en een beetje olie. Daarvan wil ze een laatste maaltijd maken, voor haar zoon en zichzelf."
+  },
+  {
+   "set": "stad",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "elia",
+     "at": "plein",
+     "do": "talk",
+     "face": "weduwe"
+    },
+    {
+     "id": "weduwe",
+     "at": "markt",
+     "face": "elia",
+     "holds": "olie"
+    }
+   ],
+   "say": "Wees niet bang, zegt Elia. Bak eerst een koekje voor mij. Het meel raakt niet op, en de olie ook niet, tot God weer regen geeft."
+  },
+  {
+   "set": "stad",
+   "time": "avond",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "plein",
+     "do": "give",
+     "holds": "brood",
+     "face": "elia"
+    },
+    {
+     "id": "elia",
+     "at": "straat",
+     "face": "weduwe"
+    }
+   ],
+   "say": "Ze doet wat hij zegt. En ze eten, zij, haar zoon en Elia, vele dagen lang."
+  },
+  {
+   "set": "stad",
+   "time": "nacht",
+   "camera": "sky",
+   "hold": 2,
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "plein"
+    },
+    {
+     "id": "elia",
+     "at": "straat"
+    }
+   ]
+  },
+  {
+   "set": "stad",
+   "time": "nacht",
+   "camera": "wide",
+   "verse": "1 Koningen 17:16",
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "plein",
+     "do": "pray"
+    },
+    {
+     "id": "elia",
+     "at": "straat"
+    }
+   ],
+   "say": "Het meel van de kruik werd niet verteerd, en de olie van de fles ontbrak niet, naar het woord des HEEREN, dat Hij gesproken had door den dienst van Elia."
+  },
+  {
+   "set": "stad",
+   "time": "nacht",
+   "camera": "aerial",
+   "app": "web:bijbel/1-koningen/17",
+   "actors": [
+    {
+     "id": "weduwe",
+     "at": "plein"
+    },
+    {
+     "id": "elia",
+     "at": "straat"
+    }
+   ],
+   "say": "Lees het in eerste Koningen zeventien, met uitleg bij elk vers, in BijbelStudie."
+  }
+ ]
+}

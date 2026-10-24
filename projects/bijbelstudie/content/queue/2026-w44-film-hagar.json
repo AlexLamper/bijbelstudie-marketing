@@ -1,0 +1,220 @@
+{
+ "id": "2026-w44-film-hagar",
+ "kind": "reel-3d",
+ "week": "2026-W44",
+ "slot": "2026-10-30T19:35:00+01:00",
+ "platforms": [
+  "instagram",
+  "facebook",
+  "tiktok",
+  "youtube"
+ ],
+ "caption": "Ze dacht dat niemand hen zag. Maar God hoorde de stem van de jongen.\n\nLees Genesis 21 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+ "hashtags": [
+  "#hagar",
+  "#ismael",
+  "#genesis",
+  "#bijbelverhaal",
+  "#bijbelstudie"
+ ],
+ "basedOn": "Genesis 21:14-20 (SV): Abraham gaf Hagar brood en een fles water; zij dwaalde in de woestijn van Berseba; het water was op; zij wierp het kind onder een der struiken; zij weende; God hoorde de stem van den jongen; God opende haar ogen, een waterput; God was met den jongen.",
+ "subject": "Hagar in de woestijn",
+ "experiment": {
+  "hook": "herkenning",
+  "topic": "persoon"
+ },
+ "style3d": "getekend",
+ "music": "reflective",
+ "voice": "female",
+ "voiceStyle": "rustig",
+ "captions": "karaoke",
+ "endCard": {
+  "headline": "Lees Genesis met uitleg.",
+  "button": "Download gratis"
+ },
+ "hook": "Het water was op, haar zoon lag uitgeput. En toen hoorde God hem.",
+ "cast": [
+  {
+   "id": "hagar",
+   "look": "vrouw-bijbels",
+   "name": "Hagar"
+  },
+  {
+   "id": "ismael",
+   "look": "herder",
+   "name": "Ismaël"
+  },
+  {
+   "id": "abraham",
+   "look": "oude-man-bijbels",
+   "name": "Abraham"
+  }
+ ],
+ "shots": [
+  {
+   "set": "woestijn",
+   "time": "dag",
+   "camera": "establish",
+   "text": "Berseba",
+   "actors": [
+    {
+     "id": "abraham",
+     "at": "tent",
+     "do": "give",
+     "holds": "brood",
+     "face": "hagar"
+    },
+    {
+     "id": "hagar",
+     "at": "links",
+     "face": "abraham"
+    },
+    {
+     "id": "ismael",
+     "at": "midden"
+    }
+   ],
+   "say": "Vroeg in de ochtend geeft Abraham Hagar brood en een fles water. Hij stuurt haar en haar zoon Ismaël weg."
+  },
+  {
+   "set": "woestijn",
+   "time": "dag",
+   "camera": "track",
+   "on": "hagar",
+   "actors": [
+    {
+     "id": "hagar",
+     "at": "midden",
+     "to": "rechts",
+     "do": "carry",
+     "holds": "kruik"
+    },
+    {
+     "id": "ismael",
+     "at": "links",
+     "to": "midden"
+    }
+   ],
+   "say": "Ze dwalen door de woestijn van Berseba. Dan is het water op."
+  },
+  {
+   "set": "woestijn",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "lie",
+     "mood": "verdrietig"
+    },
+    {
+     "id": "hagar",
+     "at": "links",
+     "base": "sit",
+     "do": "weep"
+    }
+   ],
+   "say": "Ze legt de jongen onder een struik, en gaat een eind verderop zitten. Ik kan hem niet zien sterven, huilt ze."
+  },
+  {
+   "set": "woestijn",
+   "time": "avond",
+   "camera": "sky",
+   "hold": 2,
+   "actors": [
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "lie"
+    },
+    {
+     "id": "hagar",
+     "at": "links",
+     "base": "sit",
+     "do": "weep"
+    }
+   ]
+  },
+  {
+   "set": "woestijn",
+   "time": "avond",
+   "camera": "sky",
+   "verse": "Genesis 21:17",
+   "actors": [
+    {
+     "id": "hagar",
+     "at": "links",
+     "base": "sit",
+     "do": "look-up"
+    },
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "lie"
+    }
+   ],
+   "say": "En God hoorde de stem van den jongen; en de Engel Gods riep Hagar toe uit den hemel, en zeide tot haar: Wat is u, Hagar? Vrees niet; want God heeft naar des jongens stem gehoord, ter plaatse, waar hij is."
+  },
+  {
+   "set": "woestijn",
+   "time": "dag",
+   "camera": "track",
+   "on": "hagar",
+   "actors": [
+    {
+     "id": "hagar",
+     "at": "links",
+     "to": "bron-3",
+     "do": "carry",
+     "holds": "kruik"
+    },
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "lie"
+    }
+   ],
+   "say": "Dan opent God haar ogen, en ze ziet een waterput."
+  },
+  {
+   "set": "woestijn",
+   "time": "dag",
+   "camera": "wide",
+   "actors": [
+    {
+     "id": "hagar",
+     "at": "bron-3",
+     "do": "give",
+     "holds": "kruik",
+     "face": "ismael"
+    },
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "sit",
+     "face": "hagar"
+    }
+   ],
+   "say": "Ze vult de fles en geeft de jongen te drinken. En God is met hem, terwijl hij opgroeit in de woestijn."
+  },
+  {
+   "set": "woestijn",
+   "time": "avond",
+   "camera": "aerial",
+   "app": "web:bijbel/genesis/21",
+   "actors": [
+    {
+     "id": "hagar",
+     "at": "bron-3"
+    },
+    {
+     "id": "ismael",
+     "at": "rechts",
+     "base": "sit"
+    }
+   ],
+   "say": "Lees Genesis eenentwintig, met uitleg bij elk vers, in BijbelStudie."
+  }
+ ]
+}

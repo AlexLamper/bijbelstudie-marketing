@@ -4,6 +4,10 @@
 
 export const DEFAULT_TZ = 'Europe/Amsterdam';
 
+/** Where an approved item goes (Alex, 24 Oct): reels on every platform, the rest only on Instagram and Facebook. Same as engine/slots.mjs. */
+export const postPlatforms = (kind: string, projectPlatforms: string[]) =>
+  kind.startsWith('reel-') ? [...projectPlatforms] : projectPlatforms.filter(p => p === 'instagram' || p === 'facebook');
+
 /** When an item was approved (latest approval; older items from their history). Same as engine/slots.mjs approvedAt. */
 export function approvedAt(it: { approvedAt?: any; history?: { event: string; at: any }[]; updatedAt?: any; createdAt?: any }): number {
   if (it.approvedAt) return +new Date(it.approvedAt);

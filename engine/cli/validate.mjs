@@ -49,6 +49,21 @@ for (const f of files) {
     if (speakers.size > 2) throw new Error(`${speakers.size} different voices (${[...speakers].join(', ')}) - Alex wants one, at most two voices per video`);
     const allowedStyles = P.voiceStylesAllowed; if (allowedStyles && s.voiceStyle && !allowedStyles.includes(s.voiceStyle)) throw new Error(`voiceStyle "${s.voiceStyle}" - use ${allowedStyles.join('/')} (calm voices only)`);
     if (P.musicMoods && s.music && s.music !== 'none' && !P.musicMoods.includes(s.music)) throw new Error(`music "${s.music}" - only calm music: ${P.musicMoods.join(', ')}`);
+    // what Alex chose (24 Oct 2026, project.json): only these formats and looks for new items; reels go to every
+    // platform, the verse of the day only to instagram + facebook; map stories are told on the map
+    if (!revising.has(s.id) && !samples) {
+      if (P.formatsAllowed && s.kind !== 'verse-still' && !P.formatsAllowed.includes(s.kind)) throw new Error(`${s.kind} is not made any more - use ${P.formatsAllowed.join(' or ')} (or verse-still for the daily verse)`);
+      if (P.stylesAllowed && s.kind.startsWith('reel-') && s.kind !== 'reel-3d' && s.style && !P.stylesAllowed.includes(s.style)) throw new Error(`style "${s.style}" - use ${P.stylesAllowed.join('/')}`);
+      if (P.style3dAllowed && s.kind === 'reel-3d' && !P.style3dAllowed.includes(s.style3d || 'lowpoly')) throw new Error(`style3d "${s.style3d || 'lowpoly'}" - use ${P.style3dAllowed.join(' or ')}`);
+      const want = s.kind.startsWith('reel-') ? P.platforms : P.platforms.filter(p => p === 'instagram' || p === 'facebook');
+      if (want.join() !== P.platforms.filter(p => s.platforms.includes(p)).join() || s.platforms.length !== want.length) throw new Error(`platforms must be ${want.join(', ')} (${s.kind.startsWith('reel-') ? 'every reel goes everywhere' : 'the verse of the day only on instagram and facebook'})`);
+      if (P.narratorOnly && s.kind === 'reel-3d' && (s.shots || []).some(x => x.by)) throw new Error('one narrator only (narratorOnly in project.json): no character lines (by + line)');
+      if (s.kind === 'reel-story') {
+        if (s.scenes.some(x => x.show === 'photo')) throw new Error('no photo scenes in a story reel (Alex: a picture that suddenly appears breaks the map story)');
+        const maps = s.scenes.filter(x => x.show === 'map').length;
+        if (maps < 3) throw new Error(`${maps} map scenes - a story reel is told on the map: at least 3 map scenes`);
+      }
+    }
     // every verse shown anywhere in the item (lines, items, scenes, slides, quiz)
     const shown = [s.verse, s.verseData, ...['lines', 'items', 'scenes', 'slides', 'shots'].flatMap(k => (s[k] || []).map(x => x.verseData))].filter(Boolean);
     for (const v of shown) {
@@ -81,6 +96,8 @@ if (allocation && planned.length) {
   const main = reels.filter(isMain), extra = reels.filter(x => !isMain(x));
   const R = allocation.recipe;
   for (const d of target.days.map(d => d.date)) {
+    const v = planned.filter(x => x.kind === 'verse-still' && day(x) === d).length;
+    if (v !== 1) fails.push(`${d}: ${v} verse-still - every day has exactly one verse of the day`);
     const m = main.filter(x => day(x) === d).length, e = extra.filter(x => day(x) === d).length;
     if (m !== R.mainPerDay) fails.push(`${d}: ${m} main reels (instagram/facebook/tiktok/youtube), the recipe wants ${R.mainPerDay}`);
     if (e !== R.extraPerDay) fails.push(`${d}: ${e} extra reels (tiktok + youtube only), the recipe wants ${R.extraPerDay}`);

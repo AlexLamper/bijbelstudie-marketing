@@ -15,7 +15,7 @@ import { youtubeConfigured, publishYouTube } from '../publish/youtube.mjs';
 import { tiktokConfigured, uploadPostConfigured, publishTikTok } from '../publish/tiktok.mjs';
 import { notify, studioLink } from '../notify.mjs';
 import { project } from '../project.mjs';
-import { openTimes, slotGroup, approvedAt, localDay } from '../slots.mjs';
+import { openTimes, slotGroup, approvedAt, localDay, postPlatforms } from '../slots.mjs';
 
 const PUBLISHERS = {
   instagram: { ok: metaConfigured, run: publishInstagram, label: 'Instagram' },
@@ -36,10 +36,11 @@ if (open.length) {
   const used = new Set((await items.find({ postAt: { $in: open.map(t => t.at) } }, { projection: { postAt: 1 } }).toArray()).map(o => +new Date(o.postAt)));
   const pile = (await items.find({ status: STATUS.APPROVED, postAt: null }).toArray()).sort((a, b) => approvedAt(a) - approvedAt(b));
   for (const t of open.filter(t => !used.has(+t.at))) {
-    const i = pile.findIndex(it => slotGroup(it.kind, it.spec.platforms) === t.group); if (i < 0) continue;
+    const i = pile.findIndex(it => slotGroup(it.kind) === t.group); if (i < 0) continue;
     const [it] = pile.splice(i, 1);
     const r = await items.updateOne({ _id: it._id, status: STATUS.APPROVED, postAt: null }, {
-      $set: { postAt: t.at, slot: t.at, 'spec.slot': t.iso, week: t.week, 'spec.week': t.week, plannedSlot: it.plannedSlot || it.slot },
+      $set: { postAt: t.at, slot: t.at, 'spec.slot': t.iso, week: t.week, 'spec.week': t.week, plannedSlot: it.plannedSlot || it.slot,
+        'spec.platforms': postPlatforms(it.kind, project().platforms) },   // reels everywhere, the verse on instagram/facebook (Alex, 24 Oct)
       $push: { history: { at: now, event: 'scheduled', note: `${localDay(t.at, tz)} ${t.time}` } } });
     if (r.modifiedCount) console.log(`[${project().id}] ${it._id}: from the pile for ${t.time}`);
   }

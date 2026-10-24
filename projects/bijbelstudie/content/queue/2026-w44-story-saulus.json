@@ -1,0 +1,115 @@
+{
+ "id": "2026-w44-story-saulus",
+ "kind": "reel-story",
+ "week": "2026-W44",
+ "slot": "2026-10-26T19:30:00+01:00",
+ "platforms": [
+  "instagram",
+  "facebook",
+  "tiktok",
+  "youtube"
+ ],
+ "caption": "Hij ging op weg om christenen op te pakken. Drie dagen later was hij er zelf een.\n\nLees Handelingen 9 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+ "hashtags": [
+  "#saulus",
+  "#paulus",
+  "#handelingen",
+  "#bijbelverhaal",
+  "#bijbelstudie"
+ ],
+ "basedOn": "Handelingen 9:1-30 (SV): brieven voor Damascus, licht van den hemel nabij Damaskus, 'Saul, Saul! wat vervolgt gij Mij?', drie dagen blind, Ananias, schellen van de ogen, in een mand door den muur, naar Jeruzalem, via Cesarea naar Tarsen.",
+ "subject": "Saulus op weg naar Damascus",
+ "experiment": {
+  "hook": "verrassing",
+  "topic": "persoon"
+ },
+ "style": "dark",
+ "music": "cinematic",
+ "voice": "male",
+ "voiceStyle": "rustig",
+ "captions": "karaoke",
+ "endCard": {
+  "headline": "Lees Handelingen 9 met uitleg.",
+  "button": "Download gratis"
+ },
+ "title": "Saulus op weg naar Damascus",
+ "hook": "Hij ging naar Damascus om christenen op te pakken. Hij kwam er blind aan.",
+ "scenes": [
+  {
+   "say": "Saulus jaagt in Jeruzalem op de volgelingen van Jezus. Hij vraagt de hogepriester om brieven voor Damascus.",
+   "show": "map",
+   "places": [
+    "jeruzalem"
+   ],
+   "ref": "Handelingen 9:1-2",
+   "marks": [
+    {
+     "icon": "rol",
+     "cue": "brieven"
+    }
+   ]
+  },
+  {
+   "say": "Hij reist naar het noorden. Vlak bij Damascus omstraalt hem een licht uit de hemel, en hij valt op de grond.",
+   "show": "map",
+   "places": [
+    "jeruzalem",
+    "damascus"
+   ],
+   "travel": "lopen",
+   "ref": "Handelingen 9:3",
+   "marks": [
+    {
+     "icon": "ster",
+     "at": "damascus",
+     "cue": "licht"
+    }
+   ]
+  },
+  {
+   "say": "Dan hoort hij een stem: Saul, Saul, wat vervolg je Mij?",
+   "show": "verse",
+   "verse": "Handelingen 9:4",
+   "ref": "Handelingen 9:4"
+  },
+  {
+   "say": "Blind brengen ze hem de stad in. Drie dagen eet hij niets. Dan komt Ananias, en er vallen als schellen van zijn ogen.",
+   "show": "map",
+   "places": [
+    "damascus"
+   ],
+   "ref": "Handelingen 9:8-18",
+   "marks": [
+    {
+     "icon": "stad",
+     "cue": "stad"
+    }
+   ]
+  },
+  {
+   "say": "Als ze hem willen doden, laten zijn vrienden hem 's nachts in een mand langs de muur zakken. Hij gaat terug naar Jeruzalem.",
+   "show": "map",
+   "places": [
+    "damascus",
+    "jeruzalem"
+   ],
+   "travel": "lopen",
+   "ref": "Handelingen 9:23-26"
+  },
+  {
+   "say": "Via Caesarea sturen ze hem naar huis, naar Tarsus. De vervolger is een verkondiger geworden.",
+   "show": "map",
+   "places": [
+    "jeruzalem",
+    "caesarea",
+    "tarsus"
+   ],
+   "ref": "Handelingen 9:30"
+  },
+  {
+   "say": "Lees Handelingen negen met uitleg bij elk vers, in BijbelStudie.",
+   "show": "text",
+   "text": "Handelingen 9, met uitleg bij elk vers"
+  }
+ ]
+}
