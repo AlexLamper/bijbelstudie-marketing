@@ -14,13 +14,17 @@ export async function loadVoices(d) {
 
 /** Voice keys a spec may use: male/female (when set) + the test set. */
 export function voiceKeys(list) {
+  const allowed = project().voicesAllowed;   // project.json: limit the voices the planner may use
+  return allVoiceKeys(list).filter(k => !allowed || allowed.includes(k));
+}
+function allVoiceKeys(list) {
   const keys = [];
   if (process.env.ELEVENLABS_VOICE_MALE || process.env.GOOGLE_TTS_API_KEY) keys.push('male');
   if (process.env.ELEVENLABS_VOICE_FEMALE || process.env.GOOGLE_TTS_API_KEY) keys.push('female');
   for (const v of list) if (!keys.includes(v.key) && v.id !== process.env.ELEVENLABS_VOICE_MALE && v.id !== process.env.ELEVENLABS_VOICE_FEMALE) keys.push(v.key);
   return keys;
 }
-export const musicMoods = () => [...new Set(musicLibrary().map(t => t.mood))];
+export const musicMoods = () => [...new Set(musicLibrary().map(t => t.mood))].filter(m => !project().musicMoods || project().musicMoods.includes(m));
 
 /** Recompute the scoreboard from the last 8 weeks of published items and store it for the studio. */
 export async function updateBoard(d, { seed } = {}) {
@@ -28,7 +32,7 @@ export async function updateBoard(d, { seed } = {}) {
   const items = await d.collection('items').find({ publishedAt: { $gte: since } }).toArray();
   const voices = voiceKeys(await loadVoices(d));
   const rows = trials(items);
-  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods() }), { seed: seed ?? Math.floor(Date.now() / 864e5), priors: project().experimentPriors });
+  const board = scoreboard(rows, catalogue({ voices, moods: musicMoods(), voiceStyles: project().voiceStylesAllowed }), { seed: seed ?? Math.floor(Date.now() / 864e5), priors: project().experimentPriors });
   const doc = { board, trials: rows.length, items: new Set(rows.map(r => r.id)).size, voices, moods: musicMoods(), at: new Date() };
   await d.collection('experiments').updateOne({ _id: 'board' }, { $set: doc }, { upsert: true });
   return { ...doc, rows };

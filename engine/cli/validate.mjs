@@ -8,6 +8,7 @@ import '../env.mjs';
 import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
 import { repeatProblems, rowOf } from '../repeats.mjs';
+import { screenProblems } from '../screens.mjs';
 import { spokenText, traitsOf } from '../experiments.mjs';
 
 const P = project();
@@ -40,6 +41,13 @@ for (const f of files) {
     if (s.ref && s.verse.text.length > 260) throw new Error(`${s.ref} is ${s.verse.text.length} chars - pick a verse under 260`);
     const repeats = repeatProblems(raw, [...(history || []), ...batchRows.filter(r => earlier(r, raw))], posted, { requireSubject: samples || (!!target && !revising.has(s.id)) });
     if (repeats.length) throw new Error(repeats.join(' | '));
+    // what Alex asked for (24 Oct 2026): screens that match, one or two calm voices, calm music
+    const screens = screenProblems(raw); if (screens.length) throw new Error(screens.join(' | '));
+    const speakers = new Set([s.voice, ...(s.cast || []).filter(c => (s.shots || []).some(x => x.by === c.id)).map(c => c.voice)].filter(v => v && v !== 'none'));
+    if (s.kind === 'reel-3d' && !(s.shots || []).some(x => x.say)) speakers.delete(s.voice);
+    if (speakers.size > 2) throw new Error(`${speakers.size} different voices (${[...speakers].join(', ')}) - Alex wants one, at most two voices per video`);
+    const allowedStyles = P.voiceStylesAllowed; if (allowedStyles && s.voiceStyle && !allowedStyles.includes(s.voiceStyle)) throw new Error(`voiceStyle "${s.voiceStyle}" - use ${allowedStyles.join('/')} (calm voices only)`);
+    if (P.musicMoods && s.music && s.music !== 'none' && !P.musicMoods.includes(s.music)) throw new Error(`music "${s.music}" - only calm music: ${P.musicMoods.join(', ')}`);
     // every verse shown anywhere in the item (lines, items, scenes, slides, quiz)
     const shown = [s.verse, s.verseData, ...['lines', 'items', 'scenes', 'slides', 'shots'].flatMap(k => (s[k] || []).map(x => x.verseData))].filter(Boolean);
     for (const v of shown) {

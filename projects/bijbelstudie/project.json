@@ -70,5 +70,18 @@
         1
       ]
     }
-  }
+  },
+  "voicesAllowed": [
+    "female",
+    "male"
+  ],
+  "voiceStylesAllowed": [
+    "rustig"
+  ],
+  "musicMoods": [
+    "calm",
+    "reflective",
+    "cinematic"
+  ],
+  "_voicesNote": "Alex 24 Oct 2026: one or two calm voices per video (the two default voices, steady style), calm music only - no upbeat/happy tracks."
 }

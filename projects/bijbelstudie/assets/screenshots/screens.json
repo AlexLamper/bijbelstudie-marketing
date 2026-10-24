@@ -1,0 +1,25 @@
+{
+  "note": "What each app screenshot shows. 'shows' = the Bible chapter on the screen: a video may only use that screenshot when it is about that book (the validator checks). For any other chapter use a live web screen: web:bijbel/<boek>/<hoofdstuk> (chapter page) or web:bijbelboeken/<boek> (book page).",
+  "screens": {
+    "01-start": { "about": "startscherm: tekst van de dag, verder met een studie, voortgang", "shows": null },
+    "02-bijbel": { "about": "Bijbel lezen", "shows": "Deuteronomium 2" },
+    "03-commentaar": { "about": "uitleg (KingComments) naast het hoofdstuk", "shows": "Deuteronomium 2" },
+    "04-grondtekst": { "about": "grondtekst Hebreeuws per woord (Pro)", "shows": "Deuteronomium 2" },
+    "05-info": { "about": "info over het bijbelboek met foto's", "shows": "Deuteronomium 2" },
+    "06-assistent": { "about": "assistent: vraag over het hoofdstuk", "shows": "Deuteronomium 2" },
+    "07-studies": { "about": "overzicht van de studies", "shows": null },
+    "08-les-context": { "about": "les stap 1: bijbelse context", "shows": "Filippenzen 2" },
+    "09-les-lezen": { "about": "les stap 2: lezen", "shows": "Filippenzen 2" },
+    "10-les-verdieping": { "about": "les stap 3: verdieping met uitleg", "shows": "Filippenzen 2" },
+    "11-les-toetsing": { "about": "les stap 4: quizvraag", "shows": "Filippenzen 2" },
+    "12-les-toepassing": { "about": "les stap 5: toepassing", "shows": "Filippenzen 2" },
+    "13-boom-groeide": { "about": "je boom groeide na een hoofdstuk", "shows": null },
+    "14-markeringen": { "about": "markeringen en notities", "shows": "Filippenzen 4" },
+    "15-profiel": { "about": "profiel van Alex (niet gebruiken in video's)", "shows": null, "avoid": true },
+    "16-instellingen": { "about": "leesinstellingen", "shows": null },
+    "17-onboarding-doel": { "about": "wat wil je uit bijbelstudie halen", "shows": null },
+    "18-onboarding-lastig": { "about": "bijbelstudie kan lastig zijn", "shows": null },
+    "19-onboarding-begrijpen": { "about": "je wilt de Bijbel beter begrijpen", "shows": null },
+    "20-pro": { "about": "Pro abonnement", "shows": null }
+  }
+}

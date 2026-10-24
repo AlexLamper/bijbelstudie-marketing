@@ -14,6 +14,7 @@ import { OUT } from '../paths.mjs';
 import { project, assetPath } from '../project.mjs';
 import { synthesize, ttsConfigured } from '../tts/index.mjs';
 import { musicFor } from './music.mjs';
+import { captureWebScreens } from './webscreens.mjs';
 
 const require = createRequire(import.meta.url);
 const pw = (() => { try { return require('playwright'); } catch { return require('/opt/npm-tools/node_modules/playwright'); } })();
@@ -178,7 +179,8 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
     if (process.env.PERF3D) await page.evaluate(o => { window.__3dopts = o; }, JSON.parse(process.env.PERF3D));
     const units = isVideo(spec.kind) ? await page.evaluate(s => window.units(s), spec) : null;
     const voice = await voiceClips(spec, units, work);
-    const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()])
+    const context = stageContext(); Object.assign(context.shots, await captureWebScreens(browser, spec, work, project().web));
+    const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, context])
       .catch(e => { throw new Error(e.message.split('\n')[0] + (errs.length ? ' | page: ' + errs.join(' | ') : '')); });
     await page.setViewportSize({ width: info.width, height: info.height });
     const result = { id: spec.id, kind: spec.kind, files: {}, duration: info.duration, notes: [] };
@@ -203,7 +205,7 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
       const pages = [page];
       for (let k = 1; k < nPages; k++) {
         const p2 = await browser.newPage({ viewport: { width: info.width, height: info.height }, deviceScaleFactor: 1 });
-        await p2.goto(STAGE); await p2.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, stageContext()]); pages.push(p2);
+        await p2.goto(STAGE); await p2.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, context]); pages.push(p2);
       }
       const t0 = Date.now();
       await Promise.all(pages.map(async (pg, k) => {
@@ -241,7 +243,8 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
 
 // WebGL (3D reels) runs in software in headless Chromium; module scripts load from file:// with the first flag.
 export const BROWSER_ARGS = ['--allow-file-access-from-files', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
-export const launch = () => pw.chromium.launch({ args: BROWSER_ARGS });
+// Local runs behind an HTTPS proxy (this sandbox) need it for the live web screens; CI has direct access.
+export const launch = () => pw.chromium.launch({ args: BROWSER_ARGS, ...(process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } } : {}) });
 
 /** Quick look without voice or video: stills of a spec at the given seconds (and its duration). */
 export async function renderStills(raw, times, { outDir = join(OUT, project().id), browser: shared } = {}) {
@@ -253,7 +256,9 @@ export async function renderStills(raw, times, { outDir = join(OUT, project().id
     await page.goto(STAGE);
     if (process.env.DEBUG3D) await page.evaluate(() => { window.__debug3d = true; });
     if (process.env.PERF3D) await page.evaluate(o => { window.__3dopts = o; }, JSON.parse(process.env.PERF3D));
-    const info = await page.evaluate(([s, c]) => window.setup(s, null, c), [spec, stageContext()]).catch(e => { throw new Error(e.message + (errs.length ? ' | ' + errs.join(' | ') : '')); });
+    const work = mkdtempSync(join(process.env.TMPDIR || tmpdir(), `s-${spec.id}-`));
+    const context = stageContext(); Object.assign(context.shots, await captureWebScreens(browser, spec, work, project().web));
+    const info = await page.evaluate(([s, c]) => window.setup(s, null, c), [spec, context]).catch(e => { throw new Error(e.message + (errs.length ? ' | ' + errs.join(' | ') : '')); });
     const files = [];
     for (const t of times.length ? times : [0, info.duration / 3, info.duration / 2, info.duration - 1]) {
       const t0 = Date.now(); await page.evaluate(t => { window.render(t); const c = document.querySelector('canvas'); const gl = c?.getContext('webgl2'); if (gl) gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); }, t); const tr = Date.now() - t0;

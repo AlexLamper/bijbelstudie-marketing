@@ -21,8 +21,11 @@ const CATALOG_FILE = join(dirname(fileURLToPath(import.meta.url)), 'render', '3d
 export const CATALOG3D = existsSync(CATALOG_FILE) ? JSON.parse(readFileSync(CATALOG_FILE, 'utf8')) : { looks: {}, sets: {}, cameras: {}, actions: {}, bases: [], moods: [] };
 
 const ref = z.string().regex(/^.+\s\d+:\d+(-\d+)?$/, 'Bible reference like "Johannes 3:16"');
-const screenshot = z.string().refine(s => SCREENSHOTS.includes(s), s => ({ message: SCREENSHOTS.length
-  ? `Unknown screenshot "${s}". Use one of: ${SCREENSHOTS.join(', ')}` : `${P.name} has no screenshots yet (projects/${P.id}/assets/screenshots/)` }));
+// An app screenshot (assets/screenshots, see screens.json for what each shows) or a live web screen of
+// the right chapter: web:bijbel/<boek>/<hoofdstuk> | web:bijbelboeken/<boek> (engine/render/webscreens.mjs)
+const { webKeyProblem } = await import('./render/webscreens.mjs');
+const screenshot = z.string().refine(s => s.startsWith('web:') ? !webKeyProblem(s) : SCREENSHOTS.includes(s), s => ({ message: s.startsWith('web:') ? webKeyProblem(s)
+  : SCREENSHOTS.length ? `Unknown screenshot "${s}". Use one of: ${SCREENSHOTS.join(', ')}, or web:bijbel/<boek>/<hoofdstuk>` : `${P.name} has no screenshots yet (projects/${P.id}/assets/screenshots/)` }));
 const photo = z.number().int().min(1).max(Math.max(1, PHOTO_COUNT)).refine(() => PHOTO_COUNT > 0, `${P.name} has no photos yet (projects/${P.id}/assets/photos/)`);
 const place = z.string().refine(s => PLACES.includes(s), s => ({ message: `Unknown place "${s}". Use one of: ${PLACES.join(', ')}` }));
 const shortLine = z.string().min(2).max(90);

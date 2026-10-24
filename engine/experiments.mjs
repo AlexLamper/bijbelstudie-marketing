@@ -135,10 +135,10 @@ export function capAllocation(alloc, rows, cap) {
 }
 
 /** Everything that can be tested (the catalogue), given the voices and music that exist. */
-export function catalogue({ voices = ['male', 'female'], moods = [] } = {}) {
+export function catalogue({ voices = ['male', 'female'], moods = [], voiceStyles = null } = {}) {
   return {
     format: REEL_KINDS.filter(k => RENDERABLE.includes(k)), postFormat: POST_KINDS.filter(k => RENDERABLE.includes(k)),
-    style: STYLES, style3d: STYLES3D, voice: [...voices, 'dialoog', 'geen'], voiceStyle: VOICE_STYLES,
+    style: STYLES, style3d: STYLES3D, voice: [...voices, 'dialoog', 'geen'], voiceStyle: VOICE_STYLES.filter(v => !voiceStyles || voiceStyles.includes(v)),
     music: ['none', ...MOODS.filter(m => m !== 'none' && moods.includes(m))], captions: CAPTIONS,
     hook: HOOKS, topic: TOPICS,
   };

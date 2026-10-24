@@ -3,47 +3,200 @@
   "kind": "reel-3d",
   "week": "2026-W45",
   "slot": "2026-11-02T18:15:00+01:00",
-  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
   "caption": "Abram trok met Lot uit Haran naar Kanaän. Toen er ruzie kwam, liet Abram zijn neef als eerste kiezen. Lees Genesis 12 en 13 met uitleg naast het hoofdstuk in BijbelStudie.",
-  "hashtags": ["#abram", "#genesis", "#bijbelstudie", "#bijbelverhaal"],
+  "hashtags": [
+    "#abram",
+    "#genesis",
+    "#bijbelstudie",
+    "#bijbelverhaal"
+  ],
   "voice": "female",
-  "music": "warm",
+  "music": "reflective",
   "captions": "karaoke",
   "hook": "Waarom liet Abram Lot als eerste kiezen?",
   "basedOn": "Genesis 12:1-5 (SV): Abram gaat op 75-jarige leeftijd uit Haran met Sarai en Lot naar Kanaan. Genesis 13:2-12: Abram zeer rijk, Lot had schapen, runderen en tenten, twist tussen de herders, Abram laat Lot kiezen, Lot kiest de vlakte van de Jordaan.",
   "subject": "Abram en Lot",
-  "experiment": { "hook": "vraag", "topic": "persoon" },
-  "endCard": { "headline": "Lees met uitleg ernaast.", "button": "Download gratis" },
+  "experiment": {
+    "hook": "vraag",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Lees met uitleg ernaast.",
+    "button": "Download gratis"
+  },
   "cast": [
-    { "id": "abram", "look": "oude-man-bijbels", "name": "Abram", "voice": "male" },
-    { "id": "lot", "look": "man-bijbels-2", "name": "Lot" },
-    { "id": "sarai", "look": "vrouw-bijbels", "name": "Sarai" },
-    { "id": "herder", "look": "herder", "name": "Een herder" }
+    {
+      "id": "abram",
+      "look": "oude-man-bijbels",
+      "name": "Abram",
+      "voice": "male"
+    },
+    {
+      "id": "lot",
+      "look": "man-bijbels-2",
+      "name": "Lot"
+    },
+    {
+      "id": "sarai",
+      "look": "vrouw-bijbels",
+      "name": "Sarai"
+    },
+    {
+      "id": "herder",
+      "look": "herder",
+      "name": "Een herder"
+    }
   ],
   "shots": [
-    { "set": "stad", "time": "dag", "camera": "wide", "text": "Haran",
-      "actors": [{ "id": "abram", "at": "plein", "do": "look-up", "mood": "nadenkend" }, { "id": "sarai", "at": "markt" }],
-      "say": "Abram woonde in Haran. Toen zei de HEERE tegen hem: Ga uit uw land, naar het land dat Ik u wijzen zal." },
-    { "set": "stad", "time": "dag", "camera": "follow", "on": "abram",
-      "actors": [{ "id": "abram", "at": "plein", "to": "poort" }, { "id": "lot", "at": "straat", "face": "abram" }],
-      "say": "Abram was vijfenzeventig jaar. Hij ging, met Sarai, zijn vrouw, en met Lot, de zoon van zijn broer." },
-    { "set": "woestijn", "time": "avond", "camera": "wide", "text": "Kanaän",
-      "actors": [{ "id": "abram", "at": "tent" }, { "id": "sarai", "at": "midden", "face": "abram" }, { "id": "lot", "at": "kampvuur" }],
-      "say": "Ze trokken naar het land Kanaän en woonden in tenten. Abram werd zeer rijk, in vee, in zilver en in goud." },
-    { "set": "heuvels", "time": "dag", "camera": "wide",
-      "actors": [{ "id": "lot", "at": "kudde" }, { "id": "herder", "at": "pad", "mood": "verward" }],
-      "say": "Lot had ook schapen, runderen en tenten. Het land kon hen samen niet dragen." },
-    { "set": "heuvels", "time": "dag", "camera": "medium", "on": "herder",
-      "actors": [{ "id": "herder", "at": "pad", "do": "shrug", "mood": "verward" }],
-      "say": "Er kwam ruzie tussen de herders van Abram en de herders van Lot." },
-    { "set": "heuvels", "time": "dag", "camera": "two-shot", "verse": "Genesis 13:8",
-      "actors": [{ "id": "abram", "at": "pad" }, { "id": "lot", "at": "kudde", "face": "abram" }],
-      "by": "abram", "line": "Laat er toch geen ruzie zijn tussen mij en jou. Wij zijn broeders." },
-    { "set": "heuvels", "time": "dag", "camera": "over-shoulder", "on": "abram",
-      "actors": [{ "id": "abram", "at": "pad", "do": "point" }, { "id": "lot", "at": "kudde", "face": "abram" }],
-      "by": "abram", "line": "Kies jij links, dan ga ik naar rechts. Kies jij rechts, dan ga ik naar links." },
-    { "set": "heuvels", "time": "avond", "camera": "wide",
-      "actors": [{ "id": "abram", "at": "heuvel", "do": "look-up" }],
-      "say": "Lot koos de vlakte van de Jordaan. Abram bleef in Kanaän. Lees Genesis 13 met de uitleg ernaast in BijbelStudie." }
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "text": "Haran",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "plein",
+          "do": "look-up",
+          "mood": "nadenkend"
+        },
+        {
+          "id": "sarai",
+          "at": "markt"
+        }
+      ],
+      "say": "Abram woonde in Haran. Toen zei de HEERE tegen hem: Ga uit uw land, naar het land dat Ik u wijzen zal."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "follow",
+      "on": "abram",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "plein",
+          "to": "poort"
+        },
+        {
+          "id": "lot",
+          "at": "straat",
+          "face": "abram"
+        }
+      ],
+      "say": "Abram was vijfenzeventig jaar. Hij ging, met Sarai, zijn vrouw, en met Lot, de zoon van zijn broer."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "text": "Kanaän",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "tent"
+        },
+        {
+          "id": "sarai",
+          "at": "midden",
+          "face": "abram"
+        },
+        {
+          "id": "lot",
+          "at": "kampvuur"
+        }
+      ],
+      "say": "Ze trokken naar het land Kanaän en woonden in tenten. Abram werd zeer rijk, in vee, in zilver en in goud."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "lot",
+          "at": "kudde"
+        },
+        {
+          "id": "herder",
+          "at": "pad",
+          "mood": "verward"
+        }
+      ],
+      "say": "Lot had ook schapen, runderen en tenten. Het land kon hen samen niet dragen."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "medium",
+      "on": "herder",
+      "actors": [
+        {
+          "id": "herder",
+          "at": "pad",
+          "do": "shrug",
+          "mood": "verward"
+        }
+      ],
+      "say": "Er kwam ruzie tussen de herders van Abram en de herders van Lot."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "two-shot",
+      "verse": "Genesis 13:8",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "pad"
+        },
+        {
+          "id": "lot",
+          "at": "kudde",
+          "face": "abram"
+        }
+      ],
+      "by": "abram",
+      "line": "Laat er toch geen ruzie zijn tussen mij en jou. Wij zijn broeders."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "over-shoulder",
+      "on": "abram",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "pad",
+          "do": "point"
+        },
+        {
+          "id": "lot",
+          "at": "kudde",
+          "face": "abram"
+        }
+      ],
+      "by": "abram",
+      "line": "Kies jij links, dan ga ik naar rechts. Kies jij rechts, dan ga ik naar links."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "heuvel",
+          "do": "look-up"
+        }
+      ],
+      "say": "Lot koos de vlakte van de Jordaan. Abram bleef in Kanaän. Lees Genesis 13 met de uitleg ernaast in BijbelStudie."
+    }
   ]
 }
