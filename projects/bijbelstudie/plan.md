@@ -76,7 +76,8 @@ figure (narrate about them), no violence on screen (tell it, show the aftermath)
   `embrace` (two people close, both with `face`), `bow` (with `base: "kneel"`, room in front), `weep`,
   `raise` (both hands up), `pray`, `point`, `talk`, `sleep`; `mood` `verdrietig` while lying gives half-closed
   eyes; `base: "ride"` = sits on a donkey (with `to` the donkey walks along: "zette hem op zijn eigen
-  dier"). Lying (`berm`, `bed-liggen`, `ruim`): `wide`, `top` or `two-shot`.
+  dier"); `base: "wade"` = stands waist-deep in water, with `do: "dip"` he goes under and comes up again
+  (`heuvels` spot `in-beek`: Naaman in the Jordan, a baptism) - never bow on the bank for "in the water". Lying (`berm`, `bed-liggen`, `ruim`): `wide`, `top` or `two-shot`.
   Useful spots: `heuvels` `pad-ver` -> `pad-boven` -> `pad` -> `pad-dichtbij` (a walk down the path),
   `berm` (lying by the path) + `berm-naast` (kneeling at his head), `beek` (river), `kudde`; `woestijn`
   `bron` + `bron-2` (a spring among the palms), `verte` (far away, arriving), `kampvuur`, `tent` (also an

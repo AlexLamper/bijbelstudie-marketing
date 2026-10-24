@@ -45,7 +45,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 ## 2D-film (reel-3d, stickman en getekend)
 
 - Details moeten kloppen: diepte, realisme, wie doet wat. Iemand die ligt, ligt echt (op de grond of een bed, plat, niet zwevend of half rechtop); wie helpt, knielt bij het hoofd; wie praat, staat naast elkaar en niet door elkaar heen. (Alex, 24 okt: "if someone lays down, it doesn't look realistic ... depth, realism are correct")
-- Wat de verteller zegt, gebeurt ook echt in beeld (iemand geeft iets, dan zie je het geven; iemand rijdt, dan zit hij op het dier). Liever een rustig wijd beeld dat klopt dan een actie die nep oogt. (Alex, 24 okt)
+- Wat de verteller zegt, gebeurt ook echt in beeld (iemand geeft iets, dan zie je het geven; iemand rijdt, dan zit hij op het dier; wie zich in de rivier onderdompelt, staat in het water en gaat kopje onder: `in-beek`, `wade`, `dip`). Liever een rustig wijd beeld dat klopt dan een actie die nep oogt. (Alex, 24 okt)
 - Tekst blijft altijd leesbaar, ook op een lichte lucht. (Alex, 24 okt: over de getekende films)
 - De openingstitel (hook) blijft lang genoeg staan om hem rustig twee keer te lezen. (Alex, 24 okt: "gaat iets te snel weg, laat deze nog een seconde langer zien"; 2026-w44-film-weduwe)
 
@@ -94,3 +94,6 @@ Wie een template of `render.mjs` aanpast, leest dit eerst en maakt niets hiervan
 - Icoon `licht`: een lichtbundel uit de hemel. Maximaal 2 iconen per kaartscène (validator). (24 okt, `templates/story.js`, `spec.mjs`)
 - Rustiger kaart: geen wolken en geen kaartje in de hoek; landen, eilanden en rivieren alleen als het verhaal ze noemt; andere plekken van het verhaal pas nadat het verhaal er geweest is. (24 okt, `templates/story.js`)
 - Slotzin en genummerde boeken worden door de validator gecontroleerd. (24 okt, `cli/validate.mjs`)
+- Muziek loopt zonder gat door: de nummers zijn 45 s en eindigen met een fade-out, dus bij langere video's zakte de muziek rond 0:45 bijna weg. Nu: het nummer tot vlak voor zijn eigen einde, daarna het middenstuk opnieuw met een crossfade van 3 s. (25 okt, `render.mjs` `musicBody`, `mixAudio`)
+- De telefoon met het bijbelhoofdstuk aan het eind van een 2D-film staat boven de ondertitels (die liepen eroverheen). (25 okt, `templates/film2d.js`)
+- In het water staan en onderdompelen: base `wade`, actie `dip`, spot `in-beek` (heuvels); de camera gaat mee omlaag zodat hij boven de ondertitels blijft. (25 okt, `templates/film2d.js`, `3d/catalog.json`)

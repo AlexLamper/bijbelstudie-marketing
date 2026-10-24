@@ -122,6 +122,7 @@
         "kudde": "tussen de schapen",
         "rots": "zittend op een rots",
         "beek": "bij de beek",
+        "in-beek": "2D-looks: staand tot het middel in de beek/rivier (base wade; met do dip: onderdompelen, Naaman in de Jordaan, een doop)",
         "pad-ver": "ver weg op het pad, achter de heuvel (om van ver aan te komen lopen)",
         "pad-boven": "op het pad, halverwege de heuvel (een korte wandeling naar 'pad' of 'berm-naast')",
         "pad-dichtbij": "dichtbij op het pad (lopen naar de camera)",
@@ -178,7 +179,8 @@
     "embrace": "2D-looks: armen om iemand heen (sta vlak bij elkaar, 'face' naar elkaar)",
     "bow": "2D-looks: buigt diep; knielend (base kneel) met het gezicht naar de grond, aanbidden",
     "weep": "2D-looks: huilt, handen voor het gezicht",
-    "raise": "2D-looks: heft beide handen op (lofprijzing, zegen)"
+    "raise": "2D-looks: heft beide handen op (lofprijzing, zegen)",
+    "dip": "2D-looks: dompelt zich onder in het water en komt weer boven (met base wade, in het water: spot in-beek); onderdompelen, zich wassen in de Jordaan"
   },
   "holds": {
     "kruik": "kruik van klei (water halen)",
@@ -195,7 +197,8 @@
     "sit",
     "kneel",
     "lie",
-    "ride"
+    "ride",
+    "wade"
   ],
   "moods": [
     "neutraal",

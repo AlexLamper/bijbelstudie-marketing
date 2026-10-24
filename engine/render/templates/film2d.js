@@ -91,7 +91,8 @@
     const g = sv('g', { 'data-actor': 1 }, parent);
     // the contact shadow on the ground (outside the pose group: it stays flat, under the feet or the body)
     const shadow = sv('ellipse', { cx: 0, cy: 0, rx: 75, ry: 13, fill: '#000', opacity: S.poster ? 0 : P.dark ? .34 : .2, 'data-nohaze': 1 }, g);
-    const pose = sv('g', {}, g);
+    const dunk = sv('g', {}, g);   // holds the pose; cut off at the water line while standing in water ('wade')
+    const pose = sv('g', {}, dunk);
     const body = sv('g', {}, pose);
     // limbs: a tube (outline + fill) in the drawn look, one dark stroke for stickman
     const limb = (fill, w) => {
@@ -187,6 +188,14 @@
     if (L.glasses) for (const x of [-8, 28]) sv('circle', { cx: x, cy: -6, r: 15, fill: 'none', stroke: S.eye, 'stroke-width': 4 }, face);
     const blinkAt = (() => { const r = rng(seed + 'blink'); return Array.from({ length: 60 }, (_, i) => i * 3.1 + r() * 2.2); })();
     const idle = wave(seed + 'idle'), gest = wave(seed + 'gest');
+    // Standing in water (Alex, 24 Oct: Naaman "dipped himself in the Jordan" but bowed on the bank): base
+    // 'wade' sinks the figure to the waist and hides what is under the water line; action 'dip' takes him
+    // under and up again, with rings on the water.
+    const WL = 28, cid = ('f2d-wade-' + seed).replace(/[^\w-]/g, '');
+    const defsW = parent.ownerSVGElement?.querySelector('defs') || null;
+    if (defsW) { const cp = sv('clipPath', { id: cid }, defsW); sv('rect', { x: -900, y: -3000, width: 1800, height: 3000 - WL }, cp); }
+    const wake = sv('g', { visibility: 'hidden', 'data-nohaze': 1 }, g);
+    const rings = [0, 1].map(i => sv('ellipse', { cx: 0, cy: -WL + 4, rx: 120, ry: 14, fill: 'none', stroke: '#ffffff', 'stroke-width': 5 - i * 1.5, opacity: 0, 'data-nohaze': 1 }, wake));
 
     // depth: the further away (smaller), the more the figure takes on the colour of the distance
     const hazeC = hexOf(P.far) || '#808080'; let hazeK = 0; let hazeEls = null;
@@ -226,7 +235,8 @@
       if (lie) { lh = [0.5, 1.02]; rh = [0.04, 0.08]; la = [0.6, 2.0]; ra = [-0.22, 0.12]; legDx = [-(wS - 14), -(wS - 20)]; bob = breathe * .4; }
       // riding the donkey: astride its back, legs hanging down its side, hands on the reins
       if (ride) { hipY = -212; lh = [0.62, 0.72]; rh = [0.55, 0.62]; la = [0.95, 0.95]; ra = [0.9, 0.9]; lean = .06; bob = st.walk ? -Math.abs(Math.sin(st.walk.ph)) * 6 * st.walk.amt : breathe * .3; }
-      const kneel = base === 'kneel';
+      const kneel = base === 'kneel', wade = base === 'wade';
+      if (wade) { bob = breathe * .4; la = [.55, .35]; ra = [-.5, .35]; }   // in the water: arms a little out
       // actions
       switch (act) {
         case 'read': case 'scroll': la = [0.95, 1.1]; ra = [0.85, 1.15]; headTilt = .28; break;
@@ -339,7 +349,17 @@
       const sh = lie ? [-(R.head - R.hip) / 2 + 20, 250, 20] : ride ? [10, 160, 18] : base === 'sit' ? [40, 100, 15] : kneel ? [-10, 100, 15] : base === 'walk' ? [0, 66 + 8 * Math.abs(Math.sin(st.walk.ph)), 12] : [0, 74, 13];
       shadow.setAttribute('cx', sh[0]); shadow.setAttribute('rx', r1(sh[1])); shadow.setAttribute('ry', sh[2]);
       // place: lying, the pose turns flat with the back on the ground (head toward -x)
-      pose.setAttribute('transform', lie ? `translate(0 ${R.hip - wS - (draw ? lw / 2 : 0)}) rotate(-90 0 ${-R.hip})` : '');
+      let sink = 0;
+      if (wade) {
+        const ph = ((t + (seed.length % 5) * .37) % 2.8) / 2.8;
+        const k = act === 'dip' ? (ph < .32 ? sm(ph / .32) : ph < .5 ? 1 : ph < .82 ? 1 - sm((ph - .5) / .32) : 0) : 0;
+        sink = (R.hip - 18) + k * (R.head + R.hr + 60 - (R.hip - 18));
+        const splash = act === 'dip' ? Math.max(0, 1 - Math.abs(ph - .41) / .2) : 0;   // rings when he goes under and comes up
+        rings.forEach((e, i) => { e.setAttribute('rx', r1(100 + i * 50 + splash * 60)); e.setAttribute('ry', r1(12 + i * 4 + splash * 6)); e.setAttribute('opacity', r1(((.55 - i * .2) * (.4 + .6 * splash)) * 100) / 100); });
+      }
+      wake.setAttribute('visibility', wade ? 'visible' : 'hidden'); shadow.setAttribute('visibility', wade ? 'hidden' : 'visible');
+      if (wade && defsW) dunk.setAttribute('clip-path', `url(#${cid})`); else dunk.removeAttribute('clip-path');
+      pose.setAttribute('transform', lie ? `translate(0 ${R.hip - wS - (draw ? lw / 2 : 0)}) rotate(-90 0 ${-R.hip})` : wade ? `translate(0 ${r1(sink)})` : '');
       g.setAttribute('transform', `translate(${r1(st.x)} ${r1(st.y)}) scale(${r1(st.s * st.dir * 1000) / 1000} ${r1(st.s * 1000) / 1000})`);
       if (!S.poster) haze(Math.round(cl((.9 - st.s) / .5) * 5) / 10);
     }
@@ -452,7 +472,7 @@
         pad: { x: 1110, y: GY, s: 1, dir: -1 }, 'pad-dichtbij': { x: 1230, y: 1470, s: 1.15, dir: -1 },
         berm: { x: 880, y: GY + 14, s: 1, dir: -1, base: 'lie' }, 'berm-naast': { x: 1250, y: GY + 4, s: 1, dir: -1, base: 'kneel' },
         veld: { x: 850, y: GY + 6, s: 1, dir: 1 },   // in the open, facing 'pad': far enough apart to talk, give or bow
-        kudde: { x: 470, y: 1330, s: .95, dir: 1 }, boom: { x: 1500, y: 1330, s: .95, dir: -1, base: 'sit', seat: 70 }, rots: { x: 300, y: 1410, s: 1.02, dir: 1, base: 'sit', seat: 80 }, beek: { x: 1640, y: 1430, s: 1.05, dir: -1 },
+        kudde: { x: 470, y: 1330, s: .95, dir: 1 }, boom: { x: 1500, y: 1330, s: .95, dir: -1, base: 'sit', seat: 70 }, rots: { x: 300, y: 1410, s: 1.02, dir: 1, base: 'sit', seat: 80 }, beek: { x: 1640, y: 1430, s: 1.05, dir: -1 }, 'in-beek': { x: 1480, y: 1592, s: 1.08, dir: -1, base: 'wade' },
       },
       cx: 1000,
       build(g, S, P, { time, seed }) {
@@ -936,7 +956,7 @@
       const k = cl((t - s.start) / Math.max(.1, s.end - s.start)); const e = inout(k);
       const def = s.world.def; const type = s.camera || (s.say || !states.length ? 'wide' : 'medium');
       const by = s.by && states.find(st => st.a.id === s.by); const on = (s.on && states.find(st => st.a.id === s.on)) || by || states[0];
-      const head = st => ({ x: st.x + (st.base === 'lie' ? -(R.head - R.hip) * st.s * st.dir : 0), y: st.y - (st.base === 'lie' ? 60 : st.base === 'sit' ? (R.head - R.hip + (st.seat ?? 95)) : st.base === 'kneel' ? R.head - 75 : R.head) * st.s });
+      const head = st => ({ x: st.x + (st.base === 'lie' ? -(R.head - R.hip) * st.s * st.dir : 0), y: st.y - (st.base === 'lie' ? 60 : st.base === 'sit' ? (R.head - R.hip + (st.seat ?? 95)) : st.base === 'kneel' ? R.head - 75 : st.base === 'wade' ? R.head - R.hip + 18 : R.head) * st.s });
       const all = states.length ? states : null;
       const mx = all ? all.reduce((n, st) => n + st.x, 0) / all.length : def.cx;
       const wideC = { cx: cl(mx, 540, 2000), cy: 1010, z: 1.1 };
@@ -953,6 +973,9 @@
         case 'two-shot': case 'over-shoulder': { const two = states.slice(0, 2); const x = two.reduce((n, st) => n + st.x, 0) / Math.max(1, two.length); const h = on ? head(on) : { y: 1000 }; c = { cx: x, cy: h.y + 260, z: 1.35 }; break; }
         default: c = { ...wideC, cx: wideC.cx + lerp(-30, 30, e), z: lerp(1, 1.04, e) };
       }
+      // someone standing in the stream is low in the set: the shot goes down with him, so he stays above the subtitles
+      const wd = states.filter(st => st.base === 'wade');
+      if (wd.length && !['medium', 'close', 'phone', 'push-in', 'two-shot', 'over-shoulder'].includes(type)) c.cy += Math.max(0, Math.max(...wd.map(st => st.y)) - 330 - 1010);
       c.cx += Math.sin(t * .37) * 4; c.cy += Math.sin(t * .29 + 2) * 3;   // a breathing camera
       return c;
     }
@@ -978,7 +1001,7 @@
         el('div', draw ? '' : 'serif', card, esc(s.verseData.text)).style.cssText = POSTER ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 44 : 50}px;line-height:1.2;color:${S.ink}` : draw ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 42 : 48}px;line-height:1.22;color:#ebe6d9` : `font-size:${s.verseData.text.length > 150 ? 36 : 42}px;line-height:1.38;color:#fff`;
         s.card = card;
       }
-      if (s.app) { const ph = phone(stage, s.app, 560); css(ph.node, { left: '260px', top: '330px', zIndex: 3, opacity: 0, boxShadow: '0 40px 90px rgba(0,0,0,.55)' }); s.phone = ph; }
+      if (s.app) { const ph = phone(stage, s.app, 480); css(ph.node, { left: '300px', top: Math.min(300, 1340 - ph.h) + 'px', zIndex: 3, opacity: 0, boxShadow: '0 40px 90px rgba(0,0,0,.55)' }); s.phone = ph; }   // ends above the subtitles (1430px): they ran over the phone
       if (s.set === 'kaart' && !POSTER) s.mapLabels = (s.world.map.pts || []).map(p => { const n = el('div', 'abs'); css(n, draw ? { left: 0, top: 0, fontFamily: S.font, fontSize: '46px', color: '#141416', textShadow: '0 0 6px #d9d1bc, 0 0 12px #d9d1bc', zIndex: 3, opacity: 0, whiteSpace: 'nowrap' }
         : { left: 0, top: 0, fontFamily: '"Inter Black", Inter', fontWeight: 900, fontSize: '40px', color: '#fff', WebkitTextStroke: '8px rgba(8,10,16,.85)', paintOrder: 'stroke fill', zIndex: 3, opacity: 0, whiteSpace: 'nowrap' }); n.textContent = p.name; return n; });
     });

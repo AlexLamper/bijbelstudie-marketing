@@ -191,6 +191,21 @@ async function voiceOne(spec, units, work, say, offset) {
  *  -16 LUFS (a soft voice is lifted, a loud one tamed), the music bed VOICE_GAP below it - the bed ducks
  *  further while someone speaks, and only then is the sum brought to -14 LUFS for the platforms. */
 const VOICE_LUFS = -16, VOICE_GAP = 12;
+/** Where a music track is at full strength: after its quiet intro, before its ending fades (from its loudness). */
+const bodies = new Map();
+export function musicBody(file) {
+  if (bodies.has(file)) return bodies.get(file);
+  const tmp = join(tmpdir(), `body-${process.pid}-${bodies.size}.txt`);
+  spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-af', `ebur128=metadata=1,ametadata=print:key=lavfi.r128.M:file=${tmp}`, '-f', 'null', '-']);
+  const log = existsSync(tmp) ? readFileSync(tmp, 'utf8') : ''; rmSync(tmp, { force: true });
+  const pts = []; let t = null;
+  for (const line of log.split('\n')) { const a = line.match(/pts_time:([\d.]+)/); if (a) t = +a[1]; const b = line.match(/lavfi\.r128\.M=(-?[\d.]+)/); if (b && t != null) pts.push({ t, m: +b[1] }); }
+  const len = probe(file), loud = pts.filter(p => p.m > -70).map(p => p.m).sort((x, y) => x - y);
+  const med = loud.length ? loud[Math.floor(loud.length / 2)] : -20, on = pts.filter(p => p.m >= med - 8);
+  const r = on.length > 10 ? { a: Math.max(0, on[0].t), b: Math.min(len, on.at(-1).t) } : { a: 0, b: len };
+  if (r.b - r.a < 10) { r.a = 0; r.b = len; }
+  bodies.set(file, r); return r;
+}
 function mixAudio({ clips = [], starts, music, duration, work }) {
   if (!clips.length && !music) return null;
   const args = ['-loglevel', 'error', '-y']; const f = []; let n = 0;
@@ -200,9 +215,16 @@ function mixAudio({ clips = [], starts, music, duration, work }) {
     f.push(`${clips.map((_, i) => `[a${i}]`).join('')}amix=inputs=${clips.length}:normalize=0:duration=longest[voice]`);
   }
   if (music) {
-    args.push('-stream_loop', '-1', '-i', music); const m = n;
+    // A bed longer than the track: the track's own ending fades out and its intro is quiet, so a plain loop
+    // left a dip of several seconds (Saulus, Elia: near silence around 0:45). The bed is the track up to
+    // where its ending starts, then its middle part again and again, each copy crossfaded into the next.
+    const { a: s0, b: e0 } = musicBody(music), XF = 3;
+    const parts = [[0, e0]]; let total = e0;
+    while (total < duration + 1 && parts.length < 12 && e0 - s0 > XF * 2) { parts.push([s0, e0]); total += e0 - s0 - XF; }
+    parts.forEach(([a, b], i) => { args.push('-i', music); f.push(`[${n + i}:a]aresample=44100,atrim=${a.toFixed(2)}:${b.toFixed(2)},asetpts=PTS-STARTPTS[mb${i}]`); });
+    let bed = 'mb0'; for (let i = 1; i < parts.length; i++) { f.push(`[${bed}][mb${i}]acrossfade=d=${XF}:c1=qsin:c2=qsin[mx${i}]`); bed = `mx${i}`; }
     const level = clips.length ? `loudnorm=I=${VOICE_LUFS - VOICE_GAP}:TP=-6:LRA=7` : 'loudnorm=I=-16:TP=-1.5:LRA=11';
-    f.push(`[${m}:a]aresample=44100,atrim=0:${duration.toFixed(2)},asetpts=N/SR/TB,${level},aresample=44100,afade=t=in:d=0.8,afade=t=out:st=${Math.max(0, duration - 1.8).toFixed(2)}:d=1.8[music]`);
+    f.push(`[${bed}]atrim=0:${duration.toFixed(2)},asetpts=N/SR/TB,${level},aresample=44100,afade=t=in:d=0.8,afade=t=out:st=${Math.max(0, duration - 1.8).toFixed(2)}:d=1.8[music]`);
   }
   // the voice is padded to the full length: the ducker (and so the music) would otherwise stop at the last word
   const D = duration.toFixed(2), STEREO = 'aformat=channel_layouts=stereo';

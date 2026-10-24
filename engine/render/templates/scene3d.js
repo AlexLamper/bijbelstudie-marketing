@@ -98,7 +98,7 @@ T['reel-3d'] = (spec, timing) => {
       el('div', 'serif', card, esc(s.verseData.text)).style.cssText = `font-size:${s.verseData.text.length > 150 ? 36 : 42}px;line-height:1.38;color:#1f2933`;
       s.card = card;
     }
-    if (s.app) { const ph = phone(stage, s.app, 560); css(ph.node, { left: '260px', top: '330px', zIndex: 3, opacity: 0, boxShadow: '0 40px 90px rgba(0,0,0,.55)' }); s.phone = ph; }
+    if (s.app) { const ph = phone(stage, s.app, 480); css(ph.node, { left: '300px', top: Math.min(300, 1340 - ph.h) + 'px', zIndex: 3, opacity: 0, boxShadow: '0 40px 90px rgba(0,0,0,.55)' }); s.phone = ph; }   // ends above the subtitles (1430px): they ran over the phone
   });
   const fade = el('div', 'abs full'); css(fade, { background: '#000', opacity: 0, zIndex: 5 });
   const end = endCard(spec); document.querySelector('.end').style.zIndex = 6;
