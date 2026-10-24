@@ -1,10 +1,1 @@
-[
-  {
-    "file": "2026-w44-film-abigail.json",
-    "error": "Updating the path 'history' would create a conflict at 'history'"
-  },
-  {
-    "file": "2026-w44-story-uittocht.json",
-    "error": "Updating the path 'history' would create a conflict at 'history'"
-  }
-]
+[]
