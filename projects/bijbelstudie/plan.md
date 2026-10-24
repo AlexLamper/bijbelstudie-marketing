@@ -1,9 +1,9 @@
-# BijbelStudie - weekly recipe and rules
+# BijbelStudie - recipe and rules
 
 Read together with `planner/PLAN.md` (the steps). Where this file is more specific, it wins.
 Paths here (`brand/`, `content/`) are inside this project folder, `projects/bijbelstudie/`.
 
-## Report sections
+## Report sections (Mondays, about last week)
 
 - **Wat werkte** - top 3 items with numbers and why you think they worked
 - **Wat niet** - bottom 3 and the likely reason
@@ -11,19 +11,23 @@ Paths here (`brand/`, `content/`) are inside this project folder, `projects/bijb
 - **Groei** - followers and new BijbelStudie signups, compared to the week before
 - **Volgende week** - what you change and why (one line per change)
 
-## Weekly recipe
+## Recipe (per day)
 
-| What | How many | Slot | Platforms |
+The planner plans one day per run (the day in `content/context/target-week.json`). Every day:
+
+| What | Per day | Slot | Platforms |
 |---|---|---|---|
-| `verse-still` daily verse | 7 (every day) | 07:00 | instagram, facebook |
-| Main reel | 7 (1 a day) | 19:30 | instagram, facebook, tiktok, youtube |
-| Extra test reels | 14 (2 a day) | 12:30 and 17:00 | tiktok, youtube |
-| Feed posts | 4 | 12:00 Tue, Thu, Sat, Sun | instagram, facebook |
+| `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook |
+| Main reel | 1 | 19:30 | instagram, facebook, tiktok, youtube |
+| Extra test reels | 2 | 12:30 and 17:00 | tiktok, youtube |
+| Feed post | 1 on Tue, Thu, Sat and Sun only | 12:00 | instagram, facebook |
 
-Which formats fill the reel and feed slots comes from `allocation.json` (`mainReels.format`,
-`extraReels.format`, `feedPosts.format`). Main reels get what works best (the account's face on
-Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<format short>-<day>`,
-with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
+Over a week that is 7 daily verses, 7 main reels, 14 extras and 4 feed posts. The feed days are also
+in the engine (`engine/experiments.mjs` `FEED_DAYS`): change both together. Which formats fill the reel
+and feed slots comes from `allocation.json` (`mainReels.format`, `extraReels.format`, `feedPosts.format`;
+`feedPosts.slots` is 0 on the other days). Main reels get what works best (the account's face on
+Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<format short>`, with
+`-a`/`-b` for the two extras, e.g. `2026-w46-tue-quiz-a` (`idPrefix` already holds the week and the day).
 
 ## Formats
 
@@ -87,7 +91,7 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
 - `style`: `light`, `dark` or `photo` (reels and carousels).
 - `style3d` (reel-3d): `lowpoly` (faceted triangles, flat colours), `rond` (smooth toy look), `toon`
   (cartoon, outlines), `blok` (everything blocks), `klei` (claymation). Alex wants many styles tried:
-  follow the `style3d` target in allocation.json, and vary it across the week's 3D reels.
+  follow the `style3d` target in allocation.json, and vary it from day to day (`performance.json`).
 - `experiment.hook` and `experiment.topic` on every item (`topic`: boek, persoon, context, woord,
   thema, vers, app, praktisch).
 - When you repeat a winner, change one thing (another verse, another hook line) - not everything.
@@ -99,9 +103,11 @@ with `-a`/`-b` for the two extras of a day, e.g. `2026-w46-quiz-tue-a`.
   sampling on fair scores, see `engine/experiments.mjs`). You follow it; you do not pick winners yourself.
 - **Feed posts:** `experiment.feedType` = `spotlight`, `statement` or `carousel`.
 - **Post times (decided by data):** keep the fixed slots. From week 3 compare views and saves per slot in
-  `performance.json` (use `slot`): try one alternative per type each week on one day only, set
-  `experiment.note: "tijd-test HH:MM"`, and move the default slot when an alternative wins two weeks in a row.
-- **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" (caption, or a spotlight on `15-profiel`).
+  `performance.json` (use `slot`): try one alternative per type each week on one day only (check
+  `performance.json` for a `tijd-test` already in that ISO week), set `experiment.note: "tijd-test HH:MM"`,
+  and move the default slot when an alternative wins two weeks in a row.
+- **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" (caption, or a spotlight
+  on `15-profiel`): plan it when no item of the target's ISO week has it yet (see `performance.json`).
 
 ## Daily verse rules
 

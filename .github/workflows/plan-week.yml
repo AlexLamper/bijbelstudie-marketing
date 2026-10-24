@@ -1,8 +1,11 @@
-# Every Friday (schedule saved by AlexLamper), per enabled project (one after the other): Claude plans next week (report + specs +
-# comment replies), the engine validates, imports and renders everything, and Alex gets one message.
-name: Plan week
-# Started on Friday by the studio's timer (Vercel Cron, /api/cron/plan); GitHub's own schedule is not
-# used here so the planner can never run twice. By hand: Actions > Plan week > Run workflow.
+# Every morning (schedule saved by AlexLamper), per enabled project (one after the other): Claude plans one day -
+# the first day from tomorrow that has no content yet (specs + comment replies, on Mondays the week report) -,
+# the engine validates, imports and renders it, and Alex gets one message. The file keeps its old name
+# (plan-week.yml) because the studio's timer dispatches it by that name.
+name: Plan day
+# Started daily at 04:00 UTC by the studio's timer (Vercel Cron, /api/cron/plan); GitHub's own schedule is not
+# used here so the planner can never run twice. By hand: Actions > Plan day > Run workflow.
+# export-context sets skip=true when the next free day is more than 3 days ahead (PLAN_FORCE overrides).
 on:
   workflow_dispatch:
     inputs:
@@ -31,7 +34,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-engine
         with: { render: 'true' }
-      - name: Export context for the planner
+      - name: Export context for the planner (picks the day to plan)
         id: ctx
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/export-context.mjs 2>&1 | tee -a run.log
@@ -43,7 +46,7 @@ jobs:
       - name: Today
         if: steps.ctx.outputs.skip != 'true'
         run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y, ISO week %G-W%V')" >> $GITHUB_ENV
-      - name: Claude plans the week
+      - name: Claude plans the day
         if: steps.ctx.outputs.skip != 'true'
         uses: anthropics/claude-code-action@v1
         with:
@@ -51,9 +54,10 @@ jobs:
           github_token: ${{ github.token }}   # the planner only writes files; no Claude GitHub App needed
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ matrix.project }} (folder projects/${{ matrix.project }}/).
-            Read planner/PLAN.md and follow it exactly: report on last week, plan next ISO week,
-            meet the quality bar (draft, then edit like a strict editor; check every Bible fact in
-            data/statenvertaling), draft comment replies, and run the validator until it passes.
+            Read planner/PLAN.md and follow it exactly: on Mondays a report on last week, plan the one day
+            in content/context/target-week.json (${{ steps.ctx.outputs.date }}), meet the quality bar (draft,
+            then edit like a strict editor; check every Bible fact in data/statenvertaling), draft comment
+            replies, and run the validator until it passes.
             Take your time - quality over speed.
           claude_args: >-
             --model claude-opus-5-5 --effort xhigh --fallback-model claude-sonnet-5-5 --max-turns 260
@@ -67,11 +71,12 @@ jobs:
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         if: steps.ctx.outputs.skip != 'true'
+        env: { DAY: '${{ steps.ctx.outputs.date }}' }
         run: |
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           c=projects/$PROJECT/content
           git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
-          git diff --cached --quiet || (git commit -m "plan $PROJECT: $(TZ=Europe/Amsterdam date +%G-W%V)" && git pull --rebase --autostash -q && git push)
+          git diff --cached --quiet || (git commit -m "plan $PROJECT: ${DAY:-$(TZ=Europe/Amsterdam date +%F)}" && git pull --rebase --autostash -q && git push)
       - name: Render (the Render workflow, three jobs side by side)
         if: steps.ctx.outputs.skip != 'true'
         env: { GH_TOKEN: '${{ github.token }}' }

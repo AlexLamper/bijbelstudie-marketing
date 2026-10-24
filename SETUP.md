@@ -18,7 +18,7 @@
 Everything is done from the studio's **Instellingen** page (per project). It shows a checklist of
 what is set and what is missing, and when each job last ran.
 
-1. **Weekplanner (before Friday 30 Oct):** on your computer run `claude setup-token`, log in, and paste
+1. **Planner (runs every morning):** on your computer run `claude setup-token`, log in, and paste
    the token under Instellingen > Sleutels > Claude. (A GitHub secret `CLAUDE_CODE_OAUTH_TOKEN` also works.)
 2. **YouTube:** app done (Google Cloud project "BijbelStudie", OAuth client "Marketing Studio (YouTube)").
    Click Koppel and pick the BijbelStudie channel (@bijbelstudie-io).
@@ -48,10 +48,10 @@ without a prefix. Every other project uses its `envPrefix` from `project.json`, 
 
 ## How it runs
 
-- **Friday** 16:00: Plan week (Claude, one project after the other) -> import -> render -> you get "<Project>: week .. staat klaar".
+- **Every morning** 04:00 UTC: Plan day (Claude, one project after the other) plans the first day from tomorrow without content (at most 3 days ahead; on Mondays also the week report) -> import -> render -> you get "<Project>: <dag> staat klaar".
 - **Studio**: approve, "Aanpassen" with a comment, fix a caption yourself, "Nu plaatsen", "Opnieuw renderen", or remove.
   "Aanpassingen naar Claude" -> revised within 30 min (the Publish job starts Revise and Render when the studio asks).
 - **Reminders**: one notice a day when posts for the next 36 hours still wait for approval, or when approved posts wait for an account link.
 - **Every 30 min** (06:00-22:30): approved items of every enabled project whose time has come are posted.
-- **Daily** 05:15: stats, comments, cleanup of old media.
+- **Daily** 05:15: stats, comments, cleanup of old media; rejected items (video and item) are removed a day after you rejected them.
 - **Anything fails** -> a GitHub issue with the log.

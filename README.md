@@ -4,13 +4,15 @@ Plans, makes, publishes and measures social content for any number of products (
 Alex only approves. Today: **BijbelStudie** (on) and **BijbelQuiz** (scaffolded, off).
 
 ```
-Friday      per project: Claude (planner/PLAN.md + projects/<id>/plan.md) reads results + brand
-            -> report, next week's specs, comment replies
+Mornings    per project: Claude (planner/PLAN.md + projects/<id>/plan.md) reads results + brand
+            -> the specs of one day (the first day from tomorrow without content, at most 3 days
+            ahead), comment replies, on Mondays the week report
             validate -> import to the project's Mongo database -> render (Playwright + ffmpeg,
-            voice via ElevenLabs/Google TTS) -> Vercel Blob -> "<Project>: week ready"
-Studio      pick a project, approve / comment / remove (comments -> "Aanpassingen naar Claude" -> Revise)
+            voice via ElevenLabs/Google TTS) -> Vercel Blob -> "<Project>: <dag> staat klaar"
+Studio      pick a project, approve / comment / reject (comments -> "Aanpassingen naar Claude" -> Revise)
 Every 30m   approved items whose time has come -> Instagram, Facebook, YouTube Shorts, TikTok
-Daily       metrics, followers, new users, new comments; competitors on Mondays
+Daily       metrics, followers, new users, new comments; competitors on Mondays; rejected items
+            removed a day after the rejection (a short record stays for the planner)
 ```
 
 | Part | Where |

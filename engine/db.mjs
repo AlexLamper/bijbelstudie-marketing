@@ -6,8 +6,10 @@
 //   verses    every verse that went out (the never-reuse ledger)
 //   metrics   daily account numbers (followers, signups)
 //   insights  competitor snapshots from Instagram Business Discovery
-//   reports   weekly reports written by the planner
+//   reports   weekly reports written by the planner (Mondays)
 //   comments  incoming comments + drafted replies
+//   rejected  what is kept of a rejected item after the stats job removed it and its media (a day after
+//             the rejection): week, slot, kind, subject, hook, traits, Alex's comments - for the planner
 import { MongoClient } from 'mongodb';
 import { project } from './project.mjs';
 
