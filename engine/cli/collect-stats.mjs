@@ -1,5 +1,6 @@
 // Daily, per project: per-item metrics (Instagram, YouTube), account numbers, new product signups,
-// new comments to draft replies for, and (weekly) competitor snapshots.
+// new comments to draft replies for, (weekly) competitor snapshots, and cleanup: media of old posts,
+// rejected items a day after the rejection.
 import '../env.mjs';
 import { db, close, STATUS, heartbeat } from '../db.mjs';
 import { applyConnections } from '../connections.mjs';
@@ -78,16 +79,35 @@ if (process.env.PLATFORM_MONGODB_URI) {
     await d.collection('metrics').updateOne({ _id: today }, { $set: { users: { total, newYesterday: yesterday } } }, { upsert: true });
   } finally { await c.close(); }
 }
-// Keep storage small (Vercel Blob free tier): drop media of items published > 60 days ago or rejected > 14 days ago.
+// Keep storage small (Vercel Blob free tier): drop media of items published > 60 days ago.
+const mediaUrls = it => [...new Set([it.media?.url, it.media?.coverUrl, ...(it.media?.slides || [])].filter(Boolean))];
 if (storageConfigured()) {
-  const old = await items.find({ media: { $exists: true }, $or: [
-    { status: { $in: [STATUS.PUBLISHED, STATUS.PARTIAL] }, publishedAt: { $lt: new Date(Date.now() - 60 * 864e5) } },
-    { status: STATUS.REJECTED, updatedAt: { $lt: new Date(Date.now() - 14 * 864e5) } }] }).toArray();
+  const old = await items.find({ media: { $exists: true }, status: { $in: [STATUS.PUBLISHED, STATUS.PARTIAL] }, publishedAt: { $lt: new Date(Date.now() - 60 * 864e5) } }).toArray();
   for (const it of old) {
-    try { await remove([it.media.url, it.media.coverUrl]); await items.updateOne({ _id: it._id }, { $unset: { media: '' }, $set: { mediaRemovedAt: new Date() } }); }
+    try { await remove(mediaUrls(it)); await items.updateOne({ _id: it._id }, { $unset: { media: '' }, $set: { mediaRemovedAt: new Date() } }); }
     catch (e) { console.error(`cleanup ${it._id}: ${e.message}`); }
   }
   if (old.length) console.log(`removed media of ${old.length} old items`);
+}
+// Rejected items go a day after Alex rejected them: the media from storage and the item from the studio.
+// A short record stays in `rejected` (exported to content/context/rejected.json) so the planner learns
+// what he does not want. Published items are never touched here.
+{
+  const { rejectedRecord, rejectedAt } = await import('../repeats.mjs');
+  const dayAgo = Date.now() - 24 * 3600e3;
+  const due = (await items.find({ status: STATUS.REJECTED }).toArray()).filter(it => new Date(rejectedAt(it) || Date.now()).getTime() < dayAgo);
+  let gone = 0;
+  for (const it of due) {
+    const urls = mediaUrls(it);
+    if (urls.length && !storageConfigured()) { console.error(`rejected ${it._id}: no media storage configured - item kept`); continue; }
+    try {
+      const { _id, ...record } = rejectedRecord(it);
+      await d.collection('rejected').updateOne({ _id }, { $set: record }, { upsert: true });
+      await remove(urls);
+      if ((await items.deleteOne({ _id: it._id, status: STATUS.REJECTED })).deletedCount) gone++;
+    } catch (e) { console.error(`rejected ${it._id}: ${e.message}`); }
+  }
+  if (gone) console.log(`removed ${gone} rejected items (media + item)`);
 }
 // Reminder: posts planned for the next 36 hours that still wait for Alex's approval (once a day).
 const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] }, slot: { $gte: new Date(), $lte: new Date(Date.now() + 36 * 3600e3) } }).sort({ slot: 1 }).toArray();

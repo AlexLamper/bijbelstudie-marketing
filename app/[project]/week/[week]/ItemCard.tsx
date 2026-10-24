@@ -143,6 +143,7 @@ export default function ItemCard({ project, item }: { project: string; item: any
         {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
         {msg && <p role="status" className="mt-2 text-xs text-success">{msg}</p>}
         {item.status === 'approved' && new Date(item.slot) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen 30 minuten).</p>}
+        {item.status === 'rejected' && <p className="mt-2 rounded-md bg-bg px-2 py-1 text-xs text-ink-muted ring-1 ring-line">Wordt na ongeveer een dag verwijderd (video en item). Tot dan kun je het nog goedkeuren of laten aanpassen; de planner onthoudt wat je hebt afgewezen.</p>}
         {item.results && Object.values(item.results).some((r: any) => r.waiting) && <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-warn">Wacht op koppeling: {Object.entries(item.results).filter(([, r]: any) => r.waiting).map(([p]) => PLATFORM[p] || p).join(', ')} - zie Instellingen.</p>}
         {canDecide && (
           <div className="mt-auto flex gap-2 pt-4">

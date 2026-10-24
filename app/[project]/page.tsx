@@ -49,7 +49,7 @@ export default async function Weeks({ params }: { params: Promise<{ project: str
       </div>
       {!weeks.length && (
         <Empty>
-          Nog geen content voor {p.name}. De planner draait elke vrijdag, of start hem in GitHub Actions bij <strong>Plan week</strong> (project: <code>{project}</code>).
+          Nog geen content voor {p.name}. De planner draait elke ochtend en plant steeds een dag, of start hem in GitHub Actions bij <strong>Plan day</strong> (project: <code>{project}</code>).
         </Empty>
       )}
     </div>

@@ -8,7 +8,7 @@ import '../env.mjs';
 import { project } from '../project.mjs';
 import { prepare } from '../spec.mjs';
 import { repeatProblems, rowOf } from '../repeats.mjs';
-import { spokenText, traitsOf } from '../experiments.mjs';
+import { spokenText, traitsOf, formatTolerance } from '../experiments.mjs';
 
 const P = project();
 const arg = process.argv[2];
@@ -16,7 +16,8 @@ const dir = !arg ? P.paths.queue : arg === 'samples' ? P.paths.samples : arg;
 const files = existsSync(dir) ? readdirSync(dir).filter(f => f.endsWith('.json') && !f.startsWith('_') && f !== 'replies.json') : [];
 const slots = new Map(); let bad = 0; let weekFails = 0; const planned = [];
 const HEADING = /^(Een psalm|Een lied|Een gebed|Een onderwijzing|Voor den opperzangmeester|Aleph|Beth|Gimel|Daleth|He\.|Vau|Zain|Cheth|Teth|Jod|Caph|Lamed|Mem|Nun|Samech|Ain|Pe\.|Tsade|Koph|Resch|Schin|Thau)\b/;
-// When planning (not for samples): every new item belongs to the target week, revisions keep their own.
+// When planning (not for samples): every new item belongs to the target day (target-week.json `days`,
+// one day since the planner runs daily), revisions keep their own.
 const ctx = name => { try { return JSON.parse(readFileSync(join(P.paths.context, name), 'utf8')); } catch { return null; } };
 const target = !arg ? ctx('target-week.json') : null;
 const revising = new Set((ctx('changes-requested.json') || []).map(c => c.id));
@@ -48,9 +49,10 @@ for (const f of files) {
     }
     if (target && !revising.has(s.id)) {
       if (s.week !== target.week) throw new Error(`week must be ${target.week} (content/context/target-week.json), not ${s.week}`);
+      if (target.idPrefix && !s.id.startsWith(`${target.idPrefix}-`)) throw new Error(`id must start with ${target.idPrefix}- (idPrefix in content/context/target-week.json)`);
       const dates = target.days.map(d => d.date);
       const local = new Date(s.slot).toLocaleDateString('sv-SE', { timeZone: P.timezone });
-      if (!dates.includes(local)) throw new Error(`slot ${s.slot} is not in ${target.week} (${dates[0]} - ${dates[6]})`);
+      if (!dates.includes(local)) throw new Error(`slot ${s.slot} is on ${local}, not on the day to plan (${dates.join(', ')}; content/context/target-week.json)`);
     }
     const key = `${s.slot}|${s.kind.startsWith('reel-') ? 'reel' : 'post'}`;
     if (slots.has(key)) throw new Error(`slot ${s.slot} already used by ${slots.get(key)}`);
@@ -61,7 +63,8 @@ for (const f of files) {
     console.log(`ok   ${f}${s.verse ? `  [${s.verse.ref}: ${s.verse.text.slice(0, 60)}...]` : ''}`);
   } catch (e) { bad++; console.log(`FAIL ${f}: ${e.message.replace(/\s+/g, ' ').slice(0, 600)}`); }
 }
-// The week as a whole: the recipe (reels per day), formats per allocation.json, the voice budget.
+// The planned day(s) as a whole: the recipe (reels per day), formats per allocation.json (exact for a day,
+// within 1 for a week), the feed posts, the voice budget.
 if (allocation && planned.length) {
   const fails = [], warns = [];
   const day = sp => new Date(sp.slot).toLocaleDateString('sv-SE', { timeZone: P.timezone });
@@ -75,26 +78,29 @@ if (allocation && planned.length) {
     if (e !== R.extraPerDay) fails.push(`${d}: ${e} extra reels (tiktok + youtube only), the recipe wants ${R.extraPerDay}`);
   }
   const count = (list, key = x => x.kind) => list.reduce((o, x) => { const k = key(x); o[k] = (o[k] || 0) + 1; return o; }, {});
-  const compare = (name, have, want, hard) => {
+  // tol: how far a count may be off. Format groups of one day (1-3 slots) must match exactly - within 1
+  // would let any format fill a 1-slot group; soft targets stay within 1 (warnings only).
+  const compare = (name, have, want, tol, hard) => {
     for (const k of new Set([...Object.keys(have), ...Object.keys(want)])) {
       const h = have[k] || 0, w = want[k] || 0;
-      if (Math.abs(h - w) > 1) (hard ? fails : warns).push(`${name} ${k}: ${h} planned, allocation.json says ${w} (within 1 is fine)`);
+      if (Math.abs(h - w) > tol) (hard ? fails : warns).push(`${name} ${k}: ${h} planned, allocation.json says ${w} (${tol ? `within ${tol} is fine` : 'must match'})`);
     }
   };
-  compare('main reels format', count(main), allocation.mainReels.format, true);
-  compare('extra reels format', count(extra), allocation.extraReels.format, true);
+  const group = (name, have, g) => compare(name, have, g.format, formatTolerance(g.slots), true);
+  group('main reels format', count(main), allocation.mainReels);
+  group('extra reels format', count(extra), allocation.extraReels);
   const feed = planned.filter(x => ['post-spotlight', 'post-statement', 'carousel'].includes(x.kind));
-  compare('feed posts format', count(feed), allocation.feedPosts.format, true);
+  group('feed posts format', count(feed), allocation.feedPosts);
   if (feed.length !== allocation.feedPosts.slots) fails.push(`${feed.length} feed posts planned, allocation.json wants ${allocation.feedPosts.slots}`);
-  for (const [trait, want] of Object.entries(allocation.targets || {})) if (!['voiceStyle', 'captions', 'style3d'].includes(trait)) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, false);
+  for (const [trait, want] of Object.entries(allocation.targets || {})) if (!['voiceStyle', 'captions', 'style3d'].includes(trait)) compare(`target ${trait}`, count(planned.filter(x => traitsOf(x)[trait] != null), x => traitsOf(x)[trait]), want, 1, false);
   if (allocation.voiceBudget) {
-    const chars = planned.reduce((n, x) => n + spokenText(x).length, 0);
-    if (chars > allocation.voiceBudget.charsThisWeek) fails.push(`voiced text is ${chars} characters, the voice budget this week is ${allocation.voiceBudget.charsThisWeek} - shorten lines or use formats without voice`);
-    else console.log(`voice budget: ${chars} of ${allocation.voiceBudget.charsThisWeek} characters`);
+    const chars = planned.reduce((n, x) => n + spokenText(x).length, 0), max = allocation.voiceBudget.charsForDay;
+    if (chars > max) fails.push(`voiced text is ${chars} characters, the voice budget for this day is ${max} (voiceBudget.charsForDay) - shorten lines or use formats without voice`);
+    else console.log(`voice budget: ${chars} of ${max} characters for this day`);
   }
   warns.forEach(w => console.log(`WARN ${w}`));
-  fails.forEach(f => console.log(`FAIL week: ${f}`));
+  fails.forEach(f => console.log(`FAIL day: ${f}`));
   weekFails = fails.length;
 }
-console.log(`\n[${P.id}] ${files.length - bad}/${files.length} valid${weekFails ? `, ${weekFails} week problem${weekFails > 1 ? 's' : ''}` : ''}${bad || weekFails ? ' - fix every FAIL above' : ''}`);
+console.log(`\n[${P.id}] ${files.length - bad}/${files.length} valid${weekFails ? `, ${weekFails} day problem${weekFails > 1 ? 's' : ''}` : ''}${bad || weekFails ? ' - fix every FAIL above' : ''}`);
 process.exit(bad || weekFails ? 1 : 0);

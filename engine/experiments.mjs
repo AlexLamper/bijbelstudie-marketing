@@ -1,4 +1,4 @@
-// What we test and how next week's slots are divided.
+// What we test and how the slots of the next day to plan are divided.
 //
 // 1. Traits: every item has traits (format, look, voice, voice style, music, subtitles, hook, topic,
 //    length, time). Most are read from the spec itself, so the planner cannot mislabel them.
@@ -8,8 +8,10 @@
 //    = 0.75, 4x = 1, half = 0.25. score = 0.6 * views part + 0.4 * engagement part, from 0 to 1;
 //    where the platform reports watch time: 0.45 views + 0.3 engagement + 0.25 share watched.
 // 3. Per trait value a Beta(1 + sum of scores, 1 + sum of (1 - score)) belief; Thompson sampling gives
-//    the chance that each value is the best. Next week's slots: a fixed share for exploring (spread
-//    evenly, so new things keep getting tried) + the rest in proportion to that chance.
+//    the chance that each value is the best. The day's slots: a fixed share for exploring (spread
+//    evenly, so new things keep getting tried) + the rest in proportion to that chance. A day has only
+//    a few slots per group, so the remainders are drawn at random (seeded per day) in proportion to
+//    their size: over the days every value gets its share instead of the leader taking every slot.
 import { HOOKS, TOPICS, STYLES, STYLES3D, MOODS, CAPTIONS, VOICE_STYLES, REEL_KINDS, VOICE_REQUIRED, RENDERABLE, isVideo } from './spec.mjs';
 
 export const POST_KINDS = ['post-spotlight', 'post-statement', 'carousel'];
@@ -107,8 +109,13 @@ export function scoreboard(rows, catalogue, { seed = 1, draws = 4000, priors = {
   return out;
 }
 
-/** Divide `slots` over the values of one trait: explore share evenly, the rest by P(best). Largest remainder. */
-export function allocate(rows, slots, explore, { minN = 0 } = {}) {
+/**
+ * Divide `slots` over the values of one trait: explore share evenly, the rest by P(best).
+ * Remainders: with `rand` (a () => [0, 1) function) each value gets an extra slot with a chance equal to its
+ * remainder (systematic sampling, exactly the slots that are left), so the expected count is its exact share;
+ * without it, largest remainder.
+ */
+export function allocate(rows, slots, explore, { minN = 0, rand = null } = {}) {
   if (!rows?.length || slots <= 0) return {};
   // exploit only what has a track record (minN results) or a prior from Alex, when anything has one
   const P = r => r.p ?? r.pBest;
@@ -119,6 +126,12 @@ export function allocate(rows, slots, explore, { minN = 0 } = {}) {
   const w = rows.map(r => ({ v: r.value, x: slots * (explore / rows.length + (1 - explore) * (base.includes(r) ? P(r) / sum : 0)) }));
   const res = Object.fromEntries(w.map(o => [o.v, Math.floor(o.x)]));
   let left = slots - Object.values(res).reduce((a, b) => a + b, 0);
+  if (rand && left > 0) {
+    const total = w.reduce((n, o) => n + o.x - Math.floor(o.x), 0), step = total / left;
+    let u = rand() * step, acc = 0;
+    for (const o of w) { acc += o.x - Math.floor(o.x); while (left > 0 && u < acc) { res[o.v]++; left--; u += step; } }
+  }
+  // largest remainder: everything without rand, and a slot that rounding error left over with it
   const order = [...w].sort((a, b) => (b.x % 1) - (a.x % 1) || b.x - a.x);
   for (let i = 0; left > 0; i++) { res[order[i % order.length].v]++; left--; }   // largest remainder, as often as needed
   return Object.fromEntries(Object.entries(res).filter(([, n]) => n > 0));
@@ -144,22 +157,35 @@ export function catalogue({ voices = ['male', 'female'], moods = [] } = {}) {
   };
 }
 
-/** The week's plan for the planner: how many of what (reels per day: 1 main on every platform + extras on TikTok/YouTube). */
-export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPosts = 4, days = 7 } = {}) {
+/** The days that carry a feed post (12:00), as in the recipe of projects/<id>/plan.md. */
+export const FEED_DAYS = ['tue', 'thu', 'sat', 'sun'];
+
+/** Format counts per group must match exactly when a group has fewer slots than this (one day); else within 1. */
+export const formatTolerance = slots => slots >= 7 ? 1 : 0;
+
+/**
+ * The plan for the planner: how many of what (reels per day: 1 main on every platform + extras on TikTok/YouTube).
+ * One day: { days: 1, feedPosts: 1 on a feed day else 0, seed }. With `seed` the remainders are drawn at random
+ * (see allocate), so a 1-slot group explores across days; without it the result is deterministic.
+ */
+export function weekAllocation(board, { mainPerDay = 1, extraPerDay = 2, feedPosts = 4, days = 7, seed = null } = {}) {
   const main = mainPerDay * days, extra = extraPerDay * days, reels = main + extra;
   const fmt = board.format; const voiced = reels;
+  const rand = seed == null ? null : rng(seed);
+  const share = (rows, slots, explore, o = {}) => allocate(rows, slots, explore, { ...o, rand });
+  const tol = n => formatTolerance(n) ? 'within 1' : 'exactly';
   return {
     recipe: { mainPerDay, extraPerDay, feedPosts, days },
-    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(allocate(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => b.pBest - a.pBest), Math.ceil(main * .55)) },
-    extraReels: { slots: extra, platforms: 'tiktok, youtube', format: allocate(fmt, extra, .5) },
-    feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: allocate(board.postFormat, feedPosts, .35) },
+    mainReels: { slots: main, platforms: 'instagram, facebook, tiktok, youtube', format: capAllocation(share(fmt, main, .15, { minN: 4 }), [...fmt].sort((a, b) => b.pBest - a.pBest), Math.ceil(main * .55)) },
+    extraReels: { slots: extra, platforms: 'tiktok, youtube', format: share(fmt, extra, .5) },
+    feedPosts: { slots: feedPosts, platforms: 'instagram, facebook', format: share(board.postFormat, feedPosts, .35) },
     // targets over all reels (soft: within 1 of these is fine; the validator only warns)
     targets: {
-      style: allocate(board.style, reels, .4), style3d: board.style3d ? allocate(board.style3d, Math.round(reels * .4), .6) : {}, music: allocate(board.music, reels, .4),
-      voice: allocate(board.voice, voiced, .4), voiceStyle: allocate(board.voiceStyle, Math.round(reels * .6), .4),
-      captions: allocate(board.captions, Math.round(reels * .35), .4), hook: allocate(board.hook, reels + feedPosts, .5), topic: allocate(board.topic, reels + feedPosts, .5),
+      style: share(board.style, reels, .4), style3d: board.style3d ? share(board.style3d, Math.round(reels * .4), .6) : {}, music: share(board.music, reels, .4),
+      voice: share(board.voice, voiced, .4), voiceStyle: share(board.voiceStyle, Math.round(reels * .6), .4),
+      captions: share(board.captions, Math.round(reels * .35), .4), hook: share(board.hook, reels + feedPosts, .5), topic: share(board.topic, reels + feedPosts, .5),
     },
-    rule: 'Formats per group are hard (within 1), the number of feed posts too. Targets are soft (voiceStyle, captions and style3d are estimates for the reels that have them). Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).',
+    rule: `Formats per group are hard (main reels ${tol(main)}, extra reels ${tol(extra)}, feed posts ${tol(feedPosts)}), the number of feed posts too. Targets are soft (within 1; voiceStyle, captions and style3d are estimates for the reels that have them). Voice "geen" only for formats where a voice is optional (not reel-explainer or reel-story).`,
   };
 }
 export { hasVoice, VOICE_REQUIRED };

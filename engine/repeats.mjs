@@ -8,6 +8,7 @@
 //   - the hook (first line) is not the same or nearly the same as one used within HOOK_WEEKS
 // Verse ranges count as the same when they overlap (Psalmen 23:1 and Psalmen 23:1-3).
 import { parseRef, getVerse } from './verses.mjs';
+import { traitsOf } from './experiments.mjs';
 
 export const VERSE_DAYS = 180, SUBJECT_WEEKS = 12, APP_SUBJECT_WEEKS = 4, HOOK_WEEKS = 26;
 export const NO_SUBJECT = ['verse-still', 'reel-verse'];   // the verse is the subject
@@ -100,3 +101,11 @@ export function repeatProblems(s, others, posted = [], { requireSubject = true }
 
 /** History rows from item documents (Mongo items): everything planned or posted except rejected items. */
 export const historyFrom = items => items.filter(it => it.status !== 'rejected' && it.spec).map(it => rowOf(it.spec, { status: it.status }));
+
+/** When Alex rejected an item: the last 'reject' event in its history (the studio writes it), else updatedAt. */
+export const rejectedAt = it => [...(it.history || [])].reverse().find(h => h.event === 'reject')?.at || it.updatedAt || null;
+/** What is kept of a rejected item after its media and document are gone (Mongo `rejected`, context rejected.json). */
+export const rejectedRecord = it => ({
+  _id: it._id, week: it.week, slot: it.slot, kind: it.kind, subject: it.spec?.subject || null, hook: it.spec ? hookOf(it.spec) : null,
+  traits: it.spec ? traitsOf(it.spec, it) : {}, reviewComments: (it.reviewComments || []).map(c => c.text).filter(Boolean), rejectedAt: rejectedAt(it),
+});

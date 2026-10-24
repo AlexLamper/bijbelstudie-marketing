@@ -70,7 +70,7 @@
     },
     {
       "path": "/api/cron/plan",
-      "schedule": "0 13 * * 5"
+      "schedule": "0 4 * * *"
     }
   ]
 }

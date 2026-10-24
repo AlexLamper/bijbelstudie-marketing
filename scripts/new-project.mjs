@@ -77,5 +77,5 @@ Next:
   3. Check a render:  node engine/render/render.mjs projects/${id}/content/samples/sample-post-statement.json
   4. Accounts: add GitHub secrets with the prefix ${vars.envPrefix} (e.g. ${vars.envPrefix}IG_USER_ID, ${vars.envPrefix}META_PAGE_TOKEN).
   5. Switch on: "enabled": true in projects/${id}/project.json, then commit and push.
-     The studio shows the project after the next deploy; the planner picks it up next Friday.
+     The studio shows the project after the next deploy; the planner picks it up on its next morning run.
 `);

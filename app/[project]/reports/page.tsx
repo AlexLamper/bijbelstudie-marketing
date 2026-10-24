@@ -19,7 +19,7 @@ export default async function Reports({ params }: { params: Promise<{ project: s
   const reports = await (await getDb(project)).collection('reports').find().sort({ _id: -1 }).limit(12).toArray();
   return (
     <div>
-      <PageHeader title="Weekrapporten" sub="Elke vrijdag schrijft de planner wat werkte, wat niet, en wat hij daarom verandert." />
+      <PageHeader title="Weekrapporten" sub="Elke maandag schrijft de planner wat vorige week werkte, wat niet, en wat hij daarom verandert." />
       <div className="mt-6 space-y-5">
         {reports.map(r => (
           <Card key={String(r._id)} className="p-6 leading-relaxed text-ink-body">
