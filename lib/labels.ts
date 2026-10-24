@@ -29,7 +29,7 @@ const VALUE: Record<string, string> = {
   light: 'licht', dark: 'donker', photo: 'foto', none: 'geen', geen: 'geen stem', male: 'man (standaard)', female: 'vrouw (standaard)',
   calm: 'rustig', hopeful: 'hoopvol', reflective: 'bezinnend', cinematic: 'filmisch', warm: 'warm', upbeat: 'vrolijk',
   karaoke: 'woord voor woord', block: 'blokjes', rustig: 'rustig', levendig: 'levendig', dialoog: 'dialoog (meer stemmen)',
-  lowpoly: 'low poly', rond: 'rond', toon: 'cartoon', blok: 'blokken', klei: 'klei', silhouet: 'silhouet', papier: 'papier (verhalenboek)', getekend: 'getekend (2D)', stickman: 'stickman (2D)',
+  lowpoly: 'low poly', rond: 'rond', toon: 'cartoon', blok: 'blokken', klei: 'klei', silhouet: 'silhouet', papier: 'papier (verhalenboek)', getekend: 'getekend (2D)', stickman: 'stickman (2D)', schets: 'schets (potlood)', stift: 'stiften', krijt: 'krijtbord',
 };
 export const traitValue = (trait: string, v: string) => (trait === 'format' || trait === 'postFormat') ? (KIND[v] || v) : (VALUE[v] || v);
 
