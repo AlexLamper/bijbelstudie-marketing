@@ -52,6 +52,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ steps.token.outputs.value }}
           github_token: ${{ github.token }}   # the planner only writes files; no Claude GitHub App needed
+          allowed_bots: 'github-actions'   # kick.mjs (Publish workflow) starts this run with the workflow token
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ matrix.project }} (folder projects/${{ matrix.project }}/).
             Read planner/PLAN.md and follow it exactly: on Mondays a report on last week, plan the one day
