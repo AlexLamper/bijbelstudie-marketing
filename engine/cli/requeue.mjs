@@ -22,7 +22,8 @@ const picked = new Map();
 for (const m of modes) {
   const [name, arg] = m.split('=');
   let found = [];
-  if (name === 'stuck') found = await items.find({ status: STATUS.RENDERING }).toArray();
+  // stuck: left in "rendering" by a run that ended; not the ones a running job claimed in the last minutes
+  if (name === 'stuck') found = await items.find({ status: STATUS.RENDERING, $or: [{ renderStartedAt: { $lt: new Date(Date.now() - 15 * 60e3) } }, { renderStartedAt: { $exists: false } }] }).toArray();
   else if (name === 'voiced-before') {
     const t = new Date(arg); if (isNaN(t)) throw new Error(`voiced-before needs an ISO time, got "${arg}"`);
     found = await items.find({ status: { $in: open }, 'spec.voice': { $exists: true, $nin: [null, 'none'] }, renderedAt: { $lt: t } }).toArray();
