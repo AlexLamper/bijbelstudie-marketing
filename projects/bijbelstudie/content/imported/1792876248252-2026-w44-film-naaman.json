@@ -1,0 +1,97 @@
+{
+  "id": "2026-w44-film-naaman",
+  "week": "2026-W44",
+  "slot": "2026-10-31T19:35:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Hij verwachtte iets groots. Hij kreeg iets eenvoudigs - en dat was genoeg.\n\nLees 2 Koningen 5 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+  "hashtags": ["#naaman", "#elisa", "#2koningen", "#bijbelverhaal", "#bijbelstudie"],
+  "experiment": { "hook": "verrassing", "topic": "persoon" },
+  "basedOn": "2 Koningen 5:1-15 (SV): Naaman, krijgsoverste van Syrie, melaats; een klein meisje uit Israel; Elisa zendt een bode: was u zevenmaal in de Jordaan; Naaman wordt zeer toornig (Abana en Farpar); zijn knechten; hij doopte zich zevenmaal en werd rein; terug bij Elisa: geen God dan in Israel.",
+  "subject": "Naäman in de Jordaan",
+  "music": "reflective",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": { "headline": "Lees 2 Koningen met uitleg.", "button": "Download gratis" },
+  "kind": "reel-3d",
+  "voice": "daniel",
+  "hook": "Een legerleider met een ongeneeslijke ziekte. De opdracht: ga je zeven keer wassen.",
+  "style3d": "getekend",
+  "cast": [
+    { "id": "naaman", "look": "soldaat", "name": "Naäman" },
+    { "id": "bode", "look": "man-bijbels", "name": "Elisa's bode" },
+    { "id": "knecht", "look": "herder", "name": "Een knecht" },
+    { "id": "elisa", "look": "oude-man-bijbels", "name": "Elisa" }
+  ],
+  "shots": [
+    {
+      "set": "stad", "time": "dag", "camera": "establish",
+      "actors": [
+        { "id": "naaman", "at": "poort", "to": "plein" },
+        { "id": "knecht", "at": "straat" }
+      ],
+      "say": "Naäman is legeraanvoerder van de koning van Syrië. Een held, maar hij is melaats. Via een meisje uit Israël hoort hij over de profeet Elisa.",
+      "text": "Samaria"
+    },
+    {
+      "set": "stad", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "bode", "at": "markt", "do": "talk", "face": "naaman" },
+        { "id": "naaman", "at": "plein", "face": "bode" }
+      ],
+      "say": "Elisa komt niet eens naar buiten. Hij laat zeggen: was je zeven keer in de Jordaan."
+    },
+    {
+      "set": "stad", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "naaman", "at": "plein", "to": "poort", "do": "shrug" },
+        { "id": "knecht", "at": "straat" },
+        { "id": "bode", "at": "markt" }
+      ],
+      "say": "Naäman wordt woedend. Zijn de rivieren van Damascus niet beter? Hij draait zich om en gaat weg."
+    },
+    {
+      "set": "heuvels", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "knecht", "at": "pad", "do": "talk", "face": "naaman" },
+        { "id": "naaman", "at": "veld", "face": "knecht" }
+      ],
+      "say": "Maar zijn knechten zeggen: als de profeet iets moeilijks had gevraagd, had u het gedaan. Hij zegt alleen: was u, en u wordt rein."
+    },
+    {
+      "set": "heuvels", "time": "dag", "camera": "track", "on": "naaman",
+      "actors": [
+        { "id": "naaman", "at": "veld", "to": "beek" },
+        { "id": "knecht", "at": "pad" }
+      ],
+      "say": "Dan gaat Naäman naar de Jordaan."
+    },
+    {
+      "set": "heuvels", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "naaman", "at": "beek", "do": "bow", "base": "kneel" },
+        { "id": "knecht", "at": "pad" }
+      ],
+      "say": "Zo klom hij af, en doopte zich in de Jordaan zevenmaal, naar het woord van den man Gods; en zijn vlees kwam weder, gelijk het vlees van een kleinen jongen; en hij werd rein.",
+      "verse": "2 Koningen 5:14"
+    },
+    {
+      "set": "stad", "time": "avond", "camera": "wide",
+      "actors": [
+        { "id": "naaman", "at": "plein", "do": "talk", "face": "elisa" },
+        { "id": "elisa", "at": "markt", "face": "naaman" },
+        { "id": "knecht", "at": "straat" }
+      ],
+      "say": "Hij gaat terug naar Elisa en zegt: nu weet ik dat er op de hele aarde geen God is, dan in Israël."
+    },
+    {
+      "set": "stad", "time": "avond", "camera": "aerial",
+      "actors": [
+        { "id": "naaman", "at": "plein" },
+        { "id": "elisa", "at": "markt" },
+        { "id": "knecht", "at": "straat" }
+      ],
+      "say": "Lees het in twee Koningen vijf, met uitleg, in de BijbelStudie app.",
+      "app": "web:bijbel/2-koningen/5"
+    }
+  ]
+}

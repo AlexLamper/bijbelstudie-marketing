@@ -1,0 +1,76 @@
+{
+  "id": "2026-w44-story-babel",
+  "week": "2026-W44",
+  "slot": "2026-10-28T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Jeruzalem lag in puin en het volk zat in Babel. Hoe kwamen ze ooit terug?\n\nLees Ezra 1 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+  "hashtags": ["#ballingschap", "#babel", "#ezra", "#bijbelverhaal", "#bijbelstudie"],
+  "experiment": { "hook": "vraag", "topic": "context" },
+  "basedOn": "2 Koningen 25:8-11 (tempel, paleis en huizen verbrand, muren afgebroken, volk weggevoerd), Psalm 137:1, Ezra 1:1-3 (eerste jaar van Kores: trekke op en bouwe het huis des HEEREN), Ezra 2:64 (42.360), Ezra 3:11-12 (gejuich; de ouden weenden).",
+  "subject": "De ballingschap in Babel",
+  "style": "dark",
+  "music": "reflective",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": { "headline": "Lees Ezra met uitleg.", "button": "Download gratis" },
+  "kind": "reel-story",
+  "voice": "male",
+  "hook": "Jeruzalem brandde. Het volk moest naar Babel. En toch gingen ze terug.",
+  "title": "Naar Babel en terug",
+  "scenes": [
+    {
+      "say": "Het leger van Nebukadnezar verbrandt de tempel, het paleis en alle huizen van Jeruzalem. De muren worden afgebroken.",
+      "show": "map",
+      "places": ["jeruzalem"],
+      "ref": "2 Koningen 25:8-10",
+      "marks": [
+        { "icon": "vuur", "cue": "verbrandt" },
+        { "icon": "tempel", "cue": "tempel" }
+      ]
+    },
+    {
+      "say": "Wie overblijft, wordt weggevoerd. Honderden kilometers lopen, naar Babel.",
+      "show": "map",
+      "places": ["jeruzalem", "babel"],
+      "ref": "2 Koningen 25:11",
+      "travel": "lopen"
+    },
+    {
+      "say": "Daar, aan de rivieren van Babel, zitten ze en huilen ze, als ze aan Sion denken.",
+      "show": "verse",
+      "verse": "Psalmen 137:1",
+      "ref": "Psalmen 137:1"
+    },
+    {
+      "say": "Dan komt er een nieuwe koning: Kores van Perzië. In zijn eerste jaar zegt hij: wie wil, mag terug om het huis van de HEERE te herbouwen.",
+      "show": "map",
+      "places": ["babel"],
+      "ref": "Ezra 1:1-3",
+      "marks": [
+        { "icon": "kroon", "cue": "koning" },
+        { "icon": "rol", "cue": "herbouwen" }
+      ]
+    },
+    {
+      "say": "Tweeënveertigduizend driehonderdzestig mensen trekken terug naar Jeruzalem.",
+      "show": "map",
+      "places": ["babel", "jeruzalem"],
+      "ref": "Ezra 2:64",
+      "travel": "lopen"
+    },
+    {
+      "say": "Als de fundering van de nieuwe tempel ligt, juichen velen. Maar de ouden, die de eerste tempel nog gezien hadden, huilen hardop.",
+      "show": "map",
+      "places": ["jeruzalem"],
+      "ref": "Ezra 3:11-12",
+      "marks": [
+        { "icon": "tempel", "cue": "tempel" }
+      ]
+    },
+    {
+      "say": "Lees het in Ezra één, met uitleg, in de BijbelStudie app.",
+      "show": "text",
+      "text": "Ezra 1, met uitleg bij elk vers"
+    }
+  ]
+}
