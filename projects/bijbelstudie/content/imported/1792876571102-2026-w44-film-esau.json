@@ -1,0 +1,97 @@
+{
+  "id": "2026-w44-film-esau",
+  "week": "2026-W44",
+  "slot": "2026-10-29T19:35:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Hij verwachtte een leger. Hij kreeg een omhelzing.\n\nLees Genesis 33 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+  "hashtags": ["#jakob", "#ezau", "#genesis", "#bijbelverhaal", "#bijbelstudie"],
+  "experiment": { "hook": "verrassing", "topic": "persoon" },
+  "basedOn": "Genesis 31:41 (twintig jaar), 32:6-21 (Ezau komt met vierhonderd man; Jakob bang, bidt, stuurt geschenken vooruit), 33:1-11 (zeven maal ter aarde gebogen; Ezau liep hem tegemoet, kuste hem, zij weenden; ik heb veel, mijn broeder; hij drong hem, en hij nam het).",
+  "subject": "Jakob en Ezau verzoend",
+  "music": "cinematic",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": { "headline": "Lees Genesis met uitleg.", "button": "Download gratis" },
+  "kind": "reel-3d",
+  "voice": "male",
+  "hook": "Twintig jaar ruzie. Vierhonderd man. En toen rende zijn broer op hem af.",
+  "style3d": "getekend",
+  "cast": [
+    { "id": "jakob", "look": "man-bijbels-2", "name": "Jakob" },
+    { "id": "ezau", "look": "herder", "name": "Ezau" },
+    { "id": "knecht", "look": "man-bijbels", "name": "Een knecht" }
+  ],
+  "shots": [
+    {
+      "set": "woestijn", "time": "avond", "camera": "establish",
+      "actors": [{ "id": "jakob", "at": "tent", "mood": "bang" }],
+      "say": "Twintig jaar geleden vluchtte Jakob voor zijn broer Ezau. Nu gaat hij terug, en hoort: Ezau komt eraan, met vierhonderd man.",
+      "text": "Op weg naar huis"
+    },
+    {
+      "set": "woestijn", "time": "nacht", "camera": "wide",
+      "actors": [{ "id": "jakob", "at": "kampvuur", "do": "pray" }],
+      "say": "Jakob is doodsbang. Die nacht bidt hij tot God om hulp."
+    },
+    {
+      "set": "woestijn", "time": "nacht", "camera": "wide",
+      "actors": [
+        { "id": "jakob", "at": "tent", "do": "point", "face": "knecht" },
+        { "id": "knecht", "at": "midden", "to": "verte", "do": "carry", "holds": "lam" }
+      ],
+      "say": "Dan stuurt hij kudde na kudde vooruit, als geschenk voor zijn broer."
+    },
+    {
+      "set": "woestijn", "time": "nacht", "camera": "sky",
+      "actors": [{ "id": "jakob", "at": "kampvuur" }],
+      "hold": 2
+    },
+    {
+      "set": "woestijn", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "ezau", "at": "verte" },
+        { "id": "jakob", "at": "rechts", "face": "ezau", "mood": "bang" }
+      ],
+      "say": "De volgende ochtend ziet hij Ezau in de verte aankomen."
+    },
+    {
+      "set": "woestijn", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "jakob", "at": "midden", "do": "bow", "base": "kneel", "face": "ezau" },
+        { "id": "ezau", "at": "verte", "to": "links" }
+      ],
+      "say": "Jakob gaat voor iedereen uit, en buigt zich zeven keer diep ter aarde, tot hij bij zijn broer is."
+    },
+    {
+      "set": "woestijn", "time": "dag", "camera": "wide",
+      "actors": [
+        { "id": "ezau", "at": "links", "do": "embrace", "face": "jakob" },
+        { "id": "jakob", "at": "midden", "do": "embrace", "face": "ezau" }
+      ],
+      "say": "Toen liep Ezau hem tegemoet, en nam hem in den arm, en viel hem aan den hals, en kuste hem; en zij weenden.",
+      "verse": "Genesis 33:4"
+    },
+    {
+      "set": "woestijn", "time": "dag", "camera": "medium", "on": "ezau",
+      "actors": [
+        { "id": "ezau", "at": "links", "do": "talk", "face": "jakob" },
+        { "id": "jakob", "at": "midden", "face": "ezau" }
+      ],
+      "say": "Ik heb genoeg, mijn broer, zegt Ezau. Houd wat je hebt."
+    },
+    {
+      "set": "woestijn", "time": "avond", "camera": "wide",
+      "actors": [
+        { "id": "jakob", "at": "midden", "do": "give", "face": "ezau", "holds": "lam" },
+        { "id": "ezau", "at": "links", "face": "jakob" }
+      ],
+      "say": "Maar Jakob dringt aan: jouw gezicht zien is als Gods gezicht zien. En Ezau neemt het aan."
+    },
+    {
+      "set": "woestijn", "time": "avond", "camera": "aerial",
+      "actors": [{ "id": "jakob", "at": "midden" }, { "id": "ezau", "at": "links" }],
+      "say": "Lees het in Genesis drieëndertig, met uitleg, in de BijbelStudie app.",
+      "app": "web:bijbel/genesis/33"
+    }
+  ]
+}

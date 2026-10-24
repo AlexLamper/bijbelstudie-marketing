@@ -1,0 +1,70 @@
+{
+  "id": "2026-w44-story-uittocht",
+  "week": "2026-W44",
+  "slot": "2026-10-27T19:30:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Achter hen het leger, voor hen de zee. En toen ging de zee open.\n\nLees Exodus 14 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+  "hashtags": ["#uittocht", "#exodus", "#mozes", "#bijbelverhaal", "#bijbelstudie"],
+  "experiment": { "hook": "verrassing", "topic": "context" },
+  "basedOn": "Exodus 12:37-41 (van Raemses, zeshonderd duizend man, 430 jaren), 13:17-22 (wolk- en vuurkolom), 14:21-22 (zee gekliefd, op het droge), 15:23 (Mara), 16 (manna), 19:1-2, 19:5 en 19:18 (Sinai rookte en beefde; verbond).",
+  "subject": "De uittocht uit Egypte",
+  "style": "dark",
+  "music": "cinematic",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": { "headline": "Lees Exodus met uitleg.", "button": "Download gratis" },
+  "kind": "reel-story",
+  "voice": "female",
+  "hook": "Ruim zeshonderdduizend man trokken weg uit Egypte. Voor hen lag de zee.",
+  "title": "De uittocht uit Egypte",
+  "scenes": [
+    {
+      "say": "Na vierhonderddertig jaar in Egypte trekt Israël weg uit Raämses. Zeshonderdduizend man te voet, de kinderen niet meegeteld.",
+      "show": "map",
+      "places": ["raemses"],
+      "ref": "Exodus 12:37-41",
+      "marks": [{ "icon": "stad", "cue": "Raämses" }]
+    },
+    {
+      "say": "God leidt hen niet de korte weg langs de kust, maar door de woestijn naar de Schelfzee. Overdag in een wolkkolom, 's nachts in een vuurkolom.",
+      "show": "map",
+      "places": ["raemses", "schelfzee"],
+      "ref": "Exodus 13:17-22",
+      "travel": "lopen",
+      "marks": [{ "icon": "vuur", "at": "schelfzee", "cue": "vuurkolom" }]
+    },
+    {
+      "say": "Daar zitten ze klem tussen de zee en het leger van de farao. Mozes strekt zijn hand uit, en de zee gaat open.",
+      "show": "map",
+      "places": ["schelfzee"],
+      "ref": "Exodus 14:9-21",
+      "marks": [{ "icon": "zwaard", "cue": "leger" }, { "icon": "golven", "cue": "open" }]
+    },
+    {
+      "say": "Ze lopen op het droge door de zee. Het water staat als een muur, rechts en links van hen.",
+      "show": "verse",
+      "verse": "Exodus 14:22",
+      "ref": "Exodus 14:22"
+    },
+    {
+      "say": "Dan de woestijn in. Bitter water bij Mara, manna uit de hemel. In de derde maand komen ze bij de berg Sinaï.",
+      "show": "map",
+      "places": ["schelfzee", "sinai"],
+      "ref": "Exodus 15-19",
+      "travel": "lopen",
+      "marks": [{ "icon": "berg", "at": "sinai", "cue": "berg" }]
+    },
+    {
+      "say": "De hele berg rookt en beeft, want God daalt er neer in vuur. Daar sluit Hij een verbond met zijn volk.",
+      "show": "map",
+      "places": ["sinai"],
+      "ref": "Exodus 19:18",
+      "marks": [{ "icon": "vuur", "cue": "vuur" }, { "icon": "rol", "cue": "verbond" }]
+    },
+    {
+      "say": "Lees het in Exodus veertien, met uitleg, in de BijbelStudie app.",
+      "show": "text",
+      "text": "Exodus 14, met uitleg bij elk vers"
+    }
+  ]
+}
