@@ -74,7 +74,7 @@
       }
     },
     "woestijn": {
-      "about": "woestijn met zandduinen, tenten, palmbomen en kamelen (Abraham, de woestijnreis, Hagar)",
+      "about": "woestijn met zandduinen, tenten, palmbomen, kamelen en een waterbron (Abraham, Rebekka bij de put, de woestijnreis, Hagar, een herberg)",
       "time": [
         "dag",
         "avond",
@@ -86,7 +86,9 @@
         "links": "links in het kamp",
         "rechts": "rechts in het kamp",
         "kampvuur": "zittend bij het kampvuur",
-        "verte": "ver weg op een duin"
+        "verte": "ver weg op een duin",
+        "bron": "bij de waterbron tussen de palmen (de put, water putten)",
+        "bron-2": "een tweede plek bij de bron"
       }
     },
     "stad": {
@@ -106,7 +108,7 @@
       }
     },
     "heuvels": {
-      "about": "groene heuvels met olijfbomen, rotsen en een kudde schapen (David, de herders, Psalm 23, de Bergrede)",
+      "about": "groene heuvels met een pad, olijfbomen, rotsen, een beek en een kudde schapen (David, de herders, Psalm 23, de barmhartige Samaritaan, de verloren zoon)",
       "time": [
         "dag",
         "avond",
@@ -118,7 +120,12 @@
         "pad": "op het pad",
         "kudde": "tussen de schapen",
         "rots": "zittend op een rots",
-        "beek": "bij de beek"
+        "beek": "bij de beek",
+        "pad-ver": "ver weg op het pad, achter de heuvel (om van ver aan te komen lopen)",
+        "pad-boven": "op het pad, halverwege de heuvel (een korte wandeling naar 'pad' of 'berm-naast')",
+        "pad-dichtbij": "dichtbij op het pad (lopen naar de camera)",
+        "berm": "liggend naast het pad (gewond, uitgeput)",
+        "berm-naast": "knielend naast wie in de berm ligt"
       }
     },
     "kaart": {
@@ -161,9 +168,15 @@
     "look-up": "kijkt omhoog",
     "cheer": "armen omhoog, blij",
     "row": "roeit",
-    "carry": "draagt iets",
+    "carry": "draagt iets in beide handen (zet 'holds'); kan ook lopend ('to')",
     "sleep": "slaapt (ogen dicht)",
     "fear": "bang, armen voor de borst"
+  },
+  "holds": {
+    "kruik": "kruik van klei (water halen)",
+    "steen": "bouwsteen (muur bouwen)",
+    "lam": "een lammetje (herder)",
+    "mand": "mand met brood (standaard)"
   },
   "bases": [
     "stand",

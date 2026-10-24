@@ -42,7 +42,9 @@ T['reel-3d'] = (spec, timing) => {
     if (!worlds.has(key)) {
       const def = SETS[s.set]; if (!def) throw new Error(`3D set "${s.set}" does not exist`);
       const layer = el('div', 'abs full'); css(layer, { zIndex: 3, pointerEvents: 'none', display: 'none' });   // a world's own HTML labels
+      const mapInDusk = s.set === 'kaart' && silhouette(); if (mapInDusk) setStyle('lowpoly');   // the map keeps its colours in the silhouette look
       const w = def.build({ time: s.time, weather: s.weather, seed: spec.id + key, places: s.places, ctx, layer, shot: s });
+      if (mapInDusk) setStyle('silhouet');
       w.def = def; w.actors = {}; w.layer = layer; worlds.set(key, w);
       // a soft light from the camera, so faces always read (no shadow, cheap)
       w.camFill = new THREE.DirectionalLight('#fff4e6', def.camFill ?? .55); w.scene.add(w.camFill, w.camFill.target);
@@ -60,11 +62,15 @@ T['reel-3d'] = (spec, timing) => {
   if (silhouette()) {
     r.shadowMap.enabled = false;
     const dark = new THREE.MeshBasicMaterial({ color: '#16101a' }), cloud = new THREE.MeshBasicMaterial({ color: '#f4a982', fog: false }), glow = new Map();
+    // the ground a dusky rose and water catching the sunset, so the black figures and props stand out on it
+    const ground = new THREE.MeshBasicMaterial({ color: '#5e3438' }), water = new THREE.MeshBasicMaterial({ color: '#c47257' });
     for (const w of worlds.values()) {
       if (w.def === SETS.kaart) continue;
-      w.scene.fog = new THREE.Fog(DUSK.fog, 6, 70); w.scene.background = new THREE.Color(DUSK.horizon);
+      w.scene.fog = new THREE.Fog(DUSK.fog, 4, 60); w.scene.background = new THREE.Color(DUSK.horizon);
       w.scene.traverse(o => {
         if (!(o.isMesh || o.isInstancedMesh) || o.material?.isShaderMaterial || o.userData.outline) return;
+        if (o.userData.heightAt || o.userData.ground) { o.material = ground; return; }
+        if (o.userData.water) { o.material = water; return; }
         const m = o.material; if (Array.isArray(m)) return;
         const e = m.emissive && (m.emissive.r + m.emissive.g + m.emissive.b) > .2 ? '#' + m.emissive.getHexString() : null;
         const bright = m.isMeshBasicMaterial && m.color && (m.color.r + m.color.g + m.color.b) > 2.2;   // flames, bulbs, moon
@@ -192,6 +198,17 @@ T['reel-3d'] = (spec, timing) => {
     ray.set(cam, d.normalize()); ray.far = len - .35; ray.near = .05;
     return ray.intersectObjects(w.occluders, false).length > 0;
   }
+  const sides = new Map();   // per shot: the side an aerial or sky shot looks from
+  /** The angle to look from: the set's preferred side, unless a palm, a house or a mast is in the way (fixed per shot, from its middle). */
+  function freeSide(s, w, from, spread) {
+    if (!sides.has(s.i)) {
+      const mid = actorsAt(s, (s.start + s.end) / 2); const pts = mid.length ? mid.map(st => V(st.x, st.y + 1, st.z)) : [V(...w.wide.target)];
+      const c0 = pts.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / pts.length); const pref = V(...w.wide.pos).sub(V(...w.wide.target)).setY(0).normalize();
+      const base = Math.atan2(pref.x, pref.z);
+      sides.set(s.i, [0, .5, -.5, 1, -1, 1.5, -1.5, 2.1, -2.1, 2.7, -2.7, Math.PI].map(d => base + d).find(a => !spread.some(d => blocked(w, from(c0, a + d), c0))) ?? base);
+    }
+    return sides.get(s.i);
+  }
   const plans = new Map();   // per shot: the solved framing (deterministic, from the shot's own data)
   function plan(s, states, type, on, other) {
     const key = s.i; if (plans.has(key)) return plans.get(key);
@@ -208,6 +225,17 @@ T['reel-3d'] = (spec, timing) => {
       const focus = ids.length ? points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length) : V(...wide.target);
       const sol = solve(w, { points, focus, prefer, up: .75, fov: 46, minD: 4, maxD: 16, faces: states.map(st => [st, .7]), fill: [.5, .42] });   // the world first: people small
       P = { focus, cam: sol.cam, fov: 44 };
+    } else if (type === 'track') {   // the walk from the side, start and end in view, the world big
+      const all = ids.flatMap(id => [sA, sB].map(l => pick(l, id)).filter(Boolean)).flatMap(st => { const h = headOf(st); return [h.clone().add(V(0, .3, 0)), h.clone().add(V(0, -1.65, 0))]; });
+      const focus = all.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / all.length);
+      const a0 = pick(sA, on.a.id), b0 = pick(sB, on.a.id); const walk = V(b0.x - a0.x, 0, b0.z - a0.z);
+      let side = walk.length() > .3 ? V(-walk.z, 0, walk.x).normalize() : prefer.clone(); if (side.dot(prefer) < 0) side.negate();
+      const sol = solve(w, { points: all, focus, prefer: side, preferW: 2.4, up: 1.3, fov: 44, minD: 7.5, maxD: 16, fill: [.5, .42], faces: [[b0, .3]] });
+      P = { focus, cam: sol.cam, fov: 44 };
+    } else if (type === 'top') {   // from above: the people small in their surroundings
+      const points = pts(ids, .3, 1.65, .5); const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
+      const sol = solve(w, { points, focus, prefer, preferW: .6, up: 6, fov: 44, minD: 5.5, maxD: 12, fill: [.4, .34] });
+      P = { focus, cam: sol.cam, fov: 44 };
     } else if (type === 'two-shot' && other) {
       const points = pts([on.a.id, other.a.id], .28, .75, .3); const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
       const sol = solve(w, { points, focus, prefer, up: .22, fov: 40, minD: 1.8, faces: [[on, 1], [other, .8]] });
@@ -221,8 +249,8 @@ T['reel-3d'] = (spec, timing) => {
       const st = pick(sA, on.a.id); const close = type === 'close' || type === 'phone';
       const points = pts([on.a.id], close ? .24 : .28, close ? .3 : .8);
       const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
-      const fov = close ? 34 : type === 'low' ? 42 : 36;
-      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: type === 'low' ? -.6 : type === 'top' ? 2.6 : close ? .02 : .15, fov, minD: close ? 1.95 : 2.1, others: states.filter(x => x.a.id !== on.a.id) });
+      const low = type === 'low', fov = close ? 34 : low ? 46 : 36;   // low: from the ground up, the person against the sky but small in it
+      const sol = solve(w, { points, focus, faces: [[st, 1.6]], prefer, preferW: .3, up: low ? -.75 : close ? .02 : .15, fov, minD: close ? 1.95 : low ? 5.5 : 2.1, others: states.filter(x => x.a.id !== on.a.id), ...(low ? { fill: [.5, .55] } : {}) });
       P = { focus, cam: sol.cam, fov, dir: sol.dir, d: sol.d };
     }
     if (window.__debug3d) console.log('plan', s.i, type, on?.a.id, JSON.stringify({ cam: P.cam.toArray().map(x => +x.toFixed(2)), focus: P.focus.toArray().map(x => +x.toFixed(2)), yaws: sA.map(x => [x.a.id, +x.yaw.toFixed(2), +x.x.toFixed(2), +x.z.toFixed(2)]) }));
@@ -243,15 +271,16 @@ T['reel-3d'] = (spec, timing) => {
       const base = w.camera ? w.camera(t, s, 0) : { pos: V(...w.wide.pos), target: V(...w.wide.target), fov: 44 };
       const dir = base.pos.clone().sub(base.target); target = base.target.clone(); pos = target.clone().add(dir.multiplyScalar(1.7 - .25 * inout(k))); pos.y = Math.max(target.y + .8, pos.y * .8); fov = 48;
     } else if (type === 'aerial') {   // high above, slowly turning: the place as a diorama
-      const c = centre(); const pref = V(...w.wide.pos).sub(V(...w.wide.target)).setY(0).normalize();
-      const a = Math.atan2(pref.x, pref.z) + (inout(k) - .5) * .7; const R = w.aerial?.radius ?? 9, Hh = w.aerial?.height ?? 8;
-      pos = c.clone().add(V(Math.sin(a) * R, Hh, Math.cos(a) * R)); target = c; fov = 44;
+      const c = centre(); const R = w.aerial?.radius ?? 9, Hh = w.aerial?.height ?? 8;
+      const from = (o, a) => o.clone().add(V(Math.sin(a) * R, Hh, Math.cos(a) * R));
+      pos = from(c, freeSide(s, w, from, [-.35, 0, .35]) + (inout(k) - .5) * .7); target = c; fov = 44;
     } else if (type === 'sky') {   // from the people up to the sky (stars, storm, the heavens)
-      const c = centre(); const pref = V(...w.wide.pos).sub(V(...w.wide.target)).setY(0).normalize();
-      pos = c.clone().add(pref.clone().multiplyScalar(3)).add(V(0, .4, 0)); target = c.clone().add(pref.clone().multiplyScalar(-6)).add(V(0, lerp(.6, 9, inout(k)), 0)); fov = 50;
-    } else if (type === 'track' && states.length) {   // alongside the action, moving sideways
-      const P = plan(s, states, 'wide', on, other); target = P.focus.clone(); const rel = P.cam.clone().sub(target).multiplyScalar(.75);
-      const right = rel.clone().cross(V(0, 1, 0)).normalize(); pos = target.clone().add(rel).add(right.multiplyScalar((k - .5) * 3)); fov = 42;
+      const c = centre(); const from = (o, a) => o.clone().add(V(Math.sin(a) * 6.5, .7, Math.cos(a) * 6.5));
+      const a = freeSide(s, w, from, [0]); const dir = V(Math.sin(a), 0, Math.cos(a));
+      pos = from(c, a); target = c.clone().add(dir.multiplyScalar(-6)).add(V(0, lerp(.6, 9, inout(k)), 0)); fov = 50;
+    } else if (type === 'track' && states.length && on) {   // alongside the action: the camera slides with the walker
+      const P = plan(s, states, 'track', on, other); const shift = V(on.x, 0, on.z).sub(V(P.focus.x, 0, P.focus.z)).multiplyScalar(.55);
+      pos = P.cam.clone().add(shift); target = P.focus.clone().add(shift); fov = P.fov;
     } else if (w.camera && (type === 'wide' || !on)) ({ pos, target, fov } = w.camera(t, s, k));
     else if (type === 'phone' && on) {
       on.p.root.updateMatrixWorld(true);
@@ -306,7 +335,7 @@ T['reel-3d'] = (spec, timing) => {
       const { p, a } = st; p.root.visible = true; p.root.position.set(st.x, st.y, st.z);
       p.root.rotation.y = st.yaw; p.root.updateMatrixWorld(true);
       if (s.screenTex && (a.do === 'phone' || a.do === 'show-phone')) setPhoneScreen(p, s.screenTex);
-      p.pose(t, { base: st.base, action: st.walk ? 'idle' : (a.do || 'idle'), mood: a.mood, talking: st.speaking, talk: st.speaking ? mouth(sg, t) : 0, walk: st.walk, look: st.look, seat: st.seat });
+      p.pose(t, { base: st.base, action: st.walk && a.do !== 'carry' ? 'idle' : (a.do || 'idle'), holds: a.holds, mood: a.mood, talking: st.speaking, talk: st.speaking ? mouth(sg, t) : 0, walk: st.walk, look: st.look, seat: st.seat });
       p.root.updateMatrixWorld(true);
     } };
     poseAll();

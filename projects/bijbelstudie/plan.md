@@ -48,26 +48,38 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
   of 1-4 s. Per shot: `set`, `time`, `weather` (zee), `camera`, `on`, `actors` (`at` a spot of the set,
   optional `to` = walks there, `do` = action, `mood`, `face`), and optionally `text` (place/time label),
   `verse` (verse card), `app` (the app full size on a phone) or `screen` (what the phone in a hand shows).
-  6-12 shots, 25-50 s. `style3d` = the look (see Traits). Kinds of 3D films to make - vary them:
-  - **Herkenbare situatie (skit)**: someone today reads the Bible, gets stuck ("wat betekent dit
-    eigenlijk?"), asks a friend/parent, who shows how BijbelStudie explains it (phone shot + `app`);
-    ends on the benefit. Real, specific confusion from a real verse (old words in the SV, a puzzling
-    passage) - the app's answer must be something the app really has (brand/product.md).
-  - **Bijbelverhaal**: a Bible story acted out (Jona on the ship, Abraham leaving Haran, David with the
-    sheep, Nehemia at the wall) - narrator + one or two character lines that are close to the SV text,
-    facts only from the chapter; end with a question or the app (studies on this book/person).
-  - **Reis op de kaart**: `kaart` shots for a journey (places in travel order) between story shots.
-  - **Wist je dat / mythe vs. tekst**: two characters, one says a common assumption, the other shows what
-    the text actually says (verse card); light and friendly.
-  Dialog rules: every speaker has a different voice (validator checks); keep lines short and spoken
-  (max ~15 words); a character speaks in their own shot (`on` = the speaker for close/medium). Never show
-  Jesus or God as a figure (narrate about them instead), no angels as figures, no violence on screen.
+  6-12 shots, 30-55 s. `style3d` = the look (see Traits). Kinds of 3D films to make - vary them:
+  - **Bijbelverhaal (most of them)**: a Bible story told by ONE calm narrator, shown in the world where it
+    happens (Alex: "displaying the Bible story visually"). The world and the action carry the film, the
+    people are small in it: cameras `establish` (first shot), `aerial`, `wide`, `track` (someone walking,
+    carrying), `sky` (stars, storm, the moment of a promise), `top`, `low`; at most one `medium`, no
+    `close`. A silent `hold` of 2 s (often `sky`) gives a story room to breathe. When the narrator reads a
+    `verse` card, `say` is exactly that verse's SV text. Examples: De verloren zoon, de barmhartige
+    Samaritaan, Jakob in Bethel, Rebekka bij de put, Abraham en de sterren, Filippus en de kamerling,
+    Paulus' schipbreuk. Facts only from the chapter; end with the app on that chapter or the end card.
+  - **Reis op de kaart**: `kaart` shots for a journey (places in travel order) between story shots, or a
+    whole film of map shots (Paulus' reizen). Alex likes the map stories best.
+  - **Herkenbare situatie (skit)**: now and then - someone today reads the Bible, gets stuck, asks a
+    friend, who shows how BijbelStudie explains it (phone shot + `app`). Real confusion from a real verse.
+  Voices (Alex, 24 Oct): ONE calm voice per film, at most two (the validator fails 3+). Use the narrator
+  (`voice` male or female, `voiceStyle` `rustig`); a character line (`by` + `line`) only when it really
+  adds something. Music only `calm`, `reflective` or `cinematic` (no happy/upbeat music).
+  Screens (Alex, 24 Oct): what a video shows must match what it says. For a Bible chapter use the live
+  page `web:bijbel/<boek>/<hoofdstuk>` (e.g. `web:bijbel/handelingen/27`, `web:bijbel/1-samuel/17`) or
+  `web:bijbelboeken/<boek>`; the app screenshots only show what `assets/screenshots/screens.json` says
+  (Deuteronomium 2, Filippenzen 2 and 4) - never one of those for another chapter. The validator checks it.
+  Never show Jesus or God as a figure (narrate about them instead), no angels as figures, no violence on
+  screen (tell it, show the aftermath: someone lying in the `berm`).
+  Useful spots: `heuvels` `pad-ver` -> `pad-boven` -> `pad` -> `pad-dichtbij` (a walk down the path;
+  `pad-ver` to `pad-dichtbij` is long, the walker is still walking when the shot ends), `berm` (lying by the
+  path) + `berm-naast` (kneeling beside), `beek` (a river, water), `kudde`; `woestijn` `bron` + `bron-2`
+  (a spring/well among the palms), `verte` (far away, arriving), `kampvuur`, `tent` (also an inn).
+  `do: carry` with `holds` (`kruik`, `steen`, `lam`, `mand`) also works while walking.
   Walking (`to`): only between spots on the same ground - not up to `trap` or `muur` (raised), not between
-  the deck and the hold (`ruim`, `ruim-staan` are a separate room below deck). Lying (`ruim`, `bed-liggen`):
-  use `wide` or `two-shot`, not `close`.
-  Staging for portrait video: put the people of a conversation close to each other (adjacent spots),
-  start with a `wide` or `push-in`, use `close` for the key line, `two-shot`/`over-shoulder` for dialog,
-  `phone` when the app is shown in a hand.
+  the deck and the hold (`ruim`, `ruim-staan` are a separate room below deck). Lying (`ruim`, `bed-liggen`,
+  `berm`): use `wide`, `top` or `two-shot`, not `close`.
+  Skits in portrait video: put the people of a conversation close to each other (adjacent spots), start
+  with a `wide` or `push-in`, `two-shot`/`over-shoulder` for dialog, `phone` when the app is in a hand.
 - **reel-kinetic** - big words appearing line by line. 2-8 lines of max ~8 words, one thought per line,
   `emphasis` = the one word that carries it. Works with and without voice (test both) and with music.
 - **reel-quiz** - a question Bible readers can answer, 3-4 plausible options, the answer straight from
@@ -85,12 +97,13 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
 
 - `voice`: a key from `voices.json` (`male`/`female` = the default voices, others = the test set);
   leave it out for no voice (only where the format allows; explainers and stories always speak).
-- `voiceStyle`: `rustig` (steady narrator) or `levendig` (expressive). `captions`: `karaoke` (word by
+- `voiceStyle`: `rustig` only (Alex wants calm voices, not sharp ones; project.json `voiceStylesAllowed`). `captions`: `karaoke` (word by
   word), `block` or `none` - for voiced explainers, lists and stories.
 - `music`: a mood from `voices.json` `musicMoods` (only those exist), else leave it out.
 - `style`: `light`, `dark` or `photo` (reels and carousels).
 - `style3d` (reel-3d): `lowpoly` (faceted triangles, flat colours), `rond` (smooth toy look), `toon`
-  (cartoon, outlines), `blok` (everything blocks), `klei` (claymation). Alex wants many styles tried:
+  (cartoon, outlines), `blok` (everything blocks), `klei` (claymation), `silhouet` (shadow play against a
+  dusk sky - strong for evening and night stories), `papier` (storybook paper). Alex wants many styles tried:
   follow the `style3d` target in allocation.json, and vary it from day to day (`performance.json`).
 - `experiment.hook` and `experiment.topic` on every item (`topic`: boek, persoon, context, woord,
   thema, vers, app, praktisch).

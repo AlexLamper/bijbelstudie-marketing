@@ -238,7 +238,7 @@ defineSet('zee', {
     for (let i = 0; i < sp.count; i++) { const u = sp.getX(i), v = sp.getZ(i); bx.push(Math.sign(u) * R * Math.pow(Math.abs(u), pw) + u * 6); bz.push(Math.sign(v) * R * Math.pow(Math.abs(v), pw) + v * 6); }
     const seaCol = new Float32Array(sp.count * 3); sea.setAttribute('color', new THREE.BufferAttribute(seaCol, 3));
     const seaM = mat('#ffffff', { rough: storm ? .6 : .38 }).clone(); seaM.vertexColors = true;
-    const seaMesh = dyn(mesh(sea, seaM, { cast: false, receive: !storm })); seaMesh.frustumCulled = false; seaMesh.position.y = 0; rock.add(seaMesh);
+    const seaMesh = dyn(mesh(sea, seaM, { cast: false, receive: !storm })); seaMesh.frustumCulled = false; seaMesh.userData.water = true; seaMesh.position.y = 0; rock.add(seaMesh);
     const pal = {
       dag: storm ? ['#2b4a52', '#3d636b', '#d9e2e2'] : ['#0f5673', '#1f7d9c', '#d9eef0'],
       avond: storm ? ['#2c3540', '#45505a', '#c9c2c0'] : ['#1d3550', '#4b5878', '#f5c89c'],
@@ -358,6 +358,8 @@ defineSet('woestijn', {
     rechts: { p: [2.1, .2], yaw: -.55 },
     kampvuur: { p: [-.15, 1.85], yaw: .2, seat: .44, base: 'sit' },
     verte: { p: [-1.2, -14.5], yaw: .1 },
+    bron: { p: [2.55, -9.7], yaw: Math.PI / 2 },
+    'bron-2': { p: [3.3, -7.9], yaw: 2.4 },
   },
   build({ time = 'dag' } = {}) {
     const seed = 'woestijn';
@@ -384,7 +386,7 @@ defineSet('woestijn', {
       color: (x, z, y, slope, r) => { const dp = Math.hypot(x - pond[0], (z - pond[1]) * 1.3);
         let c = mix('#eab97a', '#cf9358', slope * 3.2); if (dp < 4.2) c = mix(c, '#9aa35a', smooth((4.2 - dp) / 1.2) * .8); return shadeHex(c, .94 + r * .12); } });
     scene.add(ground); const gy = (x, z) => ground.userData.heightAt(x, z);
-    const water = mesh(G.cyl(2.45, 2.45, .04, 14), mat('#4f9fb5', { rough: .3 }), { cast: false }); water.scale.z = 1 / 1.3; water.position.set(pond[0], -.05, pond[1]); scene.add(water);
+    const water = dyn(mesh(G.cyl(2.45, 2.45, .04, 14), mat('#4f9fb5', { rough: .3 }), { cast: false })); water.scale.z = 1 / 1.3; water.position.set(pond[0], -.05, pond[1]); water.userData.water = true; scene.add(water);
     // tents, palms, camels
     const tent = P.tent({}); tent.position.set(-2.4, gy(-2.4, -3.3), -3.3); scene.add(tent);
     const tent2 = P.tent({ w: 3.4, d: 2.6, h: 1.8, c: '#4a3b31', c2: '#6b5847', rug: '#3f6e8f' }); tent2.position.set(3.4, gy(3.4, -5.4), -5.4); tent2.rotation.y = -.55; scene.add(tent2);
@@ -429,6 +431,8 @@ defineSet('woestijn', {
     };
     world.camera = wideCamera(def, () => world.groundY, [
       { when: s => !(s.actors || []).length, pos: [1.8, 2.7, 11.5], target: [-.4, 1.6, -2], fov: 46 },
+      // at the spring: from the west, so the tents and palms in front of it do not block the view
+      { when: s => spotsOf(s).some(p => p.startsWith('bron')), pos: [-3.8, 2.3, -12.2], target: [3.2, 1.0, -8.9], fov: 46, minD: 6, maxD: 22, lift: .4 },
       { pos: [1.8, 2.6, 11], target: [-.4, 1.3, -1.5], fov: 46, minD: 8, maxD: 34, lift: .45 },
     ]);
     return world;
@@ -556,6 +560,11 @@ defineSet('heuvels', {
     kudde: { p: [-1.7, -1.3], yaw: .35 },
     rots: { p: [-2.0, 2.1], yaw: .5, seat: .44, base: 'sit' },
     beek: { p: [1.25, 3.7], yaw: .2 },
+    'pad-ver': { p: [-.3, -9], yaw: .1 },
+    'pad-boven': { p: [-.35, -2.6], yaw: .1 },
+    'pad-dichtbij': { p: [1.6, 8], yaw: .3 },
+    berm: { p: [-.8, .9], yaw: Math.PI / 2, base: 'lie' },
+    'berm-naast': { p: [-.2, 1.25], yaw: -1.9, base: 'kneel' },
   },
   build({ time = 'dag' } = {}) {
     const seed = 'heuvels';
@@ -582,7 +591,7 @@ defineSet('heuvels', {
     for (let i = 0; i <= nx; i++) { const x = X0 + (X1 - X0) * i / nx, zc = STREAM(x), y = gy(x, zc) + .17; for (const k of [-.68, 0, .68]) wbase.push([x, y, zc + k, k === 0]); }
     const widx = []; for (let i = 0; i < nx; i++) for (let k = 0; k < 2; k++) { const a = i * 3 + k, b = a + 1, c = a + 3, d = c + 1; widx.push(a, b, c, b, d, c); }
     const wgeo = new THREE.BufferGeometry(); wgeo.setAttribute('position', new THREE.BufferAttribute(wpos, 3)); wgeo.setIndex(widx);
-    const stream = dyn(mesh(wgeo, mat('#5aa7c9', { rough: .3 }), { cast: false })); stream.frustumCulled = false; scene.add(stream);
+    const stream = dyn(mesh(wgeo, mat('#5aa7c9', { rough: .3 }), { cast: false })); stream.frustumCulled = false; stream.userData.water = true; scene.add(stream);
     const updateStream = t => { wbase.forEach(([x, y, z, mid], i) => wpos.set([x, y + (mid ? .03 * Math.sin(t * 2.2 - x * 1.7) + .015 * Math.sin(t * 3.1 + x * 3.3) : 0), z], i * 3)); wgeo.attributes.position.needsUpdate = true; wgeo.computeVertexNormals(); };
     for (const [x, dz] of [[.42, -.42], [.55, 0], [.68, .42]]) { const z = STREAM(x) + dz; scene.add(at(P.rock({ s: .22, seed: 4, c: '#9c958a', sy: .5 }), x, gy(x, STREAM(x)) + .07, z)); }
     // olive trees, rocks (two to sit on), grass and flowers

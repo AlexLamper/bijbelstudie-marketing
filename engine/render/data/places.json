@@ -255,6 +255,61 @@
    "name": "Susan",
    "lat": 32.189,
    "lon": 48.258
+  },
+  "dothan": {
+   "name": "Dothan",
+   "lat": 32.411,
+   "lon": 35.24
+  },
+  "moab": {
+   "name": "Moab",
+   "lat": 31.4,
+   "lon": 35.75
+  },
+  "myra": {
+   "name": "Myra",
+   "lat": 36.259,
+   "lon": 29.985
+  },
+  "samothrace": {
+   "name": "Samothracië",
+   "lat": 40.48,
+   "lon": 25.53
+  },
+  "neapolis": {
+   "name": "Neapolis",
+   "lat": 40.937,
+   "lon": 24.41
+  },
+  "syracuse": {
+   "name": "Syracuse",
+   "lat": 37.075,
+   "lon": 15.287
+  },
+  "regium": {
+   "name": "Regium",
+   "lat": 38.11,
+   "lon": 15.65
+  },
+  "puteoli": {
+   "name": "Puteoli",
+   "lat": 40.823,
+   "lon": 14.121
+  },
+  "kades": {
+   "name": "Kades",
+   "lat": 30.69,
+   "lon": 34.49
+  },
+  "amfipolis": {
+   "name": "Amfipolis",
+   "lat": 40.82,
+   "lon": 23.85
+  },
+  "jizreel": {
+   "name": "Jizreël",
+   "lat": 32.556,
+   "lon": 35.33
   }
  }
 }

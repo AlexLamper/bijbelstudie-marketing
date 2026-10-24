@@ -182,6 +182,7 @@ const actor3d = z.object({
   base: enumOf(CATALOG3D.bases, 'base').optional(),       // stand / sit / kneel / lie (default: the spot's)
   face: z.string().optional(),                            // an actor id, a spot, or "camera"
   mood: enumOf(CATALOG3D.moods, 'mood').optional(),
+  holds: enumOf(keys(CATALOG3D.holds || {}), 'thing to carry').optional(),   // with do "carry": what is in the hands
 });
 const shot3d = z.object({
   set: enumOf(keys(CATALOG3D.sets), 'set'),

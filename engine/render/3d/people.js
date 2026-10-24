@@ -164,6 +164,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   props.phone = phone(); props.phone.visible = false; P.handR.add(props.phone);
   if (L.staff) { props.staff = at(group(P.handL), 0, -.04, .02); props.staff.add(at(mesh(G.cyl(.022, .026, 1.75, 10), mat('#7a5634', { rough: .9 })), 0, .35, 0)); props.staff.add(at(rot(mesh(G.torus(.07, .022, Math.PI * 1.2, 8, 16), mat('#7a5634', { rough: .9 })), 0, 0, -.3), -.06, 1.22, 0)); }
   props.scroll = scroll(); props.scroll.visible = false; chest.add(props.scroll);
+  props.held = held(); chest.add(props.held);   // what "carry" holds (actor "holds": kruik, steen, lam, mand)
 
   // fewer draw calls: each joint's own static meshes become one mesh per material (face parts stay separate)
   const keepFace = new Set([F.smile, F.open, skirt].filter(Boolean));
@@ -209,6 +210,27 @@ function scroll() {
   g.position.set(0, -.24, .3); g.rotation.x = -.6;
   return g;
 }
+/** Things a person carries in both hands, one visible at a time: { kruik, steen, lam, mand }. */
+function held() {
+  const g = new THREE.Group(); g.position.set(0, -.22, .34); g.userData.items = {};
+  const add = (k, o) => { o.visible = false; g.add(o); g.userData.items[k] = o; };
+  const clay = mat('#b8693f', { rough: .85 });
+  const jar = new THREE.Group();
+  jar.add(mesh(G.lathe([[.0, -.17], [.1, -.15], [.14, -.04], [.12, .07], [.06, .13], [.055, .17], [.07, .19]], 20), clay));
+  add('kruik', jar);
+  const stone = new THREE.Group(); stone.add(rot(mesh(G.box(.38, .2, .24, .02), mat('#c8b38c', { rough: 1 })), .05, .1, 0)); add('steen', stone);
+  const lamb = new THREE.Group(); const wool = mat('#f3efe4', { rough: 1 }), face = mat('#d9cdb8', { rough: .9 });
+  lamb.add(scl(mesh(G.sphere(.13, 14, 10), wool), 1.35, .95, 1));
+  lamb.add(at(scl(mesh(G.sphere(.07, 12, 9), face), .9, 1, 1.15), .2, .06, 0));
+  for (const s of [1, -1]) lamb.add(at(rot(scl(mesh(G.sphere(.03, 8, 6), face), 1, .5, 1.6), 0, 0, s * .6), .21, .1, s * .06));
+  for (const [x, z] of [[.1, .06], [.1, -.06], [-.1, .06], [-.1, -.06]]) lamb.add(at(mesh(G.cyl(.018, .016, .14, 6), face), x, -.13, z));
+  lamb.rotation.y = .4; add('lam', lamb);
+  const basket = new THREE.Group(); const reed = mat('#b08a55', { rough: .95 });
+  basket.add(mesh(G.cyl(.17, .13, .14, 16), reed));
+  for (const [x, z] of [[-.06, .02], [.06, -.03], [0, .06]]) basket.add(at(scl(mesh(G.sphere(.07, 10, 8), mat('#d9a35c', { rough: .9 })), 1.2, .7, 1), x, .08, z));
+  add('mand', basket);
+  return g;
+}
 function phone() {
   const g = new THREE.Group();
   g.add(mesh(G.box(.085, .17, .011, .008), mat('#1b1f24', { rough: .35 })));
@@ -236,6 +258,7 @@ function pose(A, t, s) {
   P.spine.scale.set(1, 1 + breathe, 1);
   if (A.skirt) A.skirt.scale.set(1, 1, 1);
   A.props.book.visible = act === 'read'; A.props.phone.visible = act === 'phone' || act === 'show-phone'; A.props.scroll.visible = act === 'scroll';
+  for (const [k, o] of Object.entries(A.props.held.userData.items)) o.visible = act === 'carry' && k === (s.holds || 'mand');
 
   // ---- base ----
   let armL = [-.08, 0, .1], armR = [-.08, 0, -.1], elL = -.18, elR = -.18;   // shoulder x,y,z ; elbow x
