@@ -1,0 +1,194 @@
+{
+  "id": "2026-w44-film-schipbreuk",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-28T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Paulus moest als gevangene naar Rome. Onderweg kwam een storm die veertien nachten duurde. Volg de reis op de kaart en lees Handelingen 27 met uitleg naast de tekst in BijbelStudie.",
+  "hashtags": [
+    "#paulus",
+    "#handelingen27",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "cinematic",
+  "captions": "karaoke",
+  "hook": "Veertien nachten storm. Niemand kwam om.",
+  "style3d": "lowpoly",
+  "basedOn": "Handelingen 27 (SV): van Caesarea langs Sidon naar Myra, Alexandrijns schip, Kreta; Paulus waarschuwt (27:10); storm, geen zon noch sterren (27:20); 27:22; ik geloof God (27:25); de veertiende nacht, Malta (28:1); 276 zielen (27:37); 27:44.",
+  "subject": "Paulus' schipbreuk",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "paulus",
+      "look": "man-bijbels",
+      "name": "Paulus"
+    },
+    {
+      "id": "zeeman",
+      "look": "zeeman",
+      "name": "Een zeeman"
+    },
+    {
+      "id": "soldaat",
+      "look": "soldaat",
+      "name": "Een soldaat"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "caesarea",
+        "sidon",
+        "myra"
+      ],
+      "text": "Handelingen 27",
+      "say": "Paulus was gevangen. Hij moest naar Rome, naar de keizer. Het schip voer van Caesarea langs Sidon naar Myra."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "myra",
+        "kreta"
+      ],
+      "say": "Daar gingen ze over op een groot schip uit Alexandrië. Met moeite kwamen ze bij Kreta."
+    },
+    {
+      "set": "zee",
+      "time": "dag",
+      "weather": "helder",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "reling"
+        },
+        {
+          "id": "zeeman",
+          "at": "achtersteven"
+        },
+        {
+          "id": "soldaat",
+          "at": "dek"
+        }
+      ],
+      "say": "Het was al laat in het jaar. Paulus waarschuwde: deze reis wordt gevaarlijk. Maar ze voeren toch verder."
+    },
+    {
+      "set": "zee",
+      "time": "nacht",
+      "weather": "storm",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "zeeman",
+          "at": "mast",
+          "do": "fear",
+          "mood": "bang"
+        },
+        {
+          "id": "soldaat",
+          "at": "boeg",
+          "do": "fear",
+          "mood": "bang"
+        }
+      ],
+      "say": "Toen kwam er een zware storm. Dagenlang zagen ze geen zon en geen sterren."
+    },
+    {
+      "set": "zee",
+      "time": "nacht",
+      "weather": "storm",
+      "camera": "sky",
+      "hold": 2,
+      "actors": [
+        {
+          "id": "zeeman",
+          "at": "mast",
+          "do": "fear",
+          "mood": "bang"
+        }
+      ]
+    },
+    {
+      "set": "zee",
+      "time": "nacht",
+      "weather": "storm",
+      "camera": "wide",
+      "verse": "Handelingen 27:22",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "dek"
+        },
+        {
+          "id": "zeeman",
+          "at": "mast",
+          "mood": "bang"
+        },
+        {
+          "id": "soldaat",
+          "at": "boeg",
+          "mood": "bang"
+        }
+      ],
+      "say": "Doch alsnu vermaan ik ulieden goedsmoeds te zijn; want er zal geen verlies geschieden van iemands leven onder u, maar alleen van het schip."
+    },
+    {
+      "set": "zee",
+      "time": "nacht",
+      "weather": "storm",
+      "camera": "wide",
+      "on": "paulus",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "dek",
+          "do": "look-up"
+        }
+      ],
+      "say": "God had het hem beloofd. En Paulus zei: ik geloof God, dat het zo zal gebeuren."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "kreta",
+        "malta"
+      ],
+      "say": "Veertien nachten dreven ze rond. Toen liep het schip vast bij Malta. Alle 276 mensen kwamen veilig aan land."
+    },
+    {
+      "set": "zee",
+      "time": "dag",
+      "weather": "helder",
+      "camera": "aerial",
+      "app": "web:bijbel/handelingen/27",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "reling",
+          "do": "look-up"
+        }
+      ],
+      "say": "Lees het hele verhaal in Handelingen 27, met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

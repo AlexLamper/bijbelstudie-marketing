@@ -1,0 +1,88 @@
+{
+  "id": "2026-w44-film-eerste-reis",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-30T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Van Antiochië naar Cyprus, de bergen in naar Antiochië in Pisidië, Ikonium, Lystra en Derbe, en weer terug. De eerste zendingsreis van Paulus en Barnabas, op de kaart. Handelingen 13 en 14.",
+  "hashtags": [
+    "#paulus",
+    "#zendingsreis",
+    "#handelingen",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "music": "cinematic",
+  "captions": "karaoke",
+  "hook": "Zijn eerste reis, op de kaart.",
+  "style3d": "toon",
+  "basedOn": "Handelingen 13-14 (SV): afgezonderd in Antiochie (13:2), Seleucie naar Cyprus (13:4), Salamis, Pafos, Antiochie in Pisidie, Ikonium, Lystra (gestenigd 14:19), Derbe, terug langs dezelfde steden (14:21-22), terug in Antiochie (14:26-27).",
+  "subject": "De eerste reis van Paulus",
+  "experiment": {
+    "hook": "inzicht",
+    "topic": "context"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "antiochie",
+        "salamis",
+        "pafos"
+      ],
+      "text": "Handelingen 13",
+      "say": "De gemeente in Antiochië stuurde Barnabas en Saulus op reis. Eerst over zee naar Cyprus, van Salamis naar Pafos."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "pafos",
+        "antiochie-pisidie"
+      ],
+      "say": "Daarna naar het vasteland, en dan de bergen in, naar Antiochië in Pisidië. Saulus heet vanaf hier Paulus."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "antiochie-pisidie",
+        "ikonium",
+        "lystra",
+        "derbe"
+      ],
+      "say": "Ikonium, Lystra, Derbe. In Lystra werd Paulus met stenen bekogeld en voor dood achtergelaten. Toch stond hij op."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "derbe",
+        "lystra",
+        "ikonium",
+        "antiochie-pisidie"
+      ],
+      "verse": "Handelingen 14:22",
+      "say": "Versterkende de zielen der discipelen, en vermanende, dat zij zouden blijven in het geloof, en dat wij door vele verdrukkingen moeten ingaan in het Koninkrijk Gods."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "antiochie-pisidie",
+        "antiochie"
+      ],
+      "say": "Terug in Antiochië vertelden ze wat God had gedaan. Lees Handelingen 13 en 14 met uitleg ernaast, in BijbelStudie."
+    }
+  ]
+}

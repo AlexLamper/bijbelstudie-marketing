@@ -1,0 +1,155 @@
+{
+  "id": "2026-w44-film-abraham-sterren",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-11-01T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Abram was oud en had nog geen kind. Toen nam God hem mee naar buiten, onder de sterrenhemel. En Abram geloofde. Genesis 15 in beeld, met uitleg naast de tekst in BijbelStudie.",
+  "hashtags": [
+    "#abraham",
+    "#genesis15",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Tel de sterren, als je ze tellen kunt.",
+  "style3d": "rond",
+  "basedOn": "Genesis 15:1-6 (SV): het woord des HEEREN tot Abram in een gezicht; Abram zonder kinderen (15:2); Hij leidde hem naar buiten, tel de sterren (15:5); hij geloofde, en Hij rekende het hem tot gerechtigheid (15:6). Abram woonde in tenten.",
+  "subject": "Abraham en de sterren",
+  "experiment": {
+    "hook": "inzicht",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "abram",
+      "look": "oude-man-bijbels",
+      "name": "Abram"
+    },
+    {
+      "id": "sarai",
+      "look": "vrouw-bijbels",
+      "name": "Sarai"
+    }
+  ],
+  "shots": [
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "establish",
+      "text": "Genesis 15",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "tent"
+        },
+        {
+          "id": "sarai",
+          "at": "midden"
+        }
+      ],
+      "say": "Abram was oud, en Sarai ook. God had hem een groot volk beloofd. Maar ze hadden nog steeds geen kind."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "kampvuur",
+          "mood": "nadenkend"
+        }
+      ],
+      "say": "Op een nacht zei Abram tegen God: wat zult U mij geven? Ik heb geen kinderen."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "track",
+      "on": "abram",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "tent",
+          "to": "rechts"
+        }
+      ],
+      "say": "Toen nam God hem mee naar buiten, onder de open hemel."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "sky",
+      "verse": "Genesis 15:5",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "rechts",
+          "do": "look-up"
+        }
+      ],
+      "say": "Toen leidde Hij hem uit naar buiten, en zeide: Zie nu op naar den hemel, en tel de sterren, indien gij ze tellen kunt; en Hij zeide tot hem: Zo zal uw zaad zijn!"
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "wide",
+      "on": "abram",
+      "verse": "Genesis 15:6",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "rechts",
+          "do": "look-up"
+        }
+      ],
+      "say": "En hij geloofde in den HEERE; en Hij rekende het hem tot gerechtigheid."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "rechts"
+        },
+        {
+          "id": "sarai",
+          "at": "tent"
+        }
+      ],
+      "say": "Een oude man, en een belofte die nog niet te zien was. Toch vertrouwde hij God."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "aerial",
+      "app": "web:bijbel/genesis/15",
+      "actors": [
+        {
+          "id": "abram",
+          "at": "tent"
+        },
+        {
+          "id": "sarai",
+          "at": "midden"
+        }
+      ],
+      "say": "Lees Genesis 15 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

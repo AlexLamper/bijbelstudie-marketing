@@ -1,0 +1,196 @@
+{
+  "id": "2026-w44-film-athene",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-28T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "In Athene vond Paulus een altaar met het opschrift: Den onbekenden God. Daar begon hij te vertellen over de God die niet ver is van ieder van ons. Handelingen 17 in beeld.",
+  "hashtags": [
+    "#paulus",
+    "#athene",
+    "#handelingen17",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "calm",
+  "captions": "karaoke",
+  "hook": "Een altaar voor een God die niemand kende.",
+  "style3d": "papier",
+  "basedOn": "Handelingen 17:15-34 (SV): Paulus alleen in Athene, de stad vol afgoden (17:16), Areopagus, altaar DEN ONBEKENDEN GOD (17:23), 17:24, 17:27, sommigen spotten, anderen: wij zullen u nog eens horen (17:32), Dionysius en Damaris (17:34).",
+  "subject": "Paulus in Athene",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "context"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "paulus",
+      "look": "man-bijbels",
+      "name": "Paulus"
+    },
+    {
+      "id": "athener",
+      "look": "man-bijbels-2",
+      "name": "Een Athener"
+    },
+    {
+      "id": "filosoof",
+      "look": "oude-man-bijbels",
+      "name": "Een filosoof"
+    },
+    {
+      "id": "damaris",
+      "look": "vrouw-bijbels",
+      "name": "Damaris"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "filippi",
+        "thessalonica",
+        "berea",
+        "athene"
+      ],
+      "text": "Handelingen 17",
+      "say": "Na Filippi, Thessalonica en Berea kwam Paulus alleen aan in Athene."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "poort",
+          "to": "straat"
+        }
+      ],
+      "say": "Een stad vol tempels en beelden van goden. Paulus liep erdoorheen, en het greep hem aan."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "aerial",
+      "text": "DEN ONBEKENDEN GOD",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "plein",
+          "do": "look-up"
+        }
+      ],
+      "say": "Op een altaar las hij een opschrift: Den onbekenden God."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Handelingen 17:24",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "trap",
+          "do": "point"
+        },
+        {
+          "id": "athener",
+          "at": "plein",
+          "face": "paulus"
+        },
+        {
+          "id": "filosoof",
+          "at": "markt",
+          "face": "paulus"
+        },
+        {
+          "id": "damaris",
+          "at": "straat",
+          "face": "paulus"
+        }
+      ],
+      "say": "De God, Die de wereld gemaakt heeft en alles wat daarin is; Deze, zijnde een Heere des hemels en der aarde, woont niet in tempelen met handen gemaakt;"
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "on": "paulus",
+      "verse": "Handelingen 17:27",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "trap"
+        }
+      ],
+      "say": "Opdat zij den Heere zouden zoeken, of zij Hem immers tasten en vinden mochten; hoewel Hij niet verre is van een iegelijk van ons."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "athener",
+          "at": "plein",
+          "do": "shrug"
+        },
+        {
+          "id": "filosoof",
+          "at": "markt",
+          "do": "think"
+        },
+        {
+          "id": "paulus",
+          "at": "trap"
+        }
+      ],
+      "say": "Sommigen lachten hem uit. Anderen zeiden: we willen u hier later nog eens over horen."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "damaris",
+          "at": "plein",
+          "mood": "blij"
+        },
+        {
+          "id": "paulus",
+          "at": "trap",
+          "face": "damaris"
+        }
+      ],
+      "say": "Maar een paar mensen gingen geloven. Onder hen Dionysius, en een vrouw die Damaris heette."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "aerial",
+      "app": "web:bijbel/handelingen/17",
+      "actors": [
+        {
+          "id": "damaris",
+          "at": "plein"
+        },
+        {
+          "id": "paulus",
+          "at": "trap"
+        }
+      ],
+      "say": "Lees Handelingen 17 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

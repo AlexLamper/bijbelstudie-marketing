@@ -1,0 +1,180 @@
+{
+  "id": "2026-w44-film-woestijnreis",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-29T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een heel volk trok uit Egypte, door de woestijn naar de Sinaï en verder. Veertig jaar lang, met elke dag manna. Volg de reis van Mozes stap voor stap in de studie Het leven van Mozes in BijbelStudie.",
+  "hashtags": [
+    "#mozes",
+    "#exodus",
+    "#woestijnreis",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "cinematic",
+  "captions": "karaoke",
+  "hook": "Veertig jaar door de woestijn. Hun kleren sleten niet.",
+  "style3d": "lowpoly",
+  "basedOn": "Exodus 13:17-21 (niet langs de Filistijnen, door de woestijn; wolkkolom en vuurkolom), 16:15 (het Man), 19:1 (Sinai), Numeri 13:26 en 14:33 (Kades, veertig jaar), Deuteronomium 8:4. Studie Het leven van Mozes (10 lessen) staat in product.md.",
+  "subject": "De woestijnreis van Israël",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "context"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "mozes",
+      "look": "oude-man-bijbels",
+      "name": "Mozes"
+    },
+    {
+      "id": "vrouw",
+      "look": "vrouw-bijbels-2",
+      "name": "Een vrouw"
+    },
+    {
+      "id": "man",
+      "look": "man-bijbels",
+      "name": "Een man"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "egypte",
+        "sinai"
+      ],
+      "text": "Exodus 13",
+      "say": "Israël trok weg uit Egypte. Niet de korte weg langs de kust, maar door de woestijn, naar de berg Sinaï."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "verte",
+          "to": "midden"
+        },
+        {
+          "id": "man",
+          "at": "links"
+        },
+        {
+          "id": "vrouw",
+          "at": "rechts"
+        }
+      ],
+      "say": "Een heel volk onderweg. Met tenten en vee, dag na dag door het zand."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "sky",
+      "verse": "Exodus 13:21",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "midden",
+          "do": "look-up"
+        }
+      ],
+      "say": "En de HEERE toog voor hun aangezicht, des daags in een wolkkolom, dat Hij hen op den weg leidde, en des nachts in een vuurkolom, dat Hij hen lichtte, om voort te gaan dag en nacht."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "vrouw",
+          "at": "midden",
+          "do": "carry",
+          "holds": "mand"
+        },
+        {
+          "id": "man",
+          "at": "links",
+          "do": "look-up"
+        },
+        {
+          "id": "mozes",
+          "at": "tent"
+        }
+      ],
+      "say": "Elke morgen lag er brood uit de hemel. Ze noemden het manna, want ze wisten niet wat het was."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "sinai",
+        "kades"
+      ],
+      "say": "Van de Sinaï naar Kades, vlak bij het beloofde land. En toen nog veertig jaar door de woestijn."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "verse": "Deuteronomium 8:4",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "kampvuur"
+        },
+        {
+          "id": "vrouw",
+          "at": "tent"
+        },
+        {
+          "id": "man",
+          "at": "rechts"
+        }
+      ],
+      "say": "Uw kleding is aan u niet verouderd, en uw voet is niet gezwollen, deze veertig jaren."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "on": "mozes",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "midden",
+          "do": "look-up"
+        }
+      ],
+      "say": "Veertig jaar lang zorgde de HEERE voor hen. Elke dag brood, en elke dag de weg."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "kampvuur"
+        },
+        {
+          "id": "vrouw",
+          "at": "tent"
+        }
+      ],
+      "say": "Volg Mozes stap voor stap in de studie Het leven van Mozes, in BijbelStudie."
+    }
+  ]
+}

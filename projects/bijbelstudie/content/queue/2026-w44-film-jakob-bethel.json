@@ -1,0 +1,139 @@
+{
+  "id": "2026-w44-film-jakob-bethel",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-26T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Jakob vluchtte voor zijn broer Ezau en sliep in het open veld, met een steen als kussen. Die nacht kreeg hij een droom en een belofte. Genesis 28 in beeld.",
+  "hashtags": [
+    "#jakob",
+    "#genesis28",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "music": "calm",
+  "captions": "karaoke",
+  "hook": "Alleen op de vlucht. Toch was hij niet alleen.",
+  "style3d": "toon",
+  "basedOn": "Genesis 27:43 (vluchten naar Haran), 28:10-19 (SV): de zon ging onder, steen als hoofdpeluw, droom van een ladder tot de hemel, 28:15 de belofte, 28:16 gewisselijk is de HEERE aan deze plaats, Bethel = huis Gods.",
+  "subject": "Jakob in Bethel",
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "jakob",
+      "look": "man-bijbels",
+      "name": "Jakob"
+    }
+  ],
+  "shots": [
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "establish",
+      "text": "Genesis 28",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "pad-ver",
+          "to": "pad-boven"
+        }
+      ],
+      "say": "Jakob was op de vlucht voor zijn broer Ezau. Hij was alleen, op weg naar Haran."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "track",
+      "on": "jakob",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "pad-boven",
+          "to": "pad"
+        }
+      ],
+      "say": "De zon ging onder. Hij nam een steen als hoofdkussen, en ging liggen in het open veld."
+    },
+    {
+      "set": "heuvels",
+      "time": "nacht",
+      "camera": "top",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "berm",
+          "do": "sleep"
+        }
+      ],
+      "say": "Die nacht droomde hij. Een ladder stond op de aarde, en reikte tot aan de hemel."
+    },
+    {
+      "set": "heuvels",
+      "time": "nacht",
+      "camera": "sky",
+      "verse": "Genesis 28:15",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "berm",
+          "do": "sleep"
+        }
+      ],
+      "say": "En zie, Ik ben met u, en Ik zal u behoeden overal, waarheen gij trekken zult, en Ik zal u wederbrengen in dit land; want Ik zal u niet verlaten, totdat Ik zal gedaan hebben, hetgeen Ik tot u gesproken heb."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Genesis 28:16",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "pad",
+          "do": "look-up",
+          "mood": "verrast"
+        }
+      ],
+      "say": "Toen nu Jakob van zijn slaap ontwaakte, zeide hij: Gewisselijk is de HEERE aan deze plaats, en ik heb het niet geweten!"
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "on": "jakob",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "pad",
+          "do": "pray"
+        }
+      ],
+      "say": "Hij noemde die plek Bethel: huis van God. Hij was nooit alleen geweest."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "aerial",
+      "app": "web:bijbel/genesis/28",
+      "actors": [
+        {
+          "id": "jakob",
+          "at": "pad"
+        }
+      ],
+      "say": "Lees Genesis 28 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

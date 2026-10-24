@@ -1,0 +1,80 @@
+{
+  "id": "2026-w44-film-elia-horeb",
+  "kind": "reel-story",
+  "week": "2026-W44",
+  "slot": "2026-11-01T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Na de grote overwinning op de Karmel vluchtte Elia, moe en bang, de woestijn in. Veertig dagen later stond hij bij de Horeb, en God sprak niet in de storm, maar in een zachte stilte. 1 Koningen 19 op de kaart.",
+  "hashtags": [
+    "#elia",
+    "#1koningen19",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "style": "dark",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Elia was op. God stuurde geen storm, maar stilte.",
+  "scenes": [
+    {
+      "say": "Na de Karmel dreigde koningin Izebel Elia te doden. Hij vluchtte, helemaal van Jizreël naar Berseba, in het zuiden.",
+      "show": "map",
+      "places": [
+        "jizreel",
+        "berseba"
+      ]
+    },
+    {
+      "say": "Daar ging hij nog een dag verder de woestijn in. Moe, bang, en klaar met alles. Hij viel in slaap onder een struik.",
+      "show": "text",
+      "text": "Een dag de woestijn in"
+    },
+    {
+      "say": "En de engel des HEEREN kwam ten anderen male weder, en roerde hem aan, en zeide: Sta op, eet, want de weg zou te veel voor u zijn.",
+      "show": "verse",
+      "verse": "1 Koningen 19:7"
+    },
+    {
+      "say": "Met de kracht van dat eten liep hij veertig dagen en veertig nachten, tot aan de Horeb, de berg van God.",
+      "show": "stat",
+      "stat": {
+        "value": "40",
+        "label": "dagen en nachten tot aan de Horeb"
+      },
+      "text": "1 Koningen 19:8"
+    },
+    {
+      "say": "Van Berseba door de woestijn naar de Horeb. Dezelfde berg waar Mozes de wet ontving.",
+      "show": "map",
+      "places": [
+        "berseba",
+        "sinai"
+      ]
+    },
+    {
+      "say": "En na de aardbeving een vuur; de HEERE was ook in het vuur niet; en na het vuur het suizen van een zachte stilte.",
+      "show": "verse",
+      "verse": "1 Koningen 19:12"
+    },
+    {
+      "say": "Lees 1 Koningen 19 met uitleg naast de tekst, in BijbelStudie.",
+      "show": "text",
+      "text": "Lees 1 Koningen 19 met uitleg ernaast."
+    }
+  ],
+  "basedOn": "1 Koningen 18:46-19:12 (SV): Izebel dreigt (19:2), Elia naar Berseba (19:3), een dagreis de woestijn in, onder een jeneverboom (19:4-5), 19:7, veertig dagen en nachten tot Horeb (19:8), wind, aardbeving, vuur, suizen van een zachte stilte (19:11-12). Horeb = Sinai.",
+  "subject": "Elia bij de Horeb",
+  "experiment": {
+    "hook": "inzicht",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  }
+}

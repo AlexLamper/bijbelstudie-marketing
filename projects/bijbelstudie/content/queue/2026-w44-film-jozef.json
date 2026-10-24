@@ -1,0 +1,214 @@
+{
+  "id": "2026-w44-film-jozef",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-30T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Jozef was de lievelingszoon van Jakob. Zijn broers verkochten hem voor twintig zilverstukken. Jaren later zei hij: gij hebt kwaad tegen mij gedacht, maar God heeft het ten goede gedacht. Lees het vanaf Genesis 37 in BijbelStudie.",
+  "hashtags": [
+    "#jozef",
+    "#genesis",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "cinematic",
+  "captions": "karaoke",
+  "hook": "Zijn broers verkochten hem. God maakte er iets goeds van.",
+  "style3d": "klei",
+  "basedOn": "Genesis 37 (SV): Jozef 17 jaar, Israel had Jozef lief (37:3), haat van de broers (37:4), van Hebron naar Sichem en Dothan (37:14-17), verkocht voor twintig zilverlingen naar Egypte (37:28); 39:2; 50:20.",
+  "subject": "Jozef verkocht naar Egypte",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "jozef",
+      "look": "herder",
+      "name": "Jozef"
+    },
+    {
+      "id": "broer1",
+      "look": "man-bijbels",
+      "name": "Een broer"
+    },
+    {
+      "id": "broer2",
+      "look": "man-bijbels-2",
+      "name": "Een broer"
+    },
+    {
+      "id": "koopman",
+      "look": "zeeman",
+      "name": "Een koopman"
+    }
+  ],
+  "shots": [
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "establish",
+      "text": "Genesis 37",
+      "actors": [
+        {
+          "id": "jozef",
+          "at": "pad"
+        },
+        {
+          "id": "broer1",
+          "at": "kudde"
+        },
+        {
+          "id": "broer2",
+          "at": "boom"
+        }
+      ],
+      "say": "Jozef was zeventien. Zijn vader Jakob hield van hem, meer dan van al zijn andere zonen."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Genesis 37:4",
+      "actors": [
+        {
+          "id": "broer1",
+          "at": "kudde",
+          "face": "jozef",
+          "mood": "verward"
+        },
+        {
+          "id": "broer2",
+          "at": "boom",
+          "face": "jozef"
+        },
+        {
+          "id": "jozef",
+          "at": "pad"
+        }
+      ],
+      "say": "Als nu zijn broeders zagen, dat hun vader hem boven al zijn broederen liefhad, haatten zij hem, en konden hem niet vredelijk toespreken."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "track",
+      "on": "jozef",
+      "actors": [
+        {
+          "id": "jozef",
+          "at": "pad-ver",
+          "to": "pad-boven"
+        },
+        {
+          "id": "broer1",
+          "at": "kudde",
+          "face": "jozef"
+        }
+      ],
+      "say": "Op een dag zocht hij zijn broers bij de kudde. Zij zagen hem al van ver aankomen."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "koopman",
+          "at": "verte",
+          "to": "midden"
+        },
+        {
+          "id": "jozef",
+          "at": "links",
+          "mood": "verdrietig"
+        },
+        {
+          "id": "broer1",
+          "at": "rechts"
+        }
+      ],
+      "say": "Er kwam een karavaan langs, op weg naar Egypte. De broers verkochten Jozef, voor twintig zilverstukken."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "hebron",
+        "sichem",
+        "dothan",
+        "egypte"
+      ],
+      "say": "Van Hebron naar Sichem en Dothan. En dan de lange weg naar Egypte. Jozef zou zijn vader jaren niet zien."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "aerial",
+      "text": "Egypte",
+      "verse": "Genesis 39:2",
+      "actors": [
+        {
+          "id": "jozef",
+          "at": "plein"
+        }
+      ],
+      "say": "En de HEERE was met Jozef, zodat hij een voorspoedig man was; en hij was in het huis van zijn heer, den Egyptenaar."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "verse": "Genesis 50:20",
+      "actors": [
+        {
+          "id": "jozef",
+          "at": "trap"
+        },
+        {
+          "id": "broer1",
+          "at": "plein",
+          "face": "jozef"
+        },
+        {
+          "id": "broer2",
+          "at": "markt",
+          "face": "jozef"
+        }
+      ],
+      "say": "Gijlieden wel, gij hebt kwaad tegen mij gedacht; doch God heeft dat ten goede gedacht; opdat Hij deed, gelijk het te dezen dage is, om een groot volk in het leven te behouden."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "aerial",
+      "app": "web:bijbel/genesis/37",
+      "actors": [
+        {
+          "id": "jozef",
+          "at": "trap"
+        },
+        {
+          "id": "broer1",
+          "at": "plein"
+        },
+        {
+          "id": "broer2",
+          "at": "markt"
+        }
+      ],
+      "say": "Lees het verhaal van Jozef vanaf Genesis 37, met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

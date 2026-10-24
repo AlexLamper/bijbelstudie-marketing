@@ -1,0 +1,178 @@
+{
+  "id": "2026-w44-film-kamerling",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-31T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een machtig man uit Ethiopië las Jesaja, maar begreep het niet. Toen kwam Filippus naast hem zitten. Verstaat gij ook, hetgeen gij leest? Handelingen 8 in beeld. In BijbelStudie staat de uitleg naast elk hoofdstuk.",
+  "hashtags": [
+    "#filippus",
+    "#handelingen8",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "male",
+  "voiceStyle": "rustig",
+  "music": "calm",
+  "captions": "karaoke",
+  "hook": "Verstaat gij ook, hetgeen gij leest?",
+  "style3d": "klei",
+  "basedOn": "Handelingen 8:26-39 (SV): naar het zuiden, de weg van Jeruzalem naar Gaza; de kamerling van Candace las Jesaja (8:27-28); 8:30; 8:31; Filippus verkondigde hem Jezus (8:35); water, doop (8:36-38); hij reisde zijn weg met blijdschap (8:39).",
+  "subject": "Filippus en de kamerling",
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "filippus",
+      "look": "man-bijbels-2",
+      "name": "Filippus"
+    },
+    {
+      "id": "kamerling",
+      "look": "man-bijbels",
+      "name": "De kamerling"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "jeruzalem",
+        "gaza"
+      ],
+      "text": "Handelingen 8",
+      "say": "Filippus kreeg de opdracht: ga naar het zuiden, naar de woestijnweg van Jeruzalem naar Gaza."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "kampvuur",
+          "do": "scroll"
+        },
+        {
+          "id": "filippus",
+          "at": "verte",
+          "to": "links"
+        }
+      ],
+      "say": "Daar reisde een machtig man uit Ethiopië, de schatbewaarder van de koningin. Hij las in een boekrol van de profeet Jesaja."
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "track",
+      "on": "filippus",
+      "verse": "Handelingen 8:30",
+      "actors": [
+        {
+          "id": "filippus",
+          "at": "links",
+          "to": "midden"
+        },
+        {
+          "id": "kamerling",
+          "at": "kampvuur",
+          "do": "scroll"
+        }
+      ],
+      "say": "En Filippus liep toe, en hoorde hem den profeet Jesaja lezen, en zeide: Verstaat gij ook, hetgeen gij leest?"
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Handelingen 8:31",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "kampvuur",
+          "do": "shrug",
+          "mood": "verward"
+        },
+        {
+          "id": "filippus",
+          "at": "midden",
+          "face": "kamerling"
+        }
+      ],
+      "say": "En hij zeide: Hoe zou ik toch kunnen, zo mij niet iemand onderricht? En hij bad Filippus, dat hij zou opkomen, en bij hem zitten."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "kampvuur",
+          "do": "scroll",
+          "mood": "nadenkend"
+        },
+        {
+          "id": "filippus",
+          "at": "midden",
+          "face": "kamerling"
+        }
+      ],
+      "say": "Filippus begon bij die tekst uit Jesaja. En hij vertelde hem over Jezus."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "bron"
+        },
+        {
+          "id": "filippus",
+          "at": "bron-2"
+        }
+      ],
+      "say": "Onderweg kwamen ze bij water. De kamerling zei: Ziedaar water; wat verhindert mij gedoopt te worden?"
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "sky",
+      "verse": "Handelingen 8:39",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "bron",
+          "do": "cheer",
+          "mood": "blij"
+        }
+      ],
+      "say": "En toen zij uit het water waren opgekomen, nam de Geest des Heeren Filippus weg, en de kamerling zag hem niet meer; want hij reisde zijn weg met blijdschap."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "app": "web:bijbel/handelingen/8",
+      "actors": [
+        {
+          "id": "kamerling",
+          "at": "bron"
+        }
+      ],
+      "say": "Begrijp je wat je leest? Lees Handelingen 8 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

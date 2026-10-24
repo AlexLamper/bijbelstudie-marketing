@@ -1,0 +1,187 @@
+{
+  "id": "2026-w44-film-macedonie",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-27T12:30:00+01:00",
+  "platforms": [
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een droom in de nacht in Troas: kom over in Macedonië, en help ons. Zo kwam Paulus in Filippi, bij de rivier waar Lydia luisterde. Handelingen 16 in beeld.",
+  "hashtags": [
+    "#paulus",
+    "#handelingen16",
+    "#lydia",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Kom over en help ons.",
+  "style3d": "blok",
+  "basedOn": "Handelingen 15:40-16:15 (SV): Paulus en Silas door Derbe en Lystra naar Troas; het gezicht van de Macedonische man (16:9-10); via Samothracie en Neapolis naar Filippi (16:11-12); bij de rivier waar men bad; Lydia (16:14).",
+  "subject": "De roep uit Macedonië",
+  "experiment": {
+    "hook": "vraag",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "paulus",
+      "look": "man-bijbels",
+      "name": "Paulus"
+    },
+    {
+      "id": "silas",
+      "look": "man-bijbels-2",
+      "name": "Silas"
+    },
+    {
+      "id": "lydia",
+      "look": "vrouw-bijbels-2",
+      "name": "Lydia"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "antiochie",
+        "derbe",
+        "lystra",
+        "troas"
+      ],
+      "text": "Handelingen 16",
+      "say": "Paulus en Silas reisden door het land dat nu Turkije heet. Steeds ging er een deur dicht. Tot ze in Troas aan de kust stonden."
+    },
+    {
+      "set": "stad",
+      "time": "nacht",
+      "camera": "establish",
+      "text": "Troas",
+      "verse": "Handelingen 16:9",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "trap",
+          "base": "sit",
+          "do": "sleep"
+        }
+      ],
+      "say": "En van Paulus werd in den nacht een gezicht gezien: er was een Macedonisch man staande, die hem bad en zeide: Kom over in Macedonie, en help ons."
+    },
+    {
+      "set": "stad",
+      "time": "nacht",
+      "camera": "sky",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "trap",
+          "do": "look-up"
+        }
+      ],
+      "say": "Paulus begreep het. Ze zochten meteen een schip. God riep hen naar Macedonië."
+    },
+    {
+      "set": "zee",
+      "time": "dag",
+      "weather": "helder",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "paulus",
+          "at": "boeg"
+        },
+        {
+          "id": "silas",
+          "at": "reling"
+        }
+      ],
+      "say": "Ze staken over de zee. Zo kwam het evangelie naar Europa."
+    },
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "troas",
+        "samothrace",
+        "neapolis",
+        "filippi"
+      ],
+      "say": "Via Samothracië en Neapolis kwamen ze in Filippi, een belangrijke stad in Macedonië."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "lydia",
+          "at": "beek",
+          "do": "pray"
+        },
+        {
+          "id": "paulus",
+          "at": "pad-boven",
+          "to": "pad"
+        },
+        {
+          "id": "silas",
+          "at": "rots"
+        }
+      ],
+      "say": "Op de sabbat gingen ze naar de rivier, buiten de stad. Daar kwamen vrouwen samen om te bidden."
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Handelingen 16:14",
+      "actors": [
+        {
+          "id": "lydia",
+          "at": "beek",
+          "face": "paulus"
+        },
+        {
+          "id": "paulus",
+          "at": "pad",
+          "face": "lydia"
+        },
+        {
+          "id": "silas",
+          "at": "rots"
+        }
+      ],
+      "say": "En een zekere vrouw, met name Lydia, een purperverkoopster, van de stad Thyatira, die God diende, hoorde ons; welker hart de Heere heeft geopend, dat zij acht nam op hetgeen van Paulus gesproken werd."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "aerial",
+      "app": "web:bijbel/handelingen/16",
+      "actors": [
+        {
+          "id": "lydia",
+          "at": "beek"
+        },
+        {
+          "id": "paulus",
+          "at": "pad"
+        },
+        {
+          "id": "silas",
+          "at": "rots"
+        }
+      ],
+      "say": "Lees Handelingen 16 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

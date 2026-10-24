@@ -1,0 +1,179 @@
+{
+  "id": "2026-w44-film-rebekka",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-31T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Abrahams knecht wachtte bij de put, tegen de avond, met tien kamelen. Hij bad om een teken, en nog voor hij uitgesproken was, kwam Rebekka met haar kruik. Genesis 24 in beeld.",
+  "hashtags": [
+    "#rebekka",
+    "#genesis24",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Hij bad om een teken. Nog voor hij uitgesproken was, kwam zij.",
+  "style3d": "toon",
+  "basedOn": "Genesis 24 (SV): Abraham stuurt zijn knecht naar Mesopotamie, de stad van Nahor, tien kemelen (24:10), bij de waterput des avonds (24:11), het gebed (24:12-14), Rebekka met haar kruik (24:15), drinken voor de kemelen (24:19-20), de knecht buigt en dankt (24:26-27), 24:67.",
+  "subject": "Rebekka bij de put",
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "knecht",
+      "look": "oude-man-bijbels",
+      "name": "Abrahams knecht"
+    },
+    {
+      "id": "rebekka",
+      "look": "vrouw-bijbels",
+      "name": "Rebekka"
+    }
+  ],
+  "shots": [
+    {
+      "set": "kaart",
+      "camera": "wide",
+      "places": [
+        "hebron",
+        "haran"
+      ],
+      "text": "Genesis 24",
+      "say": "Abraham was oud. Hij stuurde zijn knecht naar zijn familie, ver in het noorden, om een vrouw te zoeken voor zijn zoon Izak."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "establish",
+      "verse": "Genesis 24:11",
+      "actors": [
+        {
+          "id": "knecht",
+          "at": "bron-2"
+        }
+      ],
+      "say": "En hij deed de kemelen nederknielen buiten de stad, bij een waterput, des avondtijds, ten tijde, als de putsters uitkwamen."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "knecht",
+          "at": "bron-2",
+          "do": "pray"
+        }
+      ],
+      "say": "Hij bad: HEERE, laat het meisje dat ook mijn kamelen water geeft, de vrouw zijn die U hebt uitgekozen."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "track",
+      "on": "rebekka",
+      "actors": [
+        {
+          "id": "rebekka",
+          "at": "midden",
+          "to": "bron",
+          "do": "carry",
+          "holds": "kruik"
+        },
+        {
+          "id": "knecht",
+          "at": "bron-2"
+        }
+      ],
+      "say": "Hij was nog niet uitgesproken, of daar kwam Rebekka aan, met een waterkruik."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "wide",
+      "verse": "Genesis 24:19",
+      "actors": [
+        {
+          "id": "rebekka",
+          "at": "bron",
+          "do": "carry",
+          "holds": "kruik",
+          "face": "knecht"
+        },
+        {
+          "id": "knecht",
+          "at": "bron-2",
+          "face": "rebekka"
+        }
+      ],
+      "say": "Als zij nu voleindigd had van hem drinken te geven, zeide zij: Ik zal ook voor uw kemelen putten, totdat zij voleindigd hebben te drinken."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "rebekka",
+          "at": "bron",
+          "to": "bron-2",
+          "do": "carry",
+          "holds": "kruik"
+        },
+        {
+          "id": "knecht",
+          "at": "rechts"
+        }
+      ],
+      "say": "Ze liep heen en weer, tot alle tien de kamelen genoeg hadden gedronken."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "sky",
+      "actors": [
+        {
+          "id": "knecht",
+          "at": "bron-2",
+          "do": "pray"
+        },
+        {
+          "id": "rebekka",
+          "at": "bron"
+        }
+      ],
+      "say": "Het gebed was verhoord. De knecht boog zich en dankte God. Zo werd Rebekka de vrouw van Izak."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "aerial",
+      "app": "web:bijbel/genesis/24",
+      "actors": [
+        {
+          "id": "knecht",
+          "at": "bron-2"
+        },
+        {
+          "id": "rebekka",
+          "at": "bron"
+        }
+      ],
+      "say": "Lees Genesis 24 met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}

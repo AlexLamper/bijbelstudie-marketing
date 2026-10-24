@@ -1,0 +1,197 @@
+{
+  "id": "2026-w44-film-verloren-zoon",
+  "kind": "reel-3d",
+  "week": "2026-W44",
+  "slot": "2026-10-26T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een zoon die alles meenam en alles kwijtraakte. En een vader die hem van ver al zag aankomen. De gelijkenis uit Lukas 15, verteld in beeld. Lees het hele hoofdstuk met uitleg ernaast in BijbelStudie.",
+  "hashtags": [
+    "#verlorenzoon",
+    "#lukas15",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "voice": "female",
+  "voiceStyle": "rustig",
+  "music": "reflective",
+  "captions": "karaoke",
+  "hook": "Hij was nog ver weg. Toch zag zijn vader hem.",
+  "style3d": "papier",
+  "basedOn": "Lukas 15:11-24 (SV): de jongste zoon vraagt zijn erfdeel, reist weg, brengt alles door, honger, hoedt zwijnen, komt tot zichzelf (15:17), gaat terug; de vader ziet hem van ver, loopt toe en kust hem (15:20); feest (15:24).",
+  "subject": "De verloren zoon",
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "thema"
+  },
+  "endCard": {
+    "headline": "Begrijp wat je leest.",
+    "button": "Download gratis"
+  },
+  "cast": [
+    {
+      "id": "zoon",
+      "look": "man-bijbels-2",
+      "name": "De jongste zoon"
+    },
+    {
+      "id": "vader",
+      "look": "oude-man-bijbels",
+      "name": "De vader"
+    }
+  ],
+  "shots": [
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "establish",
+      "text": "Lukas 15",
+      "actors": [
+        {
+          "id": "vader",
+          "at": "trap"
+        },
+        {
+          "id": "zoon",
+          "at": "plein"
+        }
+      ],
+      "say": "Jezus vertelde over een vader met twee zonen. De jongste wilde zijn deel van de erfenis. Nu al."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "track",
+      "on": "zoon",
+      "actors": [
+        {
+          "id": "zoon",
+          "at": "plein",
+          "to": "poort"
+        },
+        {
+          "id": "vader",
+          "at": "trap",
+          "face": "zoon",
+          "mood": "verdrietig"
+        }
+      ],
+      "say": "Hij kreeg het, pakte alles in, en vertrok naar een land ver weg."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "zoon",
+          "at": "markt",
+          "do": "cheer",
+          "mood": "blij"
+        }
+      ],
+      "say": "Daar leefde hij er flink op los. Feest na feest, tot al zijn geld op was."
+    },
+    {
+      "set": "heuvels",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "zoon",
+          "at": "rots",
+          "mood": "verdrietig"
+        }
+      ],
+      "say": "Toen kwam er honger in dat land. Hij moest het vee van een vreemde hoeden, en had zelf niets te eten."
+    },
+    {
+      "set": "heuvels",
+      "time": "nacht",
+      "camera": "sky",
+      "verse": "Lukas 15:17",
+      "actors": [
+        {
+          "id": "zoon",
+          "at": "rots",
+          "do": "think",
+          "mood": "nadenkend"
+        }
+      ],
+      "say": "En tot zichzelven gekomen zijnde, zeide hij: Hoe vele huurlingen mijns vaders hebben overvloed van brood, en ik verga van honger!"
+    },
+    {
+      "set": "heuvels",
+      "time": "dag",
+      "camera": "track",
+      "on": "zoon",
+      "actors": [
+        {
+          "id": "zoon",
+          "at": "pad-boven",
+          "to": "pad-dichtbij"
+        }
+      ],
+      "say": "Hij stond op en ging terug. Hij wilde alleen nog knecht zijn bij zijn vader."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "verse": "Lukas 15:20",
+      "actors": [
+        {
+          "id": "vader",
+          "at": "plein",
+          "to": "straat"
+        },
+        {
+          "id": "zoon",
+          "at": "poort",
+          "mood": "verdrietig"
+        }
+      ],
+      "say": "En opstaande, ging hij naar zijn vader. En als hij nog ver van hem was, zag hem zijn vader, en werd met innerlijke ontferming bewogen; en toe lopende, viel hem om zijn hals, en kuste hem."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "vader",
+          "at": "plein",
+          "do": "cheer",
+          "mood": "blij"
+        },
+        {
+          "id": "zoon",
+          "at": "markt",
+          "mood": "blij"
+        }
+      ],
+      "say": "Er kwam een feest. Want deze zoon was dood, en is weer levend geworden. Hij was verloren, en is gevonden."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "aerial",
+      "app": "web:bijbel/lukas/15",
+      "actors": [
+        {
+          "id": "vader",
+          "at": "plein"
+        },
+        {
+          "id": "zoon",
+          "at": "markt"
+        }
+      ],
+      "say": "Lees de hele gelijkenis in Lukas 15, met uitleg naast de tekst, in BijbelStudie."
+    }
+  ]
+}
