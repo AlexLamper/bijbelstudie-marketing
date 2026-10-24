@@ -1,0 +1,77 @@
+# Engine fix: Alex's feedback that no spec can fix (brand/lessons.md, "Nog op te lossen in de engine").
+# Started by lessons-learned.mjs when a Learn, Plan day or Revise run found such feedback, or by hand.
+# Claude changes the engine (planner/ENGINE.md) and checks it with stills; the workflow runs the checks
+# again, pushes to main, renders the videos Alex commented on again and tells him what changed (with the
+# commit, so one revert undoes it). Runs one at a time per project.
+name: Engine fix
+on:
+  workflow_dispatch:
+    inputs:
+      project: { description: 'Project id (empty = default project)', required: false, default: '' }
+permissions: { contents: write, issues: write, id-token: write, actions: write }
+concurrency: { group: 'engine-${{ inputs.project || ''default'' }}', cancel-in-progress: false }
+defaults: { run: { shell: bash } }
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Which project
+        env: { PROJECT: '${{ inputs.project }}' }
+        run: echo "PROJECT=$(node engine/cli/projects.mjs --current)" >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }
+      - name: Open engine items
+        id: open
+        run: |
+          node --input-type=module -e "
+            import { readFileSync, appendFileSync } from 'node:fs';
+            import { openEngineItems } from './engine/lessons.mjs';
+            const open = openEngineItems(readFileSync('projects/' + process.env.PROJECT + '/brand/lessons.md', 'utf8'));
+            console.log(open.length + ' open:'); open.forEach(l => console.log('  ' + l));
+            appendFileSync(process.env.GITHUB_OUTPUT, 'open=' + open.length + '\n');" 2>&1 | tee -a run.log
+      - name: Git identity
+        if: steps.open.outputs.open != '0'
+        run: git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
+      - name: Planner token (GitHub secret, or pasted in the studio)
+        if: steps.open.outputs.open != '0'
+        id: token
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/studio-secret.mjs CLAUDE_CODE_OAUTH_TOKEN
+      - name: Claude fixes the engine
+        if: steps.open.outputs.open != '0'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ steps.token.outputs.value }}
+          github_token: ${{ github.token }}   # the workflow pushes; Claude only edits and commits
+          allowed_bots: 'github-actions'   # started by another workflow with the workflow token
+          prompt: |
+            Project: ${{ env.PROJECT }} (folder projects/${{ env.PROJECT }}/). Read planner/ENGINE.md and follow it exactly.
+          claude_args: >-
+            --model claude-opus-5-5 --effort xhigh --fallback-model claude-sonnet-5-5 --max-turns 200
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(npm run check),Bash(node engine/render/render.mjs:*),Bash(node engine/cli/validate.mjs:*),Bash(node --check:*),Bash(ffmpeg:*),Bash(ffprobe:*),Bash(ls:*),Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*)"
+      - name: Check (gate)
+        if: steps.open.outputs.open != '0'
+        run: npm run check 2>&1 | tail -20 | tee -a run.log
+      - name: Push, render again, tell Alex
+        if: steps.open.outputs.open != '0'
+        env: { GH_TOKEN: '${{ github.token }}', SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
+        run: |
+          [ -f ENGINE-FIX.md ] && cp ENGINE-FIX.md /tmp/fix.md || echo "Engine-aanpassing voor je feedback (brand/lessons.md)." > /tmp/fix.md
+          ids=$( [ -f RERENDER.txt ] && grep -Eo '[0-9]{4}-w[0-9]{2}-[a-z0-9-]+' RERENDER.txt | sort -u | paste -sd+ - || true )
+          for f in ENGINE-FIX.md RERENDER.txt; do if git ls-files --error-unmatch $f >/dev/null 2>&1; then git rm -q $f; git commit -qm "drop $f"; else rm -f $f; fi; done
+          if [ -z "$(git log origin/main..HEAD --oneline)" ]; then echo "no engine change committed" | tee -a run.log; fi
+          if [ -n "$(git log origin/main..HEAD --oneline)" ]; then git pull --rebase -q origin main && git push origin HEAD:main; fi
+          SHA=$(git rev-parse --short HEAD); URL="https://github.com/$GITHUB_REPOSITORY/commits/main"
+          if [ -n "$ids" ]; then node engine/cli/requeue.mjs "ids=$ids" 2>&1 | tee -a run.log; gh api -X POST "repos/$GITHUB_REPOSITORY/actions/workflows/render.yml/dispatches" -f ref=main -f "inputs[project]=$PROJECT"; fi
+          URL="$URL" IDS="$ids" node --input-type=module -e "
+            import { readFileSync } from 'node:fs';
+            import { notify } from './engine/notify.mjs';
+            const body = readFileSync('/tmp/fix.md', 'utf8').split('\n').filter(l => l.trim()).slice(0, 16);
+            const ids = (process.env.IDS || '').split('+').filter(Boolean);
+            await notify('Je feedback zit in de engine', ['Claude heeft de engine aangepast en gecontroleerd; het geldt vanaf nu voor elke nieuwe video.', ...body,
+              ids.length ? 'Opnieuw gemaakt met de aanpassing: ' + ids.join(', ') + ' (straks bij Te beoordelen).' : '',
+              'Niet goed? Draai de laatste commit terug (link) of zeg het in een opmerking.'].filter(Boolean), process.env.URL);"
+      - if: failure()
+        uses: ./.github/actions/report-failure

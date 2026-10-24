@@ -77,9 +77,8 @@ writeFileSync(join(OUTD, 'rejected.json'), JSON.stringify({ note: 'Items Alex re
 
 // Alex's review comments not yet turned into lessons (P/brand/lessons.md; planner/PLAN.md step 1b).
 // cli/lessons-learned.mjs marks them learned after the run succeeded, so a failed run sees them again.
-const { newFeedback } = await import('../lessons.mjs');
-const feedback = await newFeedback(d);
-writeFileSync(join(OUTD, 'feedback-new.json'), JSON.stringify({ note: 'Review comments Alex wrote in the studio that are not in brand/lessons.md yet, newest first: the item, its traits and spec, and his words. Turn each into a lasting rule in brand/lessons.md (planner/PLAN.md step 1b).', items: feedback }, null, 2));
+const { writeNewFeedback } = await import('../lessons.mjs');
+const feedback = { length: await writeNewFeedback(d, OUTD) };
 
 const comments = await d.collection('comments').find({ status: 'new', draft: { $exists: false } }).limit(100).toArray();
 writeFileSync(join(OUTD, 'comments-to-answer.json'), JSON.stringify(comments.map(c => ({ commentId: c._id, itemId: c.itemId, username: c.username, text: c.text })), null, 2));

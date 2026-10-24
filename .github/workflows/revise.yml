@@ -47,15 +47,16 @@ jobs:
       - name: Import into the studio
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
-      - name: Lessons learned (Alex's new review comments are rules in brand/lessons.md now)
-        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
-        run: node engine/cli/lessons-learned.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         run: |
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           c=projects/$PROJECT/content
           git add $c/imported $c/used-verses.json $c/queue/_errors.json projects/$PROJECT/brand/lessons.md 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "revise $PROJECT: $(date -u +%F)" && git pull --rebase --autostash -q && git push)
+      # after git: a comment is only marked learned once its lesson is safely in git
+      - name: Lessons learned (Alex's new review comments are rules in brand/lessons.md now)
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
+        run: node engine/cli/lessons-learned.mjs 2>&1 | tee -a run.log
       - name: Render (the Render workflow, three jobs side by side)
         env: { GH_TOKEN: '${{ github.token }}' }
         run: gh api -X POST "repos/$GITHUB_REPOSITORY/actions/workflows/render.yml/dispatches" -f ref=main -f "inputs[project]=$PROJECT"

@@ -21,7 +21,8 @@ const HEADING = /^(Een psalm|Een lied|Een gebed|Een onderwijzing|Voor den opperz
 // one day since the planner runs daily), revisions keep their own.
 const ctx = name => { try { return JSON.parse(readFileSync(join(P.paths.context, name), 'utf8')); } catch { return null; } };
 const target = !arg ? ctx('target-week.json') : null;
-const revising = new Set((ctx('changes-requested.json') || []).map(c => c.id));
+// items rewritten, not new: the ones Alex sent back (Revise) and the ones not yet approved that Learn brings in line
+const revising = new Set([...(ctx('changes-requested.json') || []).map(c => c.id), ...(ctx('pending.json')?.items || []).map(c => c.id)]);
 const voices = !arg ? ctx('voices.json')?.voices?.map(v => v.key) : null;
 const moods = !arg ? ctx('voices.json')?.musicMoods : null;
 const allocation = target ? ctx('allocation.json') : null;

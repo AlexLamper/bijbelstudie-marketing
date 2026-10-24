@@ -47,3 +47,17 @@ export async function markLearned(d, keys, via = 'planner') {
   const r = await d.collection('lessons').bulkWrite(keys.map(k => ({ updateOne: { filter: { _id: k }, update: { $setOnInsert: { learnedAt: at, via } }, upsert: true } })));
   return r.upsertedCount;
 }
+
+/** Write the review comments not learned yet to content/context/feedback-new.json; returns how many. */
+export async function writeNewFeedback(d, dir) {
+  const { writeFileSync, mkdirSync } = await import('node:fs'); const { join } = await import('node:path');
+  const items = await newFeedback(d); mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'feedback-new.json'), JSON.stringify({ note: 'Review comments Alex wrote in the studio that are not in brand/lessons.md yet, newest first: the item, its traits and spec, and his words. Turn each into a lasting rule in brand/lessons.md (planner/PLAN.md step 1b).', items }, null, 2));
+  return items.length;
+}
+
+/** The open items under "Nog op te lossen in de engine" in P/brand/lessons.md (engine work still to do). */
+export function openEngineItems(lessonsText) {
+  const m = String(lessonsText || '').match(/## Nog op te lossen in de engine\n([\s\S]*?)(\n## |$)/);
+  return m ? m[1].split('\n').filter(l => /^- /.test(l) && !/niets open/i.test(l)) : [];
+}

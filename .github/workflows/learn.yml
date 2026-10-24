@@ -1,0 +1,76 @@
+# Learn from Alex's feedback. Started by kick.mjs (Publish workflow, hourly) when the studio holds review
+# comments that are not lessons yet and no planner run (Plan day, Revise, Learn) is busy; or by hand.
+# Claude turns every comment into a lasting rule in brand/lessons.md (planner/LEARN.md), rewrites items not
+# yet approved that break a new rule (they are made again), and feedback that needs engine work starts the
+# Engine fix workflow. Plan day and Revise learn the same way before they write.
+name: Learn
+on:
+  workflow_dispatch:
+    inputs:
+      project: { description: 'Project id (empty = default project)', required: false, default: '' }
+      recheck: { description: 'Also check every item not yet approved against every lesson (after the rules changed)', type: boolean, default: false }
+permissions: { contents: write, issues: write, id-token: write, actions: write }
+concurrency: { group: 'planner-${{ inputs.project || ''default'' }}', cancel-in-progress: false }
+defaults: { run: { shell: bash } }
+jobs:
+  learn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Which project
+        env: { PROJECT: '${{ inputs.project }}' }
+        run: echo "PROJECT=$(node engine/cli/projects.mjs --current)" >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-engine
+        with: { render: 'true' }   # as Plan day and Revise
+      - name: New review comments
+        id: fb
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/export-feedback.mjs ${{ inputs.recheck && '--recheck' || '' }} 2>&1 | tee -a run.log
+      - name: Planner token (GitHub secret, or pasted in the studio)
+        if: steps.fb.outputs.run == '1'
+        id: token
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/studio-secret.mjs CLAUDE_CODE_OAUTH_TOKEN
+      - name: Today
+        if: steps.fb.outputs.run == '1'
+        run: echo "TODAY=$(TZ=Europe/Amsterdam date '+%A %d %B %Y')" >> $GITHUB_ENV
+      - name: Claude learns from the comments
+        if: steps.fb.outputs.run == '1'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ steps.token.outputs.value }}
+          github_token: ${{ github.token }}   # Claude only writes files
+          allowed_bots: 'github-actions'   # kick.mjs (Publish workflow) starts this run with the workflow token
+          prompt: |
+            Today is ${{ env.TODAY }}. Project: ${{ env.PROJECT }} (folder projects/${{ env.PROJECT }}/).
+            Read planner/LEARN.md and follow it exactly.${{ inputs.recheck && ' Recheck: every item in pending.json against every rule in lessons.md.' || '' }}
+          claude_args: >-
+            --model claude-opus-5-5 --effort high --fallback-model claude-sonnet-5-5 --max-turns 50
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(node engine/cli/validate.mjs),Bash(node engine/cli/validate.mjs:*),Bash(ls:*)"
+      - name: Validate (gate)
+        if: steps.fb.outputs.run == '1'
+        run: node engine/cli/validate.mjs 2>&1 | tee -a run.log
+      - name: Import the rewritten items (made again)
+        if: steps.fb.outputs.run == '1'
+        id: imp
+        env: { SECRETS: '${{ toJSON(secrets) }}' }
+        run: node engine/cli/import-queue.mjs --refresh 2>&1 | tee -a run.log
+      # git first: a comment is only marked learned once its lesson is safely in git
+      - name: Keep the lessons in git
+        if: steps.fb.outputs.run == '1'
+        run: |
+          git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
+          c=projects/$PROJECT/content
+          git add projects/$PROJECT/brand/lessons.md projects/$PROJECT/plan.md $c/imported $c/queue/_errors.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "learn $PROJECT: $(TZ=Europe/Amsterdam date +%F)" && git pull --rebase --autostash -q && git push)
+      - name: Lessons learned (and the engine fix, when needed)
+        if: steps.fb.outputs.run == '1'
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
+        run: node engine/cli/lessons-learned.mjs 2>&1 | tee -a run.log
+      - name: Render the rewritten items
+        if: steps.fb.outputs.run == '1' && steps.imp.outputs.imported != '0'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: gh api -X POST "repos/$GITHUB_REPOSITORY/actions/workflows/render.yml/dispatches" -f ref=main -f "inputs[project]=$PROJECT"
+      - if: failure()
+        uses: ./.github/actions/report-failure
