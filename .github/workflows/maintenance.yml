@@ -2,13 +2,14 @@
 #   set-subjects - subjects from projects/<id>/content/subjects.json into older items (no-repeat check)
 #   week-status  - print a week's items, statuses and review comments (args: the week, e.g. 2026-W45)
 #   set-status   - set items to rejected / queued / review / approved (args: the status, then the ids)
+#   requeue      - put items back in the render queue without rendering (args: stuck | ids=<id>+<id> | voiced-before=<ISO>)
 #   feedback     - every review comment Alex wrote and whether it is learned (args: --mark-learned marks them all)
 #   meta-check   - diagnose the Instagram/Facebook link (no posting, no secrets printed)
 name: Maintenance
 on:
   workflow_dispatch:
     inputs:
-      task: { description: 'Job', required: true, type: choice, options: [set-subjects, week-status, set-status, meta-check, feedback] }
+      task: { description: 'Job', required: true, type: choice, options: [set-subjects, week-status, set-status, meta-check, feedback, requeue] }
       args: { description: 'Arguments for the job', required: false, default: '' }
       project: { description: 'Only this project (empty = every enabled project)', required: false, default: '' }
 permissions: { contents: read, issues: write }
