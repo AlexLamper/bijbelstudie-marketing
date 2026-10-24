@@ -42,8 +42,8 @@ for (const f of existsSync(Q) ? readdirSync(Q) : []) {
       const aiLabel = !!spec.voice && spec.voice !== 'none';      // AI voice -> platform AI label
       await d.collection('items').updateOne({ _id: spec.id }, {
         $set: { spec, kind: spec.kind, week: spec.week, slot: new Date(spec.slot), status: STATUS.QUEUED, aiLabel, renderAttempts: 0, updatedAt: new Date() },
-        $setOnInsert: { createdAt: new Date(), history: [] },
-        ...(mayRefresh ? { $push: { history: { at: new Date(), event: 'refreshed', note: 'aangepast aan je nieuwste feedback, wordt opnieuw gemaakt' } } } : {}),
+        // a refreshed item exists, so it gets its history event instead of an empty history (both would conflict)
+        ...(mayRefresh ? { $push: { history: { at: new Date(), event: 'refreshed', note: 'aangepast aan je nieuwste feedback, wordt opnieuw gemaakt' } } } : { $setOnInsert: { createdAt: new Date(), history: [] } }),
       }, { upsert: true });
       n++; batch.push(rowOf(raw));
     } else if (/^report-.*\.md$/.test(f)) {
