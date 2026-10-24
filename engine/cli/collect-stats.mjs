@@ -109,15 +109,18 @@ if (storageConfigured()) {
   }
   if (gone) console.log(`removed ${gone} rejected items (media + item)`);
 }
-// Reminder: posts planned for the next 36 hours that still wait for Alex's approval (once a day).
-const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] }, slot: { $gte: new Date(), $lte: new Date(Date.now() + 36 * 3600e3) } }).sort({ slot: 1 }).toArray();
+// Reminder (once a day): what waits for Alex's approval. Items go online when approved (the next free
+// time, engine/slots.mjs), so the planner's date does not matter - say how much is ready and how much is
+// already scheduled for the next 36 hours.
+const soon = await items.find({ status: { $in: [STATUS.REVIEW, STATUS.CHANGES] } }).sort({ createdAt: -1 }).toArray();
 if (soon.length) {
   const { notify, studioLink } = await import('../notify.mjs');
-  const first = soon[0]; const when = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: project().timezone }).format(first.slot);
-  await notify(`${soon.length} posts wachten nog op je akkoord`, [
-    `De eerste staat gepland voor ${when}. Niet goedgekeurd = niet geplaatst.`,
-    soon.some(i => i.status === STATUS.CHANGES) ? 'Een paar wachten op aanpassingen door Claude.' : 'Keur ze goed in de studio (of "Alles goedkeuren").'],
-    studioLink(`/week/${first.week}`), { replaces: 'posts wachten nog' });
+  const planned = await items.countDocuments({ status: STATUS.APPROVED, slot: { $gte: new Date(), $lte: new Date(Date.now() + 36 * 3600e3) } });
+  const review = soon.filter(i => i.status === STATUS.REVIEW).length;
+  await notify(`Wacht op je akkoord: ${review || soon.length} ${(review || soon.length) === 1 ? 'item' : 'items'}`, [
+    planned ? `Ingepland voor de komende 36 uur: ${planned}. Wat je goedkeurt, gaat de eerstvolgende vrije tijd online.` : 'Voor de komende 36 uur staat nog niets ingepland. Wat je goedkeurt, gaat de eerstvolgende vrije tijd online.',
+    soon.some(i => i.status === STATUS.CHANGES) ? 'Een paar wachten op aanpassingen door Claude.' : 'Keur goed of wijs af in de studio.'],
+    studioLink(''), { replaces: 'Wacht op je akkoord' });
 }
 // Experiments: fair score per item and platform, per trait value, for the studio and the planner.
 try { const { updateBoard } = await import('../library.mjs'); const b = await updateBoard(d); console.log(`experiments: ${b.trials} trials from ${b.items} items`); }
