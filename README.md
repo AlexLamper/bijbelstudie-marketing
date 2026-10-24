@@ -10,6 +10,7 @@ Friday      per project: Claude (planner/PLAN.md + projects/<id>/plan.md) reads 
             voice via ElevenLabs/Google TTS) -> Vercel Blob -> "<Project>: week ready"
 Studio      pick a project, approve / comment / remove (comments -> "Aanpassingen naar Claude" -> Revise)
 Every 30m   approved items whose time has come -> Instagram, Facebook, YouTube Shorts, TikTok
+            (approving gives an item the next free posting time: lib/postingSlots.ts)
 Daily       metrics, followers, new users, new comments; competitors on Mondays
 ```
 

@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
 
-export default function WeekActions({ project, week, review, changes }: { project: string; week: string; review: number; changes: number }) {
+// Revise button, and (on a week page) approve the whole week. Without `week` only the revise button.
+export default function WeekActions({ project, week, review = 0, changes }: { project: string; week?: string; review?: number; changes: number }) {
   const router = useRouter(); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState(''); const [sure, setSure] = useState(false);
   async function post(path: string, body: object) {
     setBusy(true); setMsg('');
@@ -17,7 +18,7 @@ export default function WeekActions({ project, week, review, changes }: { projec
       <Button disabled={busy || !changes} onClick={() => post('revise', {})} title={changes ? undefined : 'Zet eerst een opmerking bij een item'}>
         Aanpassingen naar Claude{changes ? ` (${changes})` : ''}
       </Button>
-      {sure
+      {!week ? null : sure
         ? <span className="flex items-center gap-2 rounded-lg bg-accent-faint px-2 py-1 ring-1 ring-accent-soft">
             <span className="text-sm font-semibold text-accent-dark">Alle {review} goedkeuren?</span>
             <Button variant="primary" size="sm" disabled={busy} onClick={() => { setSure(false); post('items/approve-all', { week }); }}>Ja</Button>

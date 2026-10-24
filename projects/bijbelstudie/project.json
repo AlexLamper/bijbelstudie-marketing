@@ -6,6 +6,13 @@
   "db": "bijbelstudie_marketing",
   "envPrefix": "",
   "web": "bijbelstudie.io",
+  "links": {
+    "appStore": "https://apps.apple.com/nl/app/bijbelstudie-lees-leer/id6800668187",
+    "playStore": "https://play.google.com/store/apps/details?id=com.bijbelstudie.app",
+    "instagram": "bijbelstudie.io",
+    "tiktok": "bijbelstudie.io",
+    "youtube": "@bijbelstudie-io"
+  },
   "language": "nl",
   "timezone": "Europe/Amsterdam",
   "platforms": [

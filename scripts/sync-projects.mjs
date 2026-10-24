@@ -11,7 +11,7 @@ const dataUri = (rel, p) => { const f = rel && assetPath(rel, p); return f ? `da
 
 const projects = listProjects({ all: true }).map(p => ({
   id: p.id, name: p.name, tagline: p.tagline || '', enabled: p.enabled !== false, db: p.db, web: p.web || '',
-  platforms: p.platforms,
+  platforms: p.platforms, timezone: p.timezone, links: p.links || {},
   theme: { accent: p.theme.accent, accentDark: p.theme.accentDark, accentSoft: p.theme.accentSoft, accentFaint: p.theme.accentFaint, cta: p.theme.cta, panel: p.theme.panel },
   logo: { mark: dataUri(p.logos.iconOnDark, p), full: dataUri(p.logos.full, p) },
 }));

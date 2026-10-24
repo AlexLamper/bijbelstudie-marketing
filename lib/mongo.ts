@@ -26,6 +26,7 @@ export type Item = {
   spec: any; media?: { url: string; coverUrl?: string; duration?: number };
   results?: Record<string, any>; metrics?: Record<string, any>;
   reviewComments?: { text: string; at: Date }[]; error?: string; renderNotes?: string[];
+  createdAt?: Date; updatedAt?: Date; publishedAt?: Date;
 };
 
 /** ISO week like 2026-W45 for a date. */
