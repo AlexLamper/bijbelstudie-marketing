@@ -2,7 +2,7 @@
    Loaded as a module (it imports three.js); registers T['reel-3d'] like the other templates.
    Each shot is one spoken line (narrator "say", or a character's "line" with "by") or a silent "hold".
    The camera, the actors and the overlays are all set from t (pure function of time). */
-import { THREE, getRenderer, V, clamp, lerp, prog, smooth, inout, out, wobble, texture, setStyle } from '../3d/core.js';
+import { THREE, getRenderer, V, clamp, lerp, prog, smooth, inout, out, wobble, texture, setStyle, silhouette, DUSK } from '../3d/core.js';
 import { person, setPhoneScreen } from '../3d/people.js';
 import { SETS } from '../3d/sets.js';
 import '../3d/sets-outdoor.js';
@@ -55,6 +55,25 @@ T['reel-3d'] = (spec, timing) => {
     return w;
   };
   shots.forEach(s => { s.world = worldOf(s); });
+  // silhouette look: every surface a dark shape, glowing things (fire, lamps, windows) stay lit, the
+  // haze makes far things paler - layered like shadow theatre. The 3D map keeps its colours.
+  if (silhouette()) {
+    r.shadowMap.enabled = false;
+    const dark = new THREE.MeshBasicMaterial({ color: '#16101a' }), cloud = new THREE.MeshBasicMaterial({ color: '#f4a982', fog: false }), glow = new Map();
+    for (const w of worlds.values()) {
+      if (w.def === SETS.kaart) continue;
+      w.scene.fog = new THREE.Fog(DUSK.fog, 6, 70); w.scene.background = new THREE.Color(DUSK.horizon);
+      w.scene.traverse(o => {
+        if (!(o.isMesh || o.isInstancedMesh) || o.material?.isShaderMaterial || o.userData.outline) return;
+        const m = o.material; if (Array.isArray(m)) return;
+        const e = m.emissive && (m.emissive.r + m.emissive.g + m.emissive.b) > .2 ? '#' + m.emissive.getHexString() : null;
+        const bright = m.isMeshBasicMaterial && m.color && (m.color.r + m.color.g + m.color.b) > 2.2;   // flames, bulbs, moon
+        if (e && m.emissiveIntensity < .8) { o.material = cloud; return; }   // clouds catch the dusk light
+        if (e || bright) { const c = e || '#' + m.color.getHexString(); if (!glow.has(c)) glow.set(c, new THREE.MeshBasicMaterial({ color: c, fog: false })); o.material = glow.get(c); }
+        else if (!m.transparent) o.material = dark;
+      });
+    }
+  }
 
   /* ---- overlays ---- */
   const vig = el('div', 'abs full'); css(vig, { background: 'radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.38))', zIndex: 2 });
@@ -124,7 +143,7 @@ T['reel-3d'] = (spec, timing) => {
   /* ---- camera: a solver picks the angle and distance that frame the shot's people, per shot ---- */
   const VF = deg => Math.tan(deg * Math.PI / 360);
   /** Distance at which all points fit when looking at `focus` from direction `dir` (unit, xz), camera raised by `up`. */
-  function fitDist(points, focus, dir, up, fov, mx = .8, my = .78) {
+  function fitDist(points, focus, dir, up, fov, mx = .8, my = .78) {   // mx/my: share of the frame the points may fill
     const tv = VF(fov) * my, th = VF(fov) * (W / H) * mx;
     let lo = .4, hi = 40;
     const ok = d => {
@@ -137,11 +156,11 @@ T['reel-3d'] = (spec, timing) => {
   }
   const inBounds = (w, c) => !w.bounds || (c.x >= w.bounds.x[0] && c.x <= w.bounds.x[1] && c.z >= w.bounds.z[0] && c.z <= w.bounds.z[1]);
   /** Best camera for: points to fit, faces to see (states, weight), a preferred direction, a distance range. */
-  function solve(w, { points, focus, faces = [], prefer = null, preferW = 1.6, up = .25, fov = 38, minD = .8, maxD = 12, others = [], fixedD = null }) {
+  function solve(w, { points, focus, faces = [], prefer = null, preferW = 1.6, up = .25, fov = 38, minD = .8, maxD = 12, others = [], fixedD = null, fill = [.8, .78] }) {
     let best = null;
     for (let a = 0; a < 360; a += 7.5) {
       const r = a * Math.PI / 180, dir = V(Math.sin(r), 0, Math.cos(r));
-      const d = fixedD ?? Math.min(maxD, Math.max(minD, fitDist(points, focus, dir, up, fov)));
+      const d = fixedD ?? Math.min(maxD, Math.max(minD, fitDist(points, focus, dir, up, fov, ...fill)));
       const cam = focus.clone().add(dir.clone().multiplyScalar(d)).add(V(0, up, 0));
       if (!inBounds(w, cam)) continue;
       let score = d * .35;
@@ -187,7 +206,7 @@ T['reel-3d'] = (spec, timing) => {
     if (type === 'wide' || !on) {
       const points = ids.length ? pts(ids, .3, 1.65, .35) : [V(...wide.target)];
       const focus = ids.length ? points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length) : V(...wide.target);
-      const sol = solve(w, { points, focus, prefer, up: .55, fov: 44, minD: 3.2, faces: states.map(st => [st, .9]) });
+      const sol = solve(w, { points, focus, prefer, up: .75, fov: 46, minD: 4, maxD: 16, faces: states.map(st => [st, .7]), fill: [.5, .42] });   // the world first: people small
       P = { focus, cam: sol.cam, fov: 44 };
     } else if (type === 'two-shot' && other) {
       const points = pts([on.a.id, other.a.id], .28, .75, .3); const focus = points.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / points.length);
@@ -216,10 +235,24 @@ T['reel-3d'] = (spec, timing) => {
     const speaker = s.by && byId[s.by] ? byId[s.by] : null;
     const on = (s.on && byId[s.on]) || speaker || states[0] || null;
     const other = on && (states.find(st => st !== on && st.a.id === s.by) || states.find(st => st !== on));
-    const type = s.camera || (states.length ? 'medium' : 'wide');
+    const type = s.camera || (s.say || !states.length ? 'wide' : 'medium');   // the narrator speaks over the world, not a face
     const planType = type === 'push-in' ? 'medium' : type;
     let pos, target, fov;
-    if (w.camera && (type === 'wide' || !on)) ({ pos, target, fov } = w.camera(t, s, k));
+    const centre = () => { const pts = states.length ? states.map(st => V(st.x, st.y + 1, st.z)) : [V(...w.wide.target)]; return pts.reduce((a, b) => a.add(b), V()).multiplyScalar(1 / pts.length); };
+    if (type === 'establish') {   // the whole place, from further back and low, slowly coming closer
+      const base = w.camera ? w.camera(t, s, 0) : { pos: V(...w.wide.pos), target: V(...w.wide.target), fov: 44 };
+      const dir = base.pos.clone().sub(base.target); target = base.target.clone(); pos = target.clone().add(dir.multiplyScalar(1.7 - .25 * inout(k))); pos.y = Math.max(target.y + .8, pos.y * .8); fov = 48;
+    } else if (type === 'aerial') {   // high above, slowly turning: the place as a diorama
+      const c = centre(); const pref = V(...w.wide.pos).sub(V(...w.wide.target)).setY(0).normalize();
+      const a = Math.atan2(pref.x, pref.z) + (inout(k) - .5) * .7; const R = w.aerial?.radius ?? 9, Hh = w.aerial?.height ?? 8;
+      pos = c.clone().add(V(Math.sin(a) * R, Hh, Math.cos(a) * R)); target = c; fov = 44;
+    } else if (type === 'sky') {   // from the people up to the sky (stars, storm, the heavens)
+      const c = centre(); const pref = V(...w.wide.pos).sub(V(...w.wide.target)).setY(0).normalize();
+      pos = c.clone().add(pref.clone().multiplyScalar(3)).add(V(0, .4, 0)); target = c.clone().add(pref.clone().multiplyScalar(-6)).add(V(0, lerp(.6, 9, inout(k)), 0)); fov = 50;
+    } else if (type === 'track' && states.length) {   // alongside the action, moving sideways
+      const P = plan(s, states, 'wide', on, other); target = P.focus.clone(); const rel = P.cam.clone().sub(target).multiplyScalar(.75);
+      const right = rel.clone().cross(V(0, 1, 0)).normalize(); pos = target.clone().add(rel).add(right.multiplyScalar((k - .5) * 3)); fov = 42;
+    } else if (w.camera && (type === 'wide' || !on)) ({ pos, target, fov } = w.camera(t, s, k));
     else if (type === 'phone' && on) {
       on.p.root.updateMatrixWorld(true);
       const ph = on.p.props.phone; const pp = ph.getWorldPosition(V()); const q = ph.getWorldQuaternion(new THREE.Quaternion());
@@ -236,7 +269,7 @@ T['reel-3d'] = (spec, timing) => {
       else if (type === 'wide') pos.add(toward.clone().multiplyScalar(.08 * inout(k)));
       else pos.add(toward.clone().multiplyScalar(.05 * k));
     }
-    if (w.bounds) { pos.x = clamp(pos.x, ...w.bounds.x); pos.z = clamp(pos.z, ...w.bounds.z); pos.y = clamp(pos.y, ...(w.bounds.y || [.3, 50])); }
+    if (w.bounds && !['aerial', 'establish', 'sky'].includes(type)) { pos.x = clamp(pos.x, ...w.bounds.x); pos.z = clamp(pos.z, ...w.bounds.z); pos.y = clamp(pos.y, ...(w.bounds.y || [.3, 50])); }
     const hs = type === 'phone' ? .0015 : .01;
     pos.add(V(shake(t * .6) * hs, shake(t * .5 + 4) * hs, 0)); target.add(V(shake(t * .4 + 9) * hs * .6, shake(t * .45 + 2) * hs * .6, 0));
     camera.fov = fov; camera.updateProjectionMatrix(); camera.position.copy(pos); camera.lookAt(target);

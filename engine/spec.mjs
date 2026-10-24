@@ -40,7 +40,7 @@ export const STYLES = ['light', 'dark', 'photo'];
 export const MOODS = ['none', 'calm', 'hopeful', 'reflective', 'cinematic', 'warm', 'upbeat'];
 export const CAPTIONS = ['karaoke', 'block', 'none'];
 export const VOICE_STYLES = ['rustig', 'levendig'];
-export const STYLES3D = ['lowpoly', 'rond', 'toon', 'blok', 'klei'];   // looks of a 3D reel (engine/render/3d/core.js)
+export const STYLES3D = ['lowpoly', 'rond', 'toon', 'blok', 'klei', 'silhouet', 'papier'];   // looks of a 3D reel (engine/render/3d/core.js)
 
 const base = {
   id: z.string().regex(/^[a-z0-9-]+$/),
@@ -218,7 +218,7 @@ export const ReelScene = z.object({
   ...base, ...reel, kind: z.literal('reel-3d'),
   voice: voice.optional(),                                // narrator (needed when a shot has "say")
   hook: shortLine,                                        // big title over the first shot
-  style3d: z.enum(STYLES3D).optional(),   // look: lowpoly (default, faceted) | rond (smooth toy) | toon (cel-shaded, outlines) | blok (blocks) | klei (claymation)
+  style3d: z.enum(STYLES3D).optional(),   // look: lowpoly (default) | rond | toon | blok | klei | silhouet (shadow play at dusk) | papier (storybook paper)
   cast: z.array(z.object({ id: z.string().regex(/^[a-z0-9-]+$/), look: enumOf(keys(CATALOG3D.looks), 'look'), name: z.string().max(30).optional(), voice: voice.optional() })).max(4).default([]),
   shots: z.array(shot3d).min(3).max(14),
 }).superRefine((s, c) => {

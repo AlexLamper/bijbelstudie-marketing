@@ -77,7 +77,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   head.add(scl(at(mesh(G.sphere(.032, 16, 12), mat(shade(skinC, -.04), { rough: .55 })), 0, -.025, headR * .98), 1, .85, 1));   // nose
   // face
   const F = P.face = {};
-  const eyeW = mat('#fbfaf6', { rough: .3 }), iris = mat(L.eyes || '#2d1f16', { rough: .25 }), shine = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+  const eyeW = mat('#fbfaf6', { rough: .3 }), iris = mat(L.eyes || '#2d1f16', { rough: .25 }), shine = new THREE.MeshBasicMaterial({ color: STYLE.name === 'silhouet' ? '#16101a' : '#ffffff' });
   F.eyes = [1, -1].map(s => {
     const e = at(group(head), s * .074, .028, headR * .9);
     e.add(scl(mesh(G.sphere(.043, 20, 14), eyeW, { cast: false }), 1, 1.12, .55));
@@ -168,7 +168,7 @@ export function person(lookKey, { seed = lookKey } = {}) {
   // fewer draw calls: each joint's own static meshes become one mesh per material (face parts stay separate)
   const keepFace = new Set([F.smile, F.open, skirt].filter(Boolean));
   for (const k of Object.keys(P)) if (P[k]?.isObject3D) bake(P[k], { deep: false, keep: keepFace });
-  if (STYLE.name === 'toon') {   // cartoon outlines on the body, not on the small face parts or props
+  if (STYLE.name === 'toon' || STYLE.name === 'papier') {   // cartoon outlines on the body, not on the small face parts or props
     const skip = new Set([...F.eyes.map(e => e.g), ...F.brows, F.mouth, ...Object.values(props)].filter(Boolean));
     const list = []; root.traverse(m => {
       if (!m.isMesh || m.userData.outline || m.material.transparent) return;

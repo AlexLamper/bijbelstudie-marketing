@@ -55,9 +55,12 @@ export const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
    toon     cel-shaded cartoon: 3 light steps + dark outlines on the characters
    blok     blocky (everything boxes, like building blocks)
    klei     claymation: smooth shapes with a hand-made clay grain
+   silhouet shadow play: everything a dark silhouette against a glowing dusk sky, depth from haze;
+            fires, lamps and windows still glow (silhouette() in templates/scene3d.js does the pass)
+   papier   storybook: paper-textured cartoon shading, soft outlines on the people
    Set once per reel before anything is built (templates/scene3d.js). G.* and mat() follow it, so sets
    and props built with them get every look. Custom geometry: use segs() and flatShading: faceted(). */
-export const STYLES3D = ['lowpoly', 'rond', 'toon', 'blok', 'klei'];
+export const STYLES3D = ['lowpoly', 'rond', 'toon', 'blok', 'klei', 'silhouet', 'papier'];
 export const STYLE = { name: 'lowpoly' };
 export const setStyle = name => { STYLE.name = STYLES3D.includes(name) ? name : 'lowpoly'; };
 export const lowpoly = () => STYLE.name === 'lowpoly';
@@ -67,7 +70,18 @@ export const faceted = () => STYLE.name === 'lowpoly' || STYLE.name === 'blok';
 /** Segment count for the current style (low poly / blok: about a third, at least `min`). */
 export const segs = (n, min = 5) => faceted() ? Math.max(min, Math.round(n / 3)) : n;
 
-let ramp = null, grain = null;
+let ramp = null, grain = null, softRamp = null, paper = null;
+const paperGrain = () => paper ||= (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); const r = rng(23);
+  g.fillStyle = '#f7f4ee'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 900; i++) { g.strokeStyle = `rgba(${150 + r() * 60},${140 + r() * 60},${120 + r() * 60},${.08 + r() * .14})`; g.lineWidth = .5 + r(); g.beginPath(); const x = r() * 256, y = r() * 256, a = r() * 6.28, l = 3 + r() * 14; g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+  for (let i = 0; i < 1800; i++) { const v = 220 + Math.floor(r() * 35); g.fillStyle = `rgba(${v},${v - 4},${v - 10},.35)`; g.fillRect(r() * 256, r() * 256, 1.4, 1.4); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.5, 1.5); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const paperRamp = () => softRamp ||= (() => { const d = new Uint8Array([120, 120, 120, 255, 200, 200, 200, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1, THREE.RGBAFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
+/** The silhouette look's sky and haze. */
+export const DUSK = { top: '#1d1640', horizon: '#ff9a52', bottom: '#ffcf8a', fog: '#f39a63' };
+export const silhouette = () => STYLE.name === 'silhouet';
 const toonRamp = () => ramp ||= (() => { const d = new Uint8Array([70, 70, 70, 255, 160, 160, 160, 255, 255, 255, 255, 255]); const t = new THREE.DataTexture(d, 3, 1, THREE.RGBAFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; })();
 const clayGrain = () => grain ||= (() => {
   const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'); const r = rng(11);
@@ -86,6 +100,9 @@ export function mat(color, o = {}) {
   let m;
   // Lambert (diffuse only) where a look is matte anyway: about a quarter faster in software WebGL.
   if (STYLE.name === 'toon') m = new THREE.MeshToonMaterial({ ...common, gradientMap: toonRamp() });
+  else if (STYLE.name === 'papier') m = new THREE.MeshToonMaterial({ ...common, gradientMap: paperRamp(), map: o.metal ? null : paperGrain() });
+  else if (STYLE.name === 'silhouet') m = o.emissive && o.emissive !== '#000000' ? new THREE.MeshBasicMaterial({ color: o.emissive, side: common.side, transparent: common.transparent, opacity: common.opacity })
+    : new THREE.MeshBasicMaterial({ color: '#16101a', side: common.side, transparent: common.transparent, opacity: common.opacity });
   else if (STYLE.name === 'klei') m = new THREE.MeshLambertMaterial({ ...common, map: o.metal ? null : clayGrain(), flatShading: !!o.flat });
   else if (faceted() && !o.metal) m = new THREE.MeshLambertMaterial({ ...common, flatShading: o.flat ?? true });
   else m = new THREE.MeshStandardMaterial({ ...common, roughness: o.rough ?? (faceted() ? .9 : .78), metalness: o.metal ?? 0, flatShading: o.flat ?? faceted() });
@@ -130,6 +147,7 @@ export const G = {
 /* ---------- sky + lights ---------- */
 /** Gradient sky dome (no fog), colours top / horizon / bottom. */
 export function sky(scene, { top = '#6fa8dc', horizon = '#f4dcc0', bottom = '#e8d2b4', radius = 400, sharp = 1.6 } = {}) {
+  if (silhouette()) ({ top, horizon, bottom } = DUSK);
   const g = new THREE.SphereGeometry(radius, 32, 16);
   const m = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
