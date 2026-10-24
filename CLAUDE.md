@@ -11,11 +11,13 @@ Projects:
 1. `P/project.json` - name, database, colours, logos, end card, platforms.
 2. `P/brand/product.md` - what the product is and does. Never claim anything that is not in it.
 3. `P/brand/voice-and-rules.md` - audience, voice, hooks and the hard rules.
+3b. `P/brand/lessons.md` - Alex's feedback as lasting rules (what to make, story, sound, looks, transitions, posting) and what was fixed in the engine. Read it before you plan, write or change a template; never undo a lesson.
 4. `P/brand/visual.md` - logo/CTA rules and which screenshot shows what. BijbelStudie's full design system is the "BijbelStudie" Design System artifact on claude.ai.
 5. `engine/spec.mjs` - the spec contract. `planner/PLAN.md` (steps) + `P/plan.md` (that project's recipe and experiments).
 
 ## Hard rules
 
+- Alex's feedback is never lost: every remark becomes a rule in `P/brand/lessons.md`. Studio review comments do this automatically (export-context writes the unlearned ones to `content/context/feedback-new.json`, the planner and revise turn them into rules first - `planner/PLAN.md` step 1b - and `cli/lessons-learned.mjs` marks them learned in Mongo `lessons`; engine-only feedback goes to Alex as one message). Feedback Alex gives in a chat session: write it into `lessons.md` in the same turn. When you fix an engine item, move it from "Nog op te lossen" to "Opgelost" with the commit.
 - Nothing is published without Alex's approval: only items with status `approved` are ever touched by `publish-due`.
 - Verse words always come from `data/statenvertaling/` (engine/verses.mjs), never typed by a model. A verse that went out is never reused (Mongo `verses` per project, exported to `P/content/used-verses.json`).
 - Secrets never go in git. They live in GitHub Actions secrets (reach the engine as `SECRETS` JSON), keys pasted in the studio (Instellingen > Sleutels; sealed with ENGINE_KEY in Mongo `secrets`, loaded by engine/db.mjs), linked accounts (Mongo `connections`, sealed), Vercel env vars (studio) and, for local runs only, `.env.engine` (gitignored). `engine.config` is committed and holds only non-secret settings. GitHub secrets win over studio keys.
@@ -42,7 +44,7 @@ Projects:
 - Studio: `app/` (`/` overview, `/<project>/...` pages, `/api/<project>/...`, `/api/engine/*` for the engine), `components/` (ui.tsx buttons/cards - use them so every control has pointer, hover, focus and disabled states), `lib/` (projects.ts reads `projects.generated.json`, written by `scripts/sync-projects.mjs`).
 - `.github/workflows/` plan-week ("Plan day", daily, one day per project, matrix per project), revise (one project), render, publish (also runs `cli/kick.mjs`: starts Revise/Render when the studio asked), stats (also the approval reminder), ci; shared steps in `.github/actions/`.
 - Studio Instellingen: setup checklist, account linking (OAuth: `app/api/oauth/*`, `lib/connections.ts`), Sleutels (`lib/secrets.ts`), ElevenLabs voices + voice test set (`lib/elevenlabs.ts`, Mongo `settings.voices`), last runs (engine heartbeats in Mongo `runs`).
-- By hand: `maintenance.yml` (set-subjects, week-status, set-status: reject or re-render items by id), `music.yml` (generate the music library with ElevenLabs Music, guards the voice budget), `samples.yml` (render samples with real voice and music, prints public links).
+- By hand: `maintenance.yml` (set-subjects, week-status, set-status: reject or re-render items by id, feedback: every review comment and whether it is learned, `--mark-learned`), `music.yml` (generate the music library with ElevenLabs Music, guards the voice budget), `samples.yml` (render samples with real voice and music, prints public links).
 
 ## Workflow schedules
 

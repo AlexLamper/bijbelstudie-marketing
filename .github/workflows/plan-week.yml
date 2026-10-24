@@ -55,7 +55,8 @@ jobs:
           allowed_bots: 'github-actions'   # kick.mjs (Publish workflow) starts this run with the workflow token
           prompt: |
             Today is ${{ env.TODAY }}. Project: ${{ matrix.project }} (folder projects/${{ matrix.project }}/).
-            Read planner/PLAN.md and follow it exactly: on Mondays a report on last week, plan the one day
+            Read planner/PLAN.md and follow it exactly: first turn Alex's new review comments into lasting
+            rules in brand/lessons.md (step 1b), on Mondays a report on last week, plan the one day
             in content/context/target-week.json (${{ steps.ctx.outputs.date }}), meet the quality bar (draft,
             then edit like a strict editor; check every Bible fact in data/statenvertaling), draft comment
             replies, and run the validator until it passes.
@@ -70,13 +71,17 @@ jobs:
         if: steps.ctx.outputs.skip != 'true'
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
+      - name: Lessons learned (Alex's new review comments are rules in brand/lessons.md now)
+        if: steps.ctx.outputs.skip != 'true'
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
+        run: node engine/cli/lessons-learned.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         if: steps.ctx.outputs.skip != 'true'
         env: { DAY: '${{ steps.ctx.outputs.date }}' }
         run: |
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           c=projects/$PROJECT/content
-          git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
+          git add $c/imported $c/used-verses.json $c/queue/_errors.json projects/$PROJECT/brand/lessons.md 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "plan $PROJECT: ${DAY:-$(TZ=Europe/Amsterdam date +%F)}" && git pull --rebase --autostash -q && git push)
       - name: Render (the Render workflow, three jobs side by side)
         if: steps.ctx.outputs.skip != 'true'

@@ -1,5 +1,6 @@
-# Started from the studio ("Aanpassingen naar Claude") for one project: Claude rewrites every item
-# Alex marked for changes, then they are validated, imported and rendered again.
+# Started from the studio ("Aanpassingen naar Claude") for one project: Claude turns Alex's new comments into
+# lessons (brand/lessons.md) and rewrites every item he marked for changes; then they are validated, imported
+# and rendered again.
 name: Revise
 on:
   repository_dispatch: { types: [revise] }       # client_payload: { "project": "<id>" }
@@ -46,11 +47,14 @@ jobs:
       - name: Import into the studio
         env: { SECRETS: '${{ toJSON(secrets) }}' }
         run: node engine/cli/import-queue.mjs 2>&1 | tee -a run.log
+      - name: Lessons learned (Alex's new review comments are rules in brand/lessons.md now)
+        env: { SECRETS: '${{ toJSON(secrets) }}', GITHUB_TOKEN: '${{ github.token }}' }
+        run: node engine/cli/lessons-learned.mjs 2>&1 | tee -a run.log
       - name: Keep a record in git
         run: |
           git config user.name "Marketing engine"; git config user.email "engine@users.noreply.github.com"
           c=projects/$PROJECT/content
-          git add $c/imported $c/used-verses.json $c/queue/_errors.json 2>/dev/null || true
+          git add $c/imported $c/used-verses.json $c/queue/_errors.json projects/$PROJECT/brand/lessons.md 2>/dev/null || true
           git diff --cached --quiet || (git commit -m "revise $PROJECT: $(date -u +%F)" && git pull --rebase --autostash -q && git push)
       - name: Render (the Render workflow, three jobs side by side)
         env: { GH_TOKEN: '${{ github.token }}' }

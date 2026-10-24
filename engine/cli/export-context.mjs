@@ -1,7 +1,7 @@
 // Before the planner runs: write everything it should know into projects/<id>/content/context/ -
 // the day to plan (target-week.json) and its allocation, last weeks' results per item, Alex's review
-// comments, what he rejected, competitor patterns, comments waiting for a reply, items marked "changes",
-// and the used-verse ledger.
+// comments (and the ones not yet learned as lessons), what he rejected, competitor patterns, comments
+// waiting for a reply, items marked "changes", and the used-verse ledger.
 import '../env.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -75,6 +75,12 @@ const rejected = [...fresh, ...kept.filter(r => !fresh.some(f => f._id === r._id
   .sort((a, b) => new Date(b.rejectedAt || 0) - new Date(a.rejectedAt || 0)).map(({ _id, ...r }) => ({ id: _id, ...r }));
 writeFileSync(join(OUTD, 'rejected.json'), JSON.stringify({ note: 'Items Alex rejected in the last 60 days, newest first: kind, subject, hook, traits and his comments. Avoid making that again - read his comments to see why.', items: rejected }, null, 2));
 
+// Alex's review comments not yet turned into lessons (P/brand/lessons.md; planner/PLAN.md step 1b).
+// cli/lessons-learned.mjs marks them learned after the run succeeded, so a failed run sees them again.
+const { newFeedback } = await import('../lessons.mjs');
+const feedback = await newFeedback(d);
+writeFileSync(join(OUTD, 'feedback-new.json'), JSON.stringify({ note: 'Review comments Alex wrote in the studio that are not in brand/lessons.md yet, newest first: the item, its traits and spec, and his words. Turn each into a lasting rule in brand/lessons.md (planner/PLAN.md step 1b).', items: feedback }, null, 2));
+
 const comments = await d.collection('comments').find({ status: 'new', draft: { $exists: false } }).limit(100).toArray();
 writeFileSync(join(OUTD, 'comments-to-answer.json'), JSON.stringify(comments.map(c => ({ commentId: c._id, itemId: c.itemId, username: c.username, text: c.text })), null, 2));
 
@@ -98,7 +104,7 @@ writeFileSync(P.paths.usedVerses, JSON.stringify(ledger, null, 2));
 const { historyFrom, VERSE_DAYS, SUBJECT_WEEKS, APP_SUBJECT_WEEKS, HOOK_WEEKS } = await import('../repeats.mjs');
 const history = historyFrom(await d.collection('items').find({ slot: { $gte: new Date(Date.now() - 400 * 864e5) } }).sort({ slot: -1 }).toArray());
 writeFileSync(join(OUTD, 'history.json'), JSON.stringify({ note: `Do not repeat: a verse of the day never again; any shown verse not within ${VERSE_DAYS} days; a subject not within ${SUBJECT_WEEKS} weeks (app/praktisch: ${APP_SUBJECT_WEEKS}) and never twice in a week; a hook not (nearly) the same within ${HOOK_WEEKS} weeks. Newest first.`, items: history }, null, 2));
-console.log(`[${P.id}] target ${T.day} ${T.date} (${T.week}, ${T.daysAhead} days ahead); context: ${rows.length} items, ${history.length} in history, ${changes.length} changes, ${rejected.length} rejected, ${comments.length} comments, ${top.length} competitor posts`);
+console.log(`[${P.id}] target ${T.day} ${T.date} (${T.week}, ${T.daysAhead} days ahead); context: ${rows.length} items, ${history.length} in history, ${changes.length} changes, ${rejected.length} rejected, ${feedback.length} new review comments to learn from, ${comments.length} comments, ${top.length} competitor posts`);
 if (skip) {
   console.log(`[${P.id}] enough waiting (${backlog} to make or review, ${pile} approved on the pile) - no new day planned today`);
   if (process.env.GITHUB_OUTPUT) (await import('node:fs')).appendFileSync(process.env.GITHUB_OUTPUT, 'skip=true\n');
