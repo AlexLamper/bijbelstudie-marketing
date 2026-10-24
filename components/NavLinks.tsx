@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const NAV: [string, string][] = [['', 'Content'], ['/reports', 'Rapporten'], ['/comments', 'Reacties'], ['/stats', 'Cijfers'], ['/experiments', 'Experimenten'], ['/settings', 'Instellingen']];
+const NAV: [string, string][] = [['', 'Content'], ['/kanalen', 'Kanalen'], ['/reports', 'Rapporten'], ['/comments', 'Reacties'], ['/stats', 'Cijfers'], ['/experiments', 'Experimenten'], ['/settings', 'Instellingen']];
 
 export default function NavLinks({ project }: { project: string }) {
   const path = usePathname();

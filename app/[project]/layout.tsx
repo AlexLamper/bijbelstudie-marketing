@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { PROJECTS, getProject, projectStyle } from '@/lib/projects';
 import ProjectSwitcher from '@/components/ProjectSwitcher';
 import NavLinks from '@/components/NavLinks';
+import Toaster from '@/components/Toast';
 
 export async function generateMetadata({ params }: { params: Promise<{ project: string }> }): Promise<Metadata> {
   const p = getProject((await params).project);
@@ -30,6 +31,7 @@ export default async function ProjectLayout({ children, params }: { children: Re
         </div>
       )}
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <Toaster />
     </div>
   );
 }

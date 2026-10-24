@@ -6,6 +6,7 @@
   "db": "{{db}}",
   "envPrefix": "{{envPrefix}}",
   "web": "{{web}}",
+  "links": { "appStore": "", "playStore": "", "instagram": "", "tiktok": "", "youtube": "" },
   "language": "nl",
   "timezone": "Europe/Amsterdam",
   "platforms": ["instagram", "facebook", "tiktok", "youtube"],

@@ -3,8 +3,12 @@ import registry from './projects.generated.json';
 
 // Every project the studio can show. Source: projects/<id>/project.json, collected by
 // scripts/sync-projects.mjs (runs before dev and build) into projects.generated.json.
+/** Public pages of a project (project.json "links"): store links and account names to fall back on. */
+export type ProjectLinks = { appStore?: string; playStore?: string; instagram?: string; facebook?: string; tiktok?: string; youtube?: string };
+
 export type Project = {
   id: string; name: string; tagline: string; enabled: boolean; db: string; web: string; platforms: string[];
+  timezone: string; links: ProjectLinks;
   theme: { accent: string; accentDark: string; accentSoft: string; accentFaint: string; cta: string; panel: string };
   logo: { mark: string | null; full: string | null };
 };

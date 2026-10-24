@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Pill } from '@/components/ui';
+import { toast } from '@/components/Toast';
 import { KIND, PLATFORM, STATUS, traitValue } from '@/lib/labels';
+import { DEFAULT_TZ, postingTimesText, slotLabel } from '@/lib/postingSlots';
 
-const TIME = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Amsterdam' });
+// Not yet decided: the planner's date is only provisional, approving gives the real posting time.
+const UNSCHEDULED = ['review', 'changes', 'queued', 'rendering', 'failed'];
 
-export default function ItemCard({ project, item }: { project: string; item: any }) {
+export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: string; item: any; tz?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -15,7 +18,6 @@ export default function ItemCard({ project, item }: { project: string; item: any
   const [editing, setEditing] = useState(false);
   const [caption, setCaption] = useState(item.spec.caption || '');
   const [tags, setTags] = useState((item.spec.hashtags || []).join(' '));
-  const [msg, setMsg] = useState('');
   const [slide, setSlide] = useState(0);
   const s = item.spec; const video = item.kind.startsWith('reel-');
   const slides: string[] = item.media?.slides || [];
@@ -30,12 +32,12 @@ export default function ItemCard({ project, item }: { project: string; item: any
   const canDecide = ['review', 'approved', 'changes', 'rejected'].includes(item.status);
 
   async function patch(body: object) {
-    setBusy(true); setError(''); setMsg('');
+    setBusy(true); setError('');
     const r = await fetch(`/api/${project}/items/${item._id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
     if (!r.ok) { setError(j.error || 'Opslaan mislukt'); return false; }
-    if (j.message) setMsg(j.message);
+    if (j.message) toast(j.message);
     router.refresh(); return true;
   }
   async function act(action: 'approve' | 'changes' | 'reject' | 'reset') {
@@ -67,7 +69,11 @@ export default function ItemCard({ project, item }: { project: string; item: any
       </div>
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-ink-muted">
-          <span>{KIND[item.kind] || item.kind}</span><span>{TIME.format(new Date(item.slot))}</span>
+          <span>{KIND[item.kind] || item.kind}</span>
+          {UNSCHEDULED.includes(item.status) ? <span>Nog niet ingepland</span>
+            : item.status === 'approved' ? <span className="text-accent-dark" title="Gaat dan online">{slotLabel(item.slot, { tz })}</span>
+            : ['published', 'partial'].includes(item.status) ? <span title="Online sinds">{slotLabel(item.publishedAt || item.slot, { tz })}</span>
+            : null}
         </div>
         {s.verse && <p className="mt-2 font-serif text-[15px] leading-snug text-ink">&ldquo;{s.verse.text}&rdquo; <span className="whitespace-nowrap text-xs font-bold text-accent-dark">{s.verse.ref}</span></p>}
         {(s.hook || s.question || s.headline || s.line || s.slides?.[0]?.title) && <p className="mt-2 font-semibold leading-snug">{s.hook || s.question || s.headline || s.line || s.slides[0].title}</p>}
@@ -88,7 +94,7 @@ export default function ItemCard({ project, item }: { project: string; item: any
                   <input value={tags} onChange={e => setTags(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-line-strong bg-surface px-2 py-1.5 text-sm text-ink outline-none transition hover:border-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button variant="primary" size="sm" disabled={busy} onClick={saveText}>Opslaan</Button>
                   <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setCaption(s.caption || ''); setTags((s.hashtags || []).join(' ')); }}>Annuleer</Button>
                 </div>
@@ -141,26 +147,30 @@ export default function ItemCard({ project, item }: { project: string; item: any
           </div>
         )}
         {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
-        {msg && <p role="status" className="mt-2 text-xs text-success">{msg}</p>}
         {item.status === 'approved' && new Date(item.slot) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen 30 minuten).</p>}
         {item.status === 'rejected' && <p className="mt-2 rounded-md bg-bg px-2 py-1 text-xs text-ink-muted ring-1 ring-line">Wordt na ongeveer een dag verwijderd (video en item). Tot dan kun je het nog goedkeuren of laten aanpassen; de planner onthoudt wat je hebt afgewezen.</p>}
         {item.results && Object.values(item.results).some((r: any) => r.waiting) && <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-warn">Wacht op koppeling: {Object.entries(item.results).filter(([, r]: any) => r.waiting).map(([p]) => PLATFORM[p] || p).join(', ')} - zie Instellingen.</p>}
         {canDecide && (
-          <div className="mt-auto flex gap-2 pt-4">
-            {open ? <>
-                <Button variant="primary" className="flex-1" disabled={busy || !note.trim()} onClick={() => act('changes')}>Verstuur opmerking</Button>
-                <Button variant="ghost" disabled={busy} onClick={() => { setOpen(false); setNote(''); }}>Annuleer</Button>
-              </>
-              : <>
-                {item.status !== 'approved'
-                  ? <Button variant="primary" className="flex-1" disabled={busy} onClick={() => act('approve')}>Goedkeuren</Button>
-                  : <>
-                      <Button className="flex-1" disabled={busy} onClick={() => act('reset')}>Terug naar keuren</Button>
-                      {new Date(item.slot) > new Date() && <Button variant="ghost" disabled={busy} onClick={() => patch({ action: 'now' })} title="Plaats bij de volgende ronde in plaats van op het geplande tijdstip">Nu plaatsen</Button>}
-                    </>}
-                <Button disabled={busy} onClick={() => act('changes')}>Aanpassen</Button>
-                {item.status !== 'rejected' && <Button variant="danger" disabled={busy} onClick={() => act('reject')}>Weg</Button>}
-              </>}
+          <div className="mt-auto pt-4">
+            {item.status !== 'approved' && !open && (
+              <p className="mb-2 text-xs text-ink-muted">Na goedkeuren gaat hij om de eerstvolgende vrije {postingTimesText(item.kind, s.platforms)} online.</p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {open ? <>
+                  <Button variant="primary" className="flex-1" disabled={busy || !note.trim()} onClick={() => act('changes')}>Verstuur opmerking</Button>
+                  <Button variant="ghost" disabled={busy} onClick={() => { setOpen(false); setNote(''); }}>Annuleer</Button>
+                </>
+                : <>
+                  {item.status !== 'approved'
+                    ? <Button variant="primary" className="flex-1" disabled={busy} onClick={() => act('approve')}>Goedkeuren</Button>
+                    : <>
+                        <Button className="flex-1" disabled={busy} onClick={() => act('reset')}>Terug naar keuren</Button>
+                        {new Date(item.slot) > new Date() && <Button variant="ghost" disabled={busy} onClick={() => patch({ action: 'now' })} title="Plaats bij de volgende ronde in plaats van op het geplande tijdstip">Nu plaatsen</Button>}
+                      </>}
+                  <Button disabled={busy} onClick={() => act('changes')}>Aanpassen</Button>
+                  {item.status !== 'rejected' && <Button variant="danger" disabled={busy} onClick={() => act('reject')}>Weg</Button>}
+                </>}
+            </div>
           </div>
         )}
       </div>

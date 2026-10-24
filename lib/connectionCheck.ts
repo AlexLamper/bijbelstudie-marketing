@@ -47,6 +47,8 @@ async function checkTikTok(project: string, secret: any): Promise<string> {
     headers: { Authorization: `Bearer ${s.accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' }, body: '{}' }), 'TikTok');
   // creator_info lists PUBLIC_TO_EVERYONE even for apps TikTok has not audited yet; those posts still land as private
   const name = c.data?.creator_username ? `@${c.data.creator_username}` : c.data?.creator_nickname || 'account';
+  // the public profile name, for the Kanalen page (linking only gives the display name)
+  if (c.data?.creator_username) await (await getDb(project)).collection('connections').updateOne({ _id: 'tiktok' as any }, { $set: { 'account.username': c.data.creator_username } });
   return `TikTok: ${name} - posts blijven privé tot TikTok de app goedkeurt`;
 }
 

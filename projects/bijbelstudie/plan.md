@@ -102,12 +102,10 @@ Instagram); extra reels on TikTok and YouTube explore more. Ids: `<idPrefix>-<fo
 - **Formats, looks, voices, music, subtitles, hooks, topics:** divided by `allocation.json` (Thompson
   sampling on fair scores, see `engine/experiments.mjs`). You follow it; you do not pick winners yourself.
 - **Feed posts:** `experiment.feedType` = `spotlight`, `statement` or `carousel`.
-- **Post times (decided by data):** keep the fixed slots. From week 3 compare views and saves per slot in
-  `performance.json` (use `slot`): try one alternative per type each week on one day only (check
-  `performance.json` for a `tijd-test` already in that ISO week), set `experiment.note: "tijd-test HH:MM"`,
-  and move the default slot when an alternative wins two weeks in a row.
-- **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" (caption, or a spotlight
-  on `15-profiel`): plan it when no item of the target's ISO week has it yet (see `performance.json`).
+- **Post times:** fixed per type. The `slot` you write is provisional: when Alex approves an item it
+  gets the next free time of its type (verse 07:00, feed post 12:00, extra reels 12:30/17:00, main reel
+  19:30; `lib/postingSlots.ts`), so a time test in the spec has no effect - do not plan one.
+- **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" in its caption: plan it when no item of the target's ISO week has it yet (see `performance.json`).
 
 ## Daily verse rules
 

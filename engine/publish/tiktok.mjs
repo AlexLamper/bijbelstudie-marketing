@@ -45,7 +45,11 @@ export async function publishTikTok(item) {
   if (!up.ok) throw new Error(`TikTok upload ${up.status}: ${await up.text()}`);
   for (let i = 0; i < 40; i++) {
     const st = await api('/post/publish/status/fetch/', token, { publish_id: init.publish_id });
-    if (st.status === 'PUBLISH_COMPLETE') return { id: st.publicaly_available_post_id?.[0] || init.publish_id, privacy, needsManual: privacy !== 'PUBLIC_TO_EVERYONE' };
+    if (st.status === 'PUBLISH_COMPLETE') {
+      const post = st.publicaly_available_post_id?.[0];   // only set once the video is public
+      return { id: post || init.publish_id, privacy, needsManual: privacy !== 'PUBLIC_TO_EVERYONE',
+        ...(post && creator.creator_username ? { url: `https://www.tiktok.com/@${creator.creator_username}/video/${post}` } : {}) };
+    }
     if (st.status === 'FAILED') throw new Error(`TikTok publish failed: ${st.fail_reason}`);
     await sleep(5000);
   }
