@@ -45,7 +45,7 @@ if ((flag && (flag.value ?? flag)) && changes) {
 }
 
 // 2. render (at most once per 40 minutes, so a running render is not stacked)
-const waiting = await d.collection('items').countDocuments({ $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, media: { $exists: false }, renderAttempts: { $not: { $gte: 3 } } }] });
+const waiting = await d.collection('items').countDocuments({ $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, renderAttempts: { $not: { $gte: 3 } } }] });
 if (waiting) {
   const last = await d.collection('settings').findOne({ _id: 'render-kick' });
   if (!last || Date.now() - new Date(last.at).getTime() > 40 * 60e3) {

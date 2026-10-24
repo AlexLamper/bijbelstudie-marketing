@@ -17,7 +17,9 @@ await (await import('../library.mjs')).loadVoices(d);     // voice test set for 
 // Several render jobs may run side by side (render.yml shards; 3D reels take minutes each): every job
 // claims one item at a time atomically, so no item is rendered twice. A job stops claiming after
 // RENDER_MINUTES (default 140) so it ends inside its time limit; the next run picks up the rest.
-const WAITING = { $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, media: { $exists: false }, renderAttempts: { $not: { $gte: 3 } } }] };
+// a failed item is tried again (at most 3 times in a row), also when it still has an older video - e.g. a
+// rewritten item (Revise, Learn) whose new render failed once
+const WAITING = { $or: [{ status: STATUS.QUEUED }, { status: STATUS.FAILED, renderAttempts: { $not: { $gte: 3 } } }] };
 const stopAt = Date.now() + Number(process.env.RENDER_MINUTES || 140) * 60e3;
 // Storage first: when media cannot be stored (24 Oct: the Blob store was suspended over its limit), rendering
 // would only throw the work away. Then nothing is claimed, the items stay queued, and the run fails visibly.
