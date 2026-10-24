@@ -1047,14 +1047,32 @@
       return cur;
     }
 
+    // Alex, 24 Oct: scenes must flow into each other. Shots dissolve into the next one (XF seconds around
+    // the cut) instead of cutting hard or dipping to black. The same world in both shots: the outgoing pose
+    // is frozen into a copy (a ghost) laid over the incoming one while it fades away.
+    const XF = draw ? .75 : .65;
+    let ghost = null;
     function render(t) {
+      if (ghost) { ghost.remove(); ghost = null; }
       const i = Math.max(0, shots.findIndex(s => t >= s.start && t < s.end)); const s = t >= at ? shots[shots.length - 1] : shots[i];
       const w = s.world;
       const bo = boilOf(t);
       let sp = null;
       if (!POSTER) {
-        for (const x of worlds.values()) x.g.setAttribute('display', x === w ? 'inline' : 'none');
-        sp = poseWorld(s, t, bo);
+        for (const x of worlds.values()) { x.g.setAttribute('display', x === w ? 'inline' : 'none'); x.g.removeAttribute('opacity'); }
+        const nx = shots.find(x => x.i > 0 && Math.abs(t - x.start) < XF / 2);
+        if (nx) {
+          const pv = shots[nx.i - 1]; const k = sm((t - (nx.start - XF / 2)) / XF);
+          pv.world.g.setAttribute('display', 'inline'); nx.world.g.setAttribute('display', 'inline');
+          const a = poseWorld(pv, t, bo);
+          if (pv.world === nx.world) { ghost = pv.world.g.cloneNode(true); pv.world.g.after(ghost); ghost.setAttribute('opacity', (1 - k).toFixed(3)); }
+          const b = poseWorld(nx, t, bo);
+          sp = s === nx ? b : a;
+          if (pv.world !== nx.world) {   // two worlds: the upper one fades
+            const nxAbove = !!(pv.world.g.compareDocumentPosition(nx.world.g) & Node.DOCUMENT_POSITION_FOLLOWING);
+            (nxAbove ? nx.world.g : pv.world.g).setAttribute('opacity', (nxAbove ? k : 1 - k).toFixed(3));
+          }
+        } else sp = poseWorld(s, t, bo);
       } else {
         // which panels are on the visible part of the sheet: this one and its neighbours (all of them in the overview)
         const over = t >= at;
@@ -1096,8 +1114,7 @@
         if (x.phone) { const v = x === s ? out(prog(t, x.start + .25, x.start + .75)) * (1 - prog(t, x.end - .25, x.end)) : 0; set(x.phone.node, v, (1 - v) * 260); const im = x.phone.node.querySelector('img'); im.style.transform = `translateY(${-140 * sm(prog(t, x.start + 1.2, x.end - .3))}px)`; }
         if (x.mapLabels && x !== s) x.mapLabels.forEach(n => { n.style.opacity = 0; });
       });
-      let fd = 0; if (!POSTER) shots.forEach((x, j) => { if (j && x.world !== shots[j - 1].world && !(x.set === 'kaart' && shots[j - 1].set === 'kaart')) fd = Math.max(fd, 1 - Math.abs(t - x.start) / (draw ? .22 : .16)); });
-      fade.style.opacity = cl(fd);
+      fade.style.opacity = 0;   // shots dissolve now (above), no dip to black
       cap(t);
       end(t, endStart);
     }

@@ -143,7 +143,11 @@ async function voiceOne(spec, units, work, say, offset) {
   return clips;
 }
 
-/** Voice clips at their starts + music bed (ducked under the voice), loudness-normalised for social. */
+/** Voice clips at their starts + music bed (ducked under the voice), loudness-normalised for social.
+ *  Alex, 24 Oct: the music was louder than a soft voice. So each stem gets a fixed loudness first - the voice
+ *  -16 LUFS (a soft voice is lifted, a loud one tamed), the music bed VOICE_GAP below it - the bed ducks
+ *  further while someone speaks, and only then is the sum brought to -14 LUFS for the platforms. */
+const VOICE_LUFS = -16, VOICE_GAP = 12;
 function mixAudio({ clips = [], starts, music, duration, work }) {
   if (!clips.length && !music) return null;
   const args = ['-loglevel', 'error', '-y']; const f = []; let n = 0;
@@ -154,20 +158,22 @@ function mixAudio({ clips = [], starts, music, duration, work }) {
   }
   if (music) {
     args.push('-stream_loop', '-1', '-i', music); const m = n;
-    const vol = clips.length ? 0.32 : 0.75;
-    f.push(`[${m}:a]aresample=44100,atrim=0:${duration.toFixed(2)},asetpts=N/SR/TB,volume=${vol},afade=t=in:d=0.8,afade=t=out:st=${Math.max(0, duration - 1.8).toFixed(2)}:d=1.8[music]`);
+    const level = clips.length ? `loudnorm=I=${VOICE_LUFS - VOICE_GAP}:TP=-6:LRA=7` : 'loudnorm=I=-16:TP=-1.5:LRA=11';
+    f.push(`[${m}:a]aresample=44100,atrim=0:${duration.toFixed(2)},asetpts=N/SR/TB,${level},aresample=44100,afade=t=in:d=0.8,afade=t=out:st=${Math.max(0, duration - 1.8).toFixed(2)}:d=1.8[music]`);
   }
   // the voice is padded to the full length: the ducker (and so the music) would otherwise stop at the last word
   const D = duration.toFixed(2), STEREO = 'aformat=channel_layouts=stereo';
-  if (clips.length && music) f.push(`[voice]apad=whole_dur=${D},${STEREO},asplit=2[v1][v2]`, `[music]${STEREO}[m2]`, '[m2][v2]sidechaincompress=threshold=0.025:ratio=12:attack=20:release=400[duck]', `[v1][duck]amix=inputs=2:normalize=0:duration=longest,${STEREO},loudnorm=I=-14:TP=-1.5:LRA=11[out]`);
+  if (clips.length && music) f.push(`[voice]apad=whole_dur=${D},loudnorm=I=${VOICE_LUFS}:TP=-2:LRA=7,aresample=44100,${STEREO},asplit=2[v1][v2]`, `[music]${STEREO}[m2]`,
+    '[m2][v2]sidechaincompress=threshold=0.02:ratio=6:attack=40:release=600[duck]', `[v1][duck]amix=inputs=2:normalize=0:duration=longest,${STEREO},loudnorm=I=-14:TP=-1.5:LRA=11[out]`);
   else if (clips.length) f.push(`[voice]apad=whole_dur=${D},${STEREO},loudnorm=I=-14:TP=-1.5:LRA=11[out]`);
-  else f.push(`[music]${STEREO},loudnorm=I=-16:TP=-1.5:LRA=11[out]`);
+  else f.push(`[music]${STEREO}[out]`);
   const file = join(work, 'sound.m4a');
   execFileSync('ffmpeg', [...args, '-filter_complex', f.join(';'), '-map', '[out]', '-t', duration.toFixed(3), '-ar', '44100', '-c:a', 'aac', '-b:a', '160k', file]);
   return file;
 }
+export { mixAudio };
 
-export async function renderSpec(raw, { outDir = join(OUT, project().id), browser: shared } = {}) {
+export async function renderSpec(raw, { outDir = join(OUT, project().id), browser: shared, say } = {}) {   // say: a cached synthesize (render-pending)
   const spec = await prepare(raw);
   const dir = join(outDir, spec.id); mkdirSync(dir, { recursive: true });
   const work = mkdtempSync(join(process.env.TMPDIR || tmpdir(), `r-${spec.id}-`));
@@ -178,7 +184,7 @@ export async function renderSpec(raw, { outDir = join(OUT, project().id), browse
     await page.goto(STAGE);
     if (process.env.PERF3D) await page.evaluate(o => { window.__3dopts = o; }, JSON.parse(process.env.PERF3D));
     const units = isVideo(spec.kind) ? await page.evaluate(s => window.units(s), spec) : null;
-    const voice = await voiceClips(spec, units, work);
+    const voice = await voiceClips(spec, units, work, say);
     const context = stageContext(); Object.assign(context.shots, await captureWebScreens(browser, spec, work, project().web));
     const info = await page.evaluate(([s, t, c]) => window.setup(s, t, c), [spec, voice?.timing ?? null, context])
       .catch(e => { throw new Error(e.message.split('\n')[0] + (errs.length ? ' | page: ' + errs.join(' | ') : '')); });

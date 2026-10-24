@@ -3,6 +3,8 @@
 import '../env.mjs';
 import { renderSpec, launch } from '../render/render.mjs';
 import { upload, remove } from '../storage/index.mjs';
+import { synthesize, resolveVoice } from '../tts/index.mjs';
+import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -26,13 +28,32 @@ if (await items.countDocuments(WAITING)) {
     await heartbeat('render', { rendered: 0, of: 0, error: `opslag: ${e.message}` }); await close(); process.exit(1);
   }
 }
+// Voice takes are kept (Mongo voicecache + the mp3 in storage): rendering an item again after a change to
+// the picture or the mix reuses the same take - no voice credits, and the voice stays exactly the same.
+const cache = d.collection('voicecache');
+async function say(text, voice, opts = {}) {
+  const v = resolveVoice(voice);
+  const key = createHash('sha256').update(JSON.stringify({ text, provider: v.provider, id: v.id, opts })).digest('hex').slice(0, 32);
+  const hit = await cache.findOne({ _id: key });
+  if (hit?.url) {
+    try { const r = await fetch(hit.url); if (r.ok) { await cache.updateOne({ _id: key }, { $set: { usedAt: new Date() } }); return { audio: Buffer.from(await r.arrayBuffer()), alignment: hit.alignment || null, cached: true }; } }
+    catch { /* not there any more: voice it again */ }
+  }
+  const out = await synthesize(text, voice, opts);
+  try {
+    const f = join(tmpdir(), `voice-${key}.mp3`); writeFileSync(f, out.audio);
+    const url = await upload(f, `${project().id}/voice/${key}.mp3`);
+    await cache.updateOne({ _id: key }, { $set: { url, alignment: out.alignment || null, chars: text.length, at: new Date(), usedAt: new Date() } }, { upsert: true });
+  } catch (e) { console.error(`voice cache: ${e.message}`); }
+  return out;
+}
 const browser = await launch(); let ok = 0, n = 0;
 const claim = async () => { const r = await items.findOneAndUpdate(WAITING, { $set: { status: STATUS.RENDERING, renderStartedAt: new Date() }, $inc: { renderAttempts: 1 } }, { sort: { slot: 1 }, returnDocument: 'after' }); return r?.value !== undefined && r?.ok !== undefined ? r.value : r; };
 
 for (let it = await claim(); it; it = Date.now() < stopAt ? await claim() : null) {
   n++;
   try {
-    const r = await renderSpec(it.spec, { browser });
+    const r = await renderSpec(it.spec, { browser, say });
     const v = Date.now();                       // version suffix: re-renders never hit a stale cache
     const key = `${project().id}/items/${it._id}/${v}`;
     const media = { url: await upload(r.files.media, `${key}-${r.files.media.split('/').pop()}`), duration: r.duration };

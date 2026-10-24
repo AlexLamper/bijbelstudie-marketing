@@ -5,7 +5,7 @@
 // render(t) is a pure function of t: frames can be rendered in any order (the cover is taken at 2.4 s).
 (() => {
   const W = 1080, H = 1920;
-  const FADE = .35;                                                   // crossfade between scenes
+  const FADE = .45;                                                   // crossfade between scenes
   const SAFE = { left: 64, right: W - 160, top: 270, bottom: 1385 };  // scene text stays inside (subtitles at 1430)
   const FIT = { left: 190, right: 790, top: 450, bottom: 1210 };      // where the camera frames a scene's places
   const CX = (FIT.left + FIT.right) / 2, CY = (FIT.top + FIT.bottom) / 2;
@@ -447,21 +447,23 @@
 
     /** Camera at time t: within a run it eases from scene to scene; the first scene zooms in from a wider view. */
     const drift = (sc, t) => ({ ...sc.cam, s: sc.cam.s * (1 + .035 * prog(t, segs[sc.i].start, until(sc.i)) + .006 * Math.max(0, t - until(sc.i))) });
+    // Alex, 24 Oct: scenes must flow into each other. The camera is one continuous journey over all map
+    // scenes: within a run it flies from scene to scene; across a verse or text scene in between it keeps
+    // gliding (under the dimmed map) to the next place, so the next map scene starts where the eye already is.
+    const seq = Object.values(mapScenes).sort((a, b) => a.i - b.i);
+    const legStart = j => { const sc = seq[j], pv = seq[j - 1]; return pv.run === sc.run ? segs[sc.i].start - .15 : until(pv.i) - FADE; };
     function cameraAt(t) {
-      const list = runs.map(r => r.map(i => mapScenes[i]).filter(Boolean)).filter(r => r.length);
-      let run = list[0]; if (!run) return fitCam([{ x: 0, y: 0 }], k);
-      for (const r of list) if (segs[r[0].i].start - 1 <= t) run = r;
-      let ri = 0; run.forEach((sc, j) => { if (segs[sc.i].start - .15 <= t) ri = j; });
-      const sc = run[ri]; const st = segs[sc.i].start;
-      if (ri === 0) {
+      if (!seq.length) return fitCam([{ x: 0, y: 0 }], k);
+      let j = 0; for (let q = 1; q < seq.length; q++) if (t >= legStart(q)) j = q;
+      const sc = seq[j]; const st = segs[sc.i].start;
+      if (j === 0) {   // behind the hook: the region, zoomed out; then one flight in to the first place
         const wide = s0 => ({ ...sc.cam, s: sc.cam.s * s0 });
-        const hookEnd = segs[1]?.start ?? st;
-        if (!mapFirst && t < hookEnd + .2) return wide(.5 + .06 * prog(t, 0, hookEnd));   // behind the hook only
-        const from = mapFirst ? wide(.5 + .06 * prog(t, 0, st)) : wide(.8);
-        const fromAt = mapFirst ? wide(.5 + .06 * prog(st - .2, 0, st)) : from;
-        return fly(t < st - .2 ? from : fromAt, drift(sc, t), inout(prog(t, st - .2, st + 1.5)));
+        const a = mapFirst ? st - .2 : (segs[1]?.start ?? st) - .2;
+        if (t < a) return wide(.5 + .06 * prog(t, 0, a));
+        return fly(wide(.56), drift(sc, t), inout(prog(t, a, st + 1.5)));
       }
-      return fly(drift(run[ri - 1], st - .15), drift(sc, t), inout(prog(t, st - .15, st + 1.3)));
+      const a = legStart(j);
+      return fly(drift(seq[j - 1], a), drift(sc, t), inout(prog(t, a, st + 1.3)));
     }
 
     /** Labels: measured once fonts are in, then placed beside their pin where they hit nothing and stay in the safe area. */
@@ -499,16 +501,18 @@
         sc.marks.forEach(mx => {
           const p = toScreen(cam, mx.at); const Z = 150, I = ICONS[mx.mk.icon];
           let best = null;
-          for (const sd of mx.mk.side ? [mx.mk.side] : Object.keys(SIDES)) for (const dist of [180, 255, 335]) {
-            const [ux, uy] = SIDES[sd]; const cx = p.x + ux * dist, cy = p.y + uy * dist;
+          // 16 directions (or the one asked for), near to far: a narrow gulf or a coast needs the finer search
+          const dirs = mx.mk.side ? [SIDES[mx.mk.side]] : Array.from({ length: 24 }, (_, q) => [Math.sin(q * Math.PI / 12), -Math.cos(q * Math.PI / 12)]);
+          for (const [ux, uy] of dirs) for (const dist of [110, 150, 200, 260, 330]) {
+            const cx = p.x + ux * dist, cy = p.y + uy * dist;
             const b = { x: cx - Z / 2, y: cy - Z / 2, w: Z, h: Z };
-            let score = dist / 6;   // close to its place first
+            let score = dist / 4;   // close to its place first
             score += 30 * (Math.max(0, SAFE.left - b.x) + Math.max(0, b.x + Z - SAFE.right) + Math.max(0, 380 - b.y) + Math.max(0, b.y + Z - 1270));
             for (const o of boxes) score += overlap(b, o) / 5;
             for (const q of route) if (q.x > b.x && q.x < b.x + Z && q.y > b.y && q.y < b.y + Z) score += 45;
             const hits = [[0, 0], [-.32, -.32], [.32, -.32], [-.32, .32], [.32, .32]].map(([a, c]) => onLand(cx + a * Z, cy + c * Z));
             const n = hits.filter(Boolean).length;
-            score += I.sea ? (hits[0] ? 60 : 0) + n * 10 : (5 - n) * 22;   // sea things: their middle on the water (a narrow gulf will do)
+            score += I.sea ? (hits[0] ? 200 : 0) + n * 4 : (5 - n) * 22;   // sea things: their middle on the water (a narrow gulf will do)
             if (!best || score < best.score) best = { score, dx: cx - p.x, dy: cy - p.y, b };
           }
           mx.off = { dx: best.dx, dy: best.dy }; boxes.push(best.b);
@@ -947,7 +951,7 @@
       const boxes = []; const pinned = new Set(); let live = 0;
       for (const sc of Object.values(mapScenes)) {
         const st = segs[sc.i].start;
-        const inK = t > sc.runEnd + .06 ? 0 : out(prog(t, st - .25, st + .1));   // only while its own run of map scenes shows
+        const inK = out(prog(t, st - .25, st + .1)) * (1 - inout(prog(t, sc.runEnd - FADE, sc.runEnd + .05)));   // only while its own run of map scenes shows, fading with it
         live = Math.max(live, t > sc.runEnd + .06 ? 0 : out(prog(t, st - .4, st + .1)) * (1 - inout(prog(t, sc.runEnd - FADE, sc.runEnd))));
         const hist = sc.next ? prog(t, segs[sc.next.i].start - .3, segs[sc.next.i].start + .05) : 0;
         const pos = sc.pts.map(p => toScreen(cam, p));
