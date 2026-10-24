@@ -11,6 +11,7 @@ const LONG_DASH = /[–—]/;
 //                                                                        takes from it every day, lib/postingSlots.ts)
 // PATCH { action: 'edit', caption, hashtags }                            fix the text yourself, no Claude round trip
 // PATCH { action: 'now' }                                                post an approved item at the next run
+// PATCH { action: 'retry' }                                              posting failed: try the failed platforms again at the next run
 // PATCH { action: 'rerender' }                                           make the media again (e.g. after choosing voices)
 export async function PATCH(req: Request, { params }: { params: Promise<{ project: string; id: string }> }) {
   const { project, id } = await params;
@@ -20,6 +21,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ projec
   const db = await getDb(project);
   const item = await db.collection('items').findOne({ _id: id as any });
   if (!item) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  if (body.action === 'retry') {   // only an item Alex approved whose posting failed (partial: the platforms that did not work)
+    if (!['failed', 'partial'].includes(item.status) || !item.results || !(item.history || []).some((h: any) => ['approve', 'approve-all'].includes(h.event)))
+      return NextResponse.json({ error: 'Er is niets opnieuw te proberen.' }, { status: 409 });
+    const at = new Date(); const kept = Object.fromEntries(Object.entries(item.results).filter(([, r]: any) => r?.id));
+    await getDb(project).then(db => db.collection('items').updateOne({ _id: id as any }, { $set: { status: 'approved', postAt: at, slot: at, 'spec.slot': at.toISOString(), results: kept, updatedAt: at },
+      $unset: { error: '' }, $push: { history: { at, event: 'retry' } } as any }));
+    return NextResponse.json({ ok: true, message: 'Wordt opnieuw geplaatst bij de volgende ronde (binnen een uur).' });
+  }
   if (['published', 'partial'].includes(item.status)) return NextResponse.json({ error: 'Al gepubliceerd' }, { status: 409 });
   const at = new Date();
 

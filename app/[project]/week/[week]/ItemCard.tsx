@@ -8,6 +8,17 @@ import { DEFAULT_TZ } from '@/lib/postingSlots';
 
 // No dates on cards: approved items wait on the pile and go out by themselves (lib/postingSlots.ts).
 
+/** Why posting failed, in plain Dutch (the raw message stays in the tooltip). */
+function postProblem(results: Record<string, any>) {
+  const bad = Object.entries(results || {}).filter(([, r]: any) => r?.error && !r?.id);
+  if (!bad.length) return null;
+  const where = bad.map(([p]) => PLATFORM[p] || p).join(' en ');
+  const msg = String((bad[0][1] as any).error);
+  if (/Cannot call API for app/i.test(msg)) return `Plaatsen op ${where} lukte niet: Meta blokkeert de koppeling (de app mag niet meer namens het gekoppelde Facebook-account werken). Controleer de app in Meta for Developers en koppel Instagram + Facebook opnieuw bij Instellingen.`;
+  if (/access token|session has expired|not authorized|OAuthException/i.test(msg)) return `Plaatsen op ${where} lukte niet: de koppeling is verlopen of ingetrokken. Koppel opnieuw bij Instellingen.`;
+  return `Plaatsen op ${where} lukte niet: ${msg.slice(0, 160)}`;
+}
+
 export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: string; item: any; tz?: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -145,6 +156,12 @@ export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: 
         {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
         {item.status === 'approved' && item.postAt && new Date(item.postAt) <= new Date() && !item.results && <p className="mt-2 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-success">Gaat online bij de volgende ronde (binnen een uur).</p>}
         {item.status === 'rejected' && <p className="mt-2 rounded-md bg-bg px-2 py-1 text-xs text-ink-muted ring-1 ring-line">Wordt na ongeveer een dag verwijderd (video en item). Tot dan kun je het nog goedkeuren of laten aanpassen; de planner onthoudt wat je hebt afgewezen.</p>}
+        {item.results && ['failed', 'partial'].includes(item.status) && postProblem(item.results) && (
+          <div className="mt-2 rounded-md bg-red-50 px-2 py-1.5 text-xs text-danger ring-1 ring-red-200">
+            <p>{postProblem(item.results)}</p>
+            <button type="button" disabled={busy} onClick={() => patch({ action: 'retry' })} className="mt-1 cursor-pointer font-semibold underline transition hover:no-underline disabled:cursor-not-allowed disabled:opacity-50">Opnieuw proberen</button>
+          </div>
+        )}
         {item.results && Object.values(item.results).some((r: any) => r.waiting) && <p className="mt-2 rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-warn">Wacht op koppeling: {Object.entries(item.results).filter(([, r]: any) => r.waiting).map(([p]) => PLATFORM[p] || p).join(', ')} - zie Instellingen.</p>}
         {canDecide && (
           <div className="mt-auto pt-4">
