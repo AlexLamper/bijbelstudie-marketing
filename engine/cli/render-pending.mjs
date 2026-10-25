@@ -95,6 +95,9 @@ for (let it = codeIsStale() ? null : await claim(); it; it = Date.now() < stopAt
     ok++;
   } catch (e) {
     console.error(`${it._id}: ${e.message}`);
+    for (const f of e.takes || []) {   // a take that kept failing the voice checks: stored to listen to
+      try { console.error(`  take: ${await upload(f, `${project().id}/debug/${it._id}/${Date.now()}-${f.split('/').pop()}`)}`); } catch (u) { console.error(`  take not stored: ${u.message}`); }
+    }
     await items.updateOne({ _id: it._id }, { $set: { status: STATUS.FAILED, error: e.message }, $push: { history: { at: new Date(), event: 'render-failed', note: e.message } } });
   }
 }

@@ -4,7 +4,7 @@
 // and returns the start of every unit, then the voice is mixed with a music bed ducked underneath.
 import '../env.mjs';
 import { createRequire } from 'node:module';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, readdirSync, existsSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -194,6 +194,11 @@ async function voiceOne(spec, units, work, say, offset) {
       if (attempt) console.log(`voice ${spec.id}: take ${attempt + 1} is good`);
       return clips;
     } catch (e) {
+      if (e instanceof TakeError && attempt >= VOICE_RETRIES) {
+        // keep the last takes and their timings (the work folder is removed): render-pending stores them so
+        // the take can be listened to and compared with the timings
+        e.takes = readdirSync(work).filter(f => /^take\d+-\d+\.(mp3|json)$/.test(f)).map(f => { const to = join(tmpdir(), `${spec.id}-${f}`); copyFileSync(join(work, f), to); return to; });
+      }
       if (!(e instanceof TakeError) || attempt >= VOICE_RETRIES) throw e;
       console.log(`voice ${spec.id}: ${e.message.replace(/ - (not made|render again)$/, '')} - voicing it again`);
     }
@@ -212,6 +217,7 @@ async function voiceTakes(spec, texts, written, work, say, offset, seed) {
     const said = await say(script, spec.voice, { style: spec.voiceStyle, seed, ...(speed ? { speed } : {}),
       previous: texts.slice(0, take[0]).join(' ').slice(-400) || undefined, next: texts.slice(take.at(-1) + 1).join(' ').slice(0, 400) || undefined });
     writeFileSync(full, said.audio);
+    if (said.alignment) writeFileSync(full.replace(/\.mp3$/, '.json'), JSON.stringify({ script, alignment: said.alignment }));
     const total = probe(full);
     const aligned = unitsFromAlignment(said.alignment, part);
     if (!aligned) console.log(`voice ${spec.id}: ${said.alignment ? 'the timing does not match the text' : 'no timing'} - cut at the pauses`);
