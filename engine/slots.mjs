@@ -4,15 +4,16 @@
 // A time stays open for WINDOW_MIN minutes, so a publish run that comes a little late still uses it, and
 // an item approved in the evening can still go out at 19:30 that same evening.
 // Alex, 24 Oct: the verse of the day only on Instagram and Facebook; every reel he approves on all platforms.
-// Alex, 25 Oct: two reels a day (the planner makes two a day, recipe.reelsPerDay), at 12:00 and 19:30.
+// Alex, 25 Oct: briefly two reels a day; back to one at 19:30 the same evening, because the voice budget
+// (ElevenLabs Starter) pays for fewer reels than that and steady posting beats a burst and then nothing.
 //   verse-still                                   07:00          instagram, facebook
 //   post-spotlight / post-statement / carousel    12:00          instagram, facebook (none are planned now)
-//   reels                                         12:00, 19:30   every platform of the project
+//   reels                                         19:30          every platform of the project
 
 export const POSTING_TIMES = {
   verse: ['07:00'],
   feed: ['12:00'],
-  reel: ['12:00', '19:30'],
+  reel: ['19:30'],
 };
 
 /** The platforms an item goes to when it is posted: reels everywhere, the rest only where images live. */

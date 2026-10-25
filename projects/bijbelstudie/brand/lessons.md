@@ -70,7 +70,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 - Het vers van de dag gaat alleen naar Instagram en Facebook, als post. (Alex, 24 okt: "this should ONLY be posted on Instagram and maybe on Facebook")
 - Elke goedgekeurde reel gaat naar alle vier: TikTok, YouTube, Instagram en Facebook. (Alex, 24 okt: "those will be posted on ALL platforms")
 - Goedkeuren zonder datum: wat Alex goedkeurt, komt op de stapel en gaat op de vaste tijden online. (Alex, 24 okt: "no dates")
-- Twee reels per dag van de stapel: om 12:00 en om 19:30, naast het vers om 07:00. (Alex, 25 okt: koos "2 reels a day (12:00 + 19:30)" nadat er een dag niets online kwam)
+- Eén reel per dag van de stapel, om 19:30, naast het vers om 07:00: het stembudget betaalt niet meer, en elke dag iets is beter dan twee per dag en dan dagen niets. (Alex, 25 okt: koos eerst 2 per dag, daarna "1 reel a day at 19:30")
 - Niet meer maken dan het stembudget betaalt: Alex blijft op ElevenLabs Starter (40.000 tekens per maand) en betaalt niet meer. Liever minder reels op volle lengte dan veel korte: een dag plant alleen de reels die zijn deel van het budget helemaal betaalt (ongeveer 700 tekens per reel, gespaard over de dagen sinds de vorige reel), hooguit 2; is er geen reel betaald, dan alleen het vers. (Alex, 25 okt: vroeg eerst om dubbel zoveel, daarna "if it's not in the budget then don't. I am not going to upgrade/pay more.")
 
 ## Nog op te lossen in de engine
