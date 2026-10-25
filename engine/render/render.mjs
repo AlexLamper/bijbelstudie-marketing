@@ -70,12 +70,12 @@ const cut = (src, from, to, out) => {
 };
 /** Every voice clip must carry sound from start to end: its loudness over the whole clip and over its last
  *  third (a line that falls silent halfway is caught too). Throws, so a broken voice never reaches Alex. */
-export function voiceGuard(clips) {
+export function voiceGuard(clips, texts = []) {
   const vol = (f, ss) => { const r = spawnSync('ffmpeg', ['-hide_banner', ...(ss ? ['-ss', ss.toFixed(2)] : []), '-i', f, '-af', 'volumedetect', '-f', 'null', '-']); const m = String(r.stderr || '').match(/mean_volume: (-?[\d.]+) dB/); return m ? +m[1] : -91; };
   clips.forEach((c, i) => {
     if (!c?.f) return;
     const all = vol(c.f), tail = c.dur > 1.5 ? vol(c.f, c.dur * 2 / 3) : all;
-    if (all < -45 || tail < -50) throw new Error(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB) - not made`);
+    if (all < -45 || tail < -50) throw new Error(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB${texts[i] ? `, "${String(texts[i]).slice(0, 60)}"` : ''}) - not made`);
   });
 }
 
@@ -106,26 +106,35 @@ export function lineEnd(u, silences, hi) {
   return Math.min(hi, end);
 }
 
+// A character as compared with the text: without accents (ElevenLabs may return "ä" as "a" plus a combining
+// mark, 25 Oct: Naaman), with quotes and dashes alike. Before, one such character made the whole take fall
+// back to cutting at silences, which can cut a line out of a pause.
+const baseOf = c => c.normalize('NFD').replace(/\p{M}/gu, '').replace(/[\u2019\u2018`\u00b4]/g, "'").replace(/[\u201c\u201d\u201e]/g, '"').replace(/[\u2013\u2014]/g, '-');
 /** Per unit: [first, last] alignment index and its words, matched on non-space characters (whitespace may be normalised). */
 export function unitsFromAlignment(al, texts) {
   if (!al?.characters?.length) return null;
   const S = al.character_start_times_seconds, E = al.character_end_times_seconds;
-  // characters of a <break .../> tag are not spoken text (when the alignment lists them at all)
+  // characters of a <break .../> tag are not spoken text (when the alignment lists them at all); a lone
+  // combining mark belongs to the letter before it
   let tag = false; const ink = [];
-  al.characters.forEach((c, k) => { if (c === '<' && al.characters.slice(k, k + 6).join('') === '<break') tag = true; if (!tag && !/\s/.test(c)) ink.push(k); if (tag && c === '>') tag = false; });
-  const want = texts.map(t => t.replace(/\s+/g, ''));
-  if (ink.length !== want.reduce((n, t) => n + t.length, 0) || ink.map(k => al.characters[k]).join('') !== want.join('')) return null;
+  al.characters.forEach((c, k) => {
+    if (c === '<' && al.characters.slice(k, k + 6).join('') === '<break') tag = true;
+    if (!tag && !/\s/.test(c)) { const b = baseOf(c); if (b) ink.push({ k, last: k, b }); else if (ink.length) ink[ink.length - 1].last = k; }
+    if (tag && c === '>') tag = false;
+  });
+  const want = texts.map(t => [...baseOf(t.replace(/\s+/g, ''))]);
+  if (ink.map(x => x.b).join('') !== want.map(w => w.join('')).join('')) return null;
   let at = 0;
   return want.map(t => {
     const ks = ink.slice(at, at + t.length); at += t.length;
     const words = []; let cur = null, prev = -1;
-    for (const k of ks) {
-      if (cur && k !== prev + 1) { words.push(cur); cur = null; }   // a gap in the indices = whitespace
-      if (!cur) cur = { w: '', a: S[k], b: E[k] };
-      cur.w += al.characters[k]; cur.b = E[k]; prev = k;
+    for (const x of ks) {
+      if (cur && x.k !== prev + 1) { words.push(cur); cur = null; }   // a gap in the indices = whitespace
+      if (!cur) cur = { w: '', a: S[x.k], b: E[x.last] };
+      cur.w += al.characters.slice(x.k, x.last + 1).join(''); cur.b = E[x.last]; prev = x.last;
     }
     if (cur) words.push(cur);
-    return { a: S[ks[0]], b: E[ks.at(-1)], words };
+    return { a: S[ks[0].k], b: E[ks.at(-1).last], words };
   });
 }
 /** Fallback without timings: cut points at the (n-1) longest silences, in time order. */
@@ -179,6 +188,7 @@ async function voiceOne(spec, units, work, say, offset) {
     writeFileSync(full, said.audio);
     const total = probe(full);
     const aligned = unitsFromAlignment(said.alignment, part);
+    if (!aligned) console.log(`voice ${spec.id}: ${said.alignment ? 'the timing does not match the text' : 'no timing'} - cut at the pauses`);
     if (aligned) {
       // tight clips: a little air before the first word, after the last one until the voice goes quiet
       // (lineEnd), never past the middle of a pause; the captions show the written words
@@ -198,7 +208,7 @@ async function voiceOne(spec, units, work, say, offset) {
     }
   }
   if (clips.length !== units.length || clips.some(c => !(c.dur > 0.1))) throw new Error('Voice: a line came out empty - render again');
-  voiceGuard(clips);
+  voiceGuard(clips, texts);
   return clips;
 }
 
