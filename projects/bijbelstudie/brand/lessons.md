@@ -19,11 +19,12 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 
 - Eén verteller per video, met een van de twee standaardstemmen (`male` of `female`). Pas als er meerdere mensen spreken, mogen ook stemmen uit de testset meedoen. (Alex, 24 okt: "only use those if there is 1 person speaking")
 - Wissel de mannen- en vrouwenstem af, zodat Alex beide hoort en de cijfers kunnen kiezen. (Alex, 24 okt: "try the men's voice as well")
-- Daniel (testset: Nederlandse, rijpe, warme mannenstem uit het Gooi) is een stem die Alex wil horen: gebruik hem als mannelijke verteller, afgewisseld met `male`. (Alex, 24 okt: "The voice, use: Daniel"; 2026-w44-story-saulus)
+- Daniel (testset: Nederlandse, rijpe, warme mannenstem uit het Gooi) is de mannenstem die Alex wil horen: bij een mannelijke verteller eerst Daniel, `male` alleen af en toe (bij de Esau-film met `male` vroeg Alex om een andere stem). Vraagt Alex bij een video om een andere stem zonder er een te noemen, kies dan een andere van de drie (voor een man: Daniel, of `male` als het Daniel was). (Alex, 24 okt: "The voice, use: Daniel"; 2026-w44-story-saulus; 25 okt: "Andere stem"; 2026-w44-film-esau)
 - De laatste gesproken zin eindigt altijd met: "lees het met uitleg, in de BijbelStudie app." - nooit "lees ze", nooit alleen "in BijbelStudie". Bijvoorbeeld: "Lees het in één Koningen zeventien, met uitleg, in de BijbelStudie app." (Alex, 24 okt, bij Saulus, de weduwe en Jona: "maak dit: 'lees het met uitleg, in de BijbelStudie app'")
 - Genummerde bijbelboeken zeg je zoals Alex ze zegt: "één Koningen", "twee Samuël", "één Korinthe" - nooit "eerste Koningen" of "tweede Samuël". (Alex, 24 okt: "zou moeten ... gezegd worden als: 'Lees het in één koningen 17'"; 2026-w44-film-weduwe)
 - Rustige stemmen (`voiceStyle` `rustig`), geen scherpe of opgewonden toon. (Alex, 24 okt)
 - Wat je hoort en wat je ziet, gaat over hetzelfde: elk scherm en elk beeld past bij de zin die dan klinkt. (Alex, 24 okt: schermen die kloppen met wat gezegd wordt)
+- Elke gesproken zin is makkelijk voor te lezen: gewoon, modern Nederlands, korte zinnen met één gedachte (liefst onder 15 woorden). Dus geen lange bijzinnen, geen citaat met "zegt hij" of "huilt ze" erachter ("Ik kan hem niet zien sterven, huilt ze" wordt "Ze wil niet zien dat hij sterft."), geen dubbele punt voor een citaat (vertel het: "Hij hoort dat Ezau eraan komt."), geen puntkomma's, haakjes of afkortingen (ca., v.Chr., km), geen HOOFDLETTERS als HEERE en geen oude woorden als "den", "zeide", "des" (zeg "de Heer"). Een vers staat exact (Statenvertaling) op de verskaart; de stem vertelt datzelfde vers in gewone woorden ("Dan hoort God de stem van de jongen."), ook in de 2D-film - dit gaat voor "say is dan precies de SV-tekst" in plan.md. (Alex, 25 okt: "generate the text so that it's very easy for the voice-over to read it. So try to minimize difficult sentences, weird annotations"; 2026-w44-film-hagar)
 - Jezus, God en engelen nooit als figuur in beeld; vertel over hen. (vaste regel)
 
 ## Stem en geluid
@@ -53,6 +54,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 
 - Scènes lopen vloeiend in elkaar over: geen harde sprongen, geen zwart tussen twee beelden, geen camera die terugspringt. Op de kaart vliegt de camera door van de ene plek naar de volgende. (Alex, 24 okt: "different scenes flow over very well into each other ... it isn't smooth")
 - Na een shot naar de lucht (`sky`) gaat de camera logisch terug omlaag; de achtergrond gaat nooit omhoog en springt dan terug. (Alex, 24 okt: "De achtergrond gaat 'omhoog' maar sprint daarna weer terug ... Gewoon smooth en logisch"; weduwe 0:47)
+- Kaartverhalen hebben een rustig tempo: per scène één gebeurtenis in één of twee korte zinnen (samen hooguit ongeveer 100 tekens; de scène met het vers mag iets langer), liever een zijpad minder dan haasten, en na elke zin even stilte waarin de kaart, de route of het icoon uitloopt voordat de volgende zin begint. Een reis met twee etappes (Karmel - Jizreël - Berseba) wordt twee kaartscènes, elk met zijn eigen korte zin. (Alex, 25 okt: "Rustiger tempo"; 2026-w44-story-elia)
 
 ## Tekst, verzen en kleuren
 
@@ -61,6 +63,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 ## Einde en CTA
 
 - Einde zoals grote apps: logo + naam, één voordeel, één knop "Download gratis", de officiële storebadges en "Ook op bijbelstudie.io". Nooit "Zoek ... in de App Store", nooit "link in bio". (vaste regel)
+- In elke reel staat de hele video door een klein BijbelStudie-watermerk (op donker de omlijnde mark `logo-icon-dark.svg` + de witte wordmark), rustig en half doorzichtig, in een hoek die vrij blijft van titel, hook, labels, ondertitels en de knoppen van TikTok en Reels. Zo ziet de kijker steeds dat de video van BijbelStudie komt en krijgt hij zin in de app. Op de eindkaart staat het logo al groot, daar niet. (Alex, 25 okt: "put some watermark in the video that's is made by BijbelStudie, or the user gets tempted/known to download the BijbelStudie app"; 2026-w44-film-hagar)
 
 ## Plaatsen
 
@@ -73,7 +76,8 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 Feedback die geen spec kan oplossen (templates, geluid, beweging). De planner zet het hier en Alex krijgt
 er een bericht over; Claude verplaatst het naar "Opgelost" met de commit zodra het in de engine zit.
 
-- (niets open)
+- Watermerk in elke reel: in `reel-story` (`templates/story.js`) en `reel-3d` (`templates/film2d.js`) de hele video een klein BijbelStudie-logo (omlijnde mark + witte wordmark, half doorzichtig) in een vrije hoek - niet over de titelchip, het plaatslabel, de hook, de verskaart, de ondertitels of de app-knoppen rechts; weg zodra de eindkaart komt. (Alex, 25 okt: "put some watermark in the video that's is made by BijbelStudie"; 2026-w44-film-hagar)
+- Rustiger tempo in kaartverhalen: tussen twee scènes zit nu maar 0,25 s stilte (`stage.html` `layout`, dat al `u.pause` kent); geef elke kaartscène na de zin een rustpauze van ongeveer 0,8-1 s (na een reis langer, zodat route en km-teller uitlopen) en kijk of de rustige stem in kaartverhalen iets trager mag (ElevenLabs `speed` rond 0,92). (Alex, 25 okt: "Rustiger tempo"; 2026-w44-story-elia)
 
 ## Opgelost in de engine (niet terugdraaien)
 

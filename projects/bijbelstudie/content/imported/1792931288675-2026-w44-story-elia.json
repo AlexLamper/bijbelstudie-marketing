@@ -1,0 +1,113 @@
+{
+  "id": "2026-w44-story-elia",
+  "week": "2026-W44",
+  "slot": "2026-10-29T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Vuur uit de hemel, en kort daarna wilde hij niet meer leven. God vond hem in een zachte stilte.\n\nLees 1 Koningen 19 met uitleg bij elk vers in BijbelStudie - gratis te downloaden.",
+  "hashtags": [
+    "#elia",
+    "#horeb",
+    "#1koningen",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "persoon"
+  },
+  "basedOn": "1 Koningen 18:38-39 (vuur op de Karmel; het volk viel op het aangezicht: de HEERE is God), 18:46 (Elia liep naar Jizreel), 19:1-8 (Izebel, Berseba, jeneverboom, de engel, veertig dagen tot Horeb), 19:11-12 (het suizen van een zachte stilte).",
+  "subject": "Elia's vlucht naar de Horeb",
+  "style": "dark",
+  "music": "reflective",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": {
+    "headline": "Lees 1 Koningen met uitleg.",
+    "button": "Download gratis"
+  },
+  "kind": "reel-story",
+  "voice": "male",
+  "hook": "Na zijn grootste overwinning wilde Elia niet meer leven. Toen begon zijn langste reis.",
+  "title": "Elia's vlucht naar de Horeb",
+  "scenes": [
+    {
+      "say": "Op de berg Karmel valt vuur uit de hemel. Het hele volk buigt diep en roept dat de Heer God is.",
+      "show": "map",
+      "places": [
+        "karmel"
+      ],
+      "ref": "1 Koningen 18:38-39",
+      "marks": [
+        {
+          "icon": "berg",
+          "cue": "berg"
+        },
+        {
+          "icon": "vuur",
+          "cue": "vuur"
+        }
+      ]
+    },
+    {
+      "say": "Elia rent naar Jizreël. Maar daar wil koningin Izebel hem doden.",
+      "show": "map",
+      "places": [
+        "karmel",
+        "jizreel"
+      ],
+      "ref": "1 Koningen 18:46-19:2",
+      "travel": "lopen"
+    },
+    {
+      "say": "Hij vlucht voor zijn leven, ver naar het zuiden, naar Berseba.",
+      "show": "map",
+      "places": [
+        "jizreel",
+        "berseba"
+      ],
+      "ref": "1 Koningen 19:3",
+      "travel": "lopen"
+    },
+    {
+      "say": "In de woestijn vraagt hij God of hij mag sterven. Maar een engel brengt hem brood en water.",
+      "show": "map",
+      "places": [
+        "berseba"
+      ],
+      "ref": "1 Koningen 19:4-7"
+    },
+    {
+      "say": "Daarna loopt hij veertig dagen en veertig nachten, naar de Horeb, de berg van God.",
+      "show": "map",
+      "places": [
+        "berseba",
+        "horeb"
+      ],
+      "ref": "1 Koningen 19:8",
+      "travel": "lopen",
+      "marks": [
+        {
+          "icon": "berg",
+          "at": "horeb",
+          "cue": "berg"
+        }
+      ]
+    },
+    {
+      "say": "Daar komt een storm, een aardbeving en een vuur. Maar God is er niet in. Dan klinkt het suizen van een zachte stilte.",
+      "show": "verse",
+      "verse": "1 Koningen 19:12",
+      "ref": "1 Koningen 19:11-12"
+    },
+    {
+      "say": "Lees het in één Koningen negentien, met uitleg, in de BijbelStudie app.",
+      "show": "text",
+      "text": "1 Koningen 19, met uitleg bij elk vers"
+    }
+  ]
+}
