@@ -5,6 +5,7 @@ import { renderSpec, launch } from '../render/render.mjs';
 import { upload, remove } from '../storage/index.mjs';
 import { synthesize, resolveVoice } from '../tts/index.mjs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -30,6 +31,25 @@ const stopAt = Date.now() + Number(process.env.RENDER_MINUTES || 140) * 60e3;
 const LONG = { 'reel-story': 95 };
 const claimable = () => { const left = (stopAt - Date.now()) / 60e3 + 20; const skip = Object.entries(LONG).filter(([, m]) => left < m).map(([k]) => k);
   return skip.length ? { $and: [WAITING(), { kind: { $nin: skip } }] } : WAITING(); };
+// 25 Oct: a long render run on older code claimed the videos the Engine fix had just queued (watermark, calmer
+// pace) and made them without the fix; the run the fix started then found nothing. So before every claim a job
+// on GitHub checks main: when it has newer code for what a video looks or sounds like, this job stops claiming
+// and the waiting render run (or the next hourly kick) makes the rest with that code.
+const RENDER_CODE = /^(engine\/|assets\/|data\/|projects\/[^/]+\/(assets\/|project\.json|brand\/pronunciation\.json))/;
+let staleAt = 0, stale = false;
+function codeIsStale() {
+  if (!process.env.GITHUB_ACTIONS || stale || Date.now() - staleAt < 60e3) return stale;
+  staleAt = Date.now();
+  try {
+    const head = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
+    const main = execFileSync('git', ['ls-remote', 'origin', 'refs/heads/main'], { timeout: 20e3 }).toString().split(/\s/)[0];
+    if (!main || main === head) return false;
+    execFileSync('git', ['fetch', '-q', '--depth=1', 'origin', 'refs/heads/main'], { timeout: 60e3 });
+    const changed = execFileSync('git', ['diff', '--name-only', head, 'FETCH_HEAD']).toString().split('\n').filter(f => RENDER_CODE.test(f));
+    if (changed.length) { stale = true; console.log(`[${project().id}] main has newer render code (${main.slice(0, 7)}: ${changed.slice(0, 3).join(', ')}${changed.length > 3 ? ', ...' : ''}) - this job stops claiming, the next render run makes the rest`); }
+  } catch (e) { console.error(`code check: ${e.message.split('\n')[0]}`); }
+  return stale;
+}
 // Storage first: when media cannot be stored (24 Oct: the Blob store was suspended over its limit), rendering
 // would only throw the work away. Then nothing is claimed, the items stay queued, and the run fails visibly.
 if (await items.countDocuments(WAITING())) {
@@ -61,7 +81,7 @@ async function say(text, voice, opts = {}) {
 const browser = await launch(); let ok = 0, n = 0;
 const claim = async () => { const r = await items.findOneAndUpdate(claimable(), { $set: { status: STATUS.RENDERING, renderStartedAt: new Date() }, $inc: { renderAttempts: 1 } }, { sort: { slot: 1 }, returnDocument: 'after' }); return r?.value !== undefined && r?.ok !== undefined ? r.value : r; };
 
-for (let it = await claim(); it; it = Date.now() < stopAt ? await claim() : null) {
+for (let it = codeIsStale() ? null : await claim(); it; it = Date.now() < stopAt && !codeIsStale() ? await claim() : null) {
   n++;
   try {
     const r = await renderSpec(it.spec, { browser, say });
