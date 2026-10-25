@@ -1,8 +1,8 @@
 // Diagnoses the Instagram/Facebook link without posting anything (run via maintenance.yml): where the
 // Page token comes from, what Meta says about it (debug_token), and whether the Page and the Instagram
-// account can be read with it. Prints no secrets.
+// account can be read with it. Prints no secrets. --write-test also checks that it may write (see below).
 import '../env.mjs';
-import { close } from '../db.mjs';
+import { db, close } from '../db.mjs';
 import { applyConnections } from '../connections.mjs';
 import { project } from '../project.mjs';
 
@@ -26,4 +26,16 @@ show('me', await get('me', { fields: 'id,name' }));
 if (env.FB_PAGE_ID) show('page', await get(env.FB_PAGE_ID, { fields: 'id,name,tasks' }));
 if (env.IG_USER_ID) show('instagram', await get(env.IG_USER_ID, { fields: 'id,username' }));
 show('permissions (me)', await get('me/permissions'));
+if (dbg.data) console.log(`[${P}] scopes: ${(dbg.data.scopes || []).join(', ') || '-'}; granular: ${JSON.stringify(dbg.data.granular_scopes || []).slice(0, 300)}`);
+// --write-test: can the app write for this account? Makes an Instagram media container from a verse image
+// that is already online, and never publishes it (an unused container expires after 24 hours).
+if (process.argv.includes('--write-test') && env.IG_USER_ID) {
+  const it = await (await db()).collection('items').findOne({ kind: 'verse-still', 'media.url': { $exists: true } }, { sort: { updatedAt: -1 } });
+  if (!it) console.log(`[${P}] write test: no verse image to test with`);
+  else {
+    const u = new URL(`https://graph.facebook.com/${V}/${env.IG_USER_ID}/media`);
+    const r = await (await fetch(u, { method: 'POST', body: new URLSearchParams({ image_url: it.media.url, caption: 'test (niet geplaatst)', access_token: tok }) })).json().catch(e => ({ error: { message: e.message } }));
+    show('write test (container, not published)', r);
+  }
+}
 await close();
