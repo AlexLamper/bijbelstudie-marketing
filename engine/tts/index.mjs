@@ -98,6 +98,6 @@ export async function elevenlabsBudget() {
     const r = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers: { 'xi-api-key': env.ELEVENLABS_API_KEY } });
     if (!r.ok) return null;
     const j = await r.json();
-    return { used: j.character_count, limit: j.character_limit, left: j.character_limit - j.character_count, resetsAt: j.next_character_count_reset_unix ? new Date(j.next_character_count_reset_unix * 1000).toISOString() : null };
+    return { tier: j.tier, used: j.character_count, limit: j.character_limit, left: j.character_limit - j.character_count, resetsAt: j.next_character_count_reset_unix ? new Date(j.next_character_count_reset_unix * 1000).toISOString() : null };
   } catch { return null; }
 }

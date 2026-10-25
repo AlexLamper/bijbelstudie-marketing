@@ -20,7 +20,8 @@ if (pile) for (const it of items) {
   console.log(`          results ${JSON.stringify(it.results || {}).slice(0, 400)}`);
   for (const h of (it.history || []).slice(-5)) console.log(`          ${at(h.at)} ${h.event}${h.note ? ` - ${String(h.note).slice(0, 120)}` : ''}${h.via ? ` (${h.via})` : ''}`);
 }
-if (pile) { const runs = await d.collection('runs').find().toArray(); for (const r of runs) console.log(`run ${r._id}: ${at(r.at)} ${JSON.stringify(r.summary || r).slice(0, 300)}`); await close(); process.exit(0); }
+if (pile) { const { elevenlabsBudget } = await import('../tts/index.mjs'); console.log(`elevenlabs: ${JSON.stringify(await elevenlabsBudget())}`);
+  const runs = await d.collection('runs').find().toArray(); for (const r of runs) console.log(`run ${r._id}: ${at(r.at)} ${JSON.stringify(r.summary || r).slice(0, 300)}`); await close(); process.exit(0); }
 for (const it of items) {
   const when = new Date(it.slot).toLocaleString('nl-NL', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   console.log(`${it.status.padEnd(9)} ${when.padEnd(20)} ${it._id.padEnd(34)} ${it.kind.padEnd(15)} ${(it.spec.platforms || []).join('+')}${it.spec.subject ? `  "${it.spec.subject}"` : ''}`);
