@@ -230,7 +230,60 @@
     const land = line(m.land, { fill: 'none', stroke: P.coast, strokeWidth: 1.6 }); g.appendChild(land);
     if (m.lakes) g.appendChild(line(m.lakes, { fill: P.sea, stroke: P.coast, strokeWidth: 1.2 }));
     if (m.rivers) g.appendChild(line(m.rivers, { fill: 'none', stroke: P.river, strokeWidth: 2.6 }));
-    return { relief, glow, land, setCam: c => cam.setAttribute('transform', `translate(${r1(CX - c.x * c.s)} ${r1(CY - c.y * c.s)}) scale(${c.s.toFixed(5)})`) };
+    let onCam = null;
+    return { relief, glow, land, root, grid, m, P, hook: f => { onCam = f; },
+      setCam: c => { cam.setAttribute('transform', `translate(${r1(CX - c.x * c.s)} ${r1(CY - c.y * c.s)}) scale(${c.s.toFixed(5)})`); if (onCam) onCam(c); } };
+  }
+
+  /* Speed (25 Oct 2026): the vector map cost about 2 s a frame in the render jobs (no graphics card) - coastline,
+     land, relief and two edge masks painted again for every frame, most of the GitHub Actions minutes. Once the
+     relief is in, the map is drawn on canvases instead: one per band of zoom (sharp for the views in it, no more
+     than 1.25x enlarged or 0.8x reduced), each covering where the camera goes in that band. A frame only moves
+     the right canvas. The SVG stays for the light look and in case a canvas cannot be made. */
+  function rasterMap(bm, imgs, r, cams) {
+    const { m, P, root } = bm; const [mw, mh] = m.size, MAX = 4096, BAND = 1.6;
+    const land = new Path2D(m.land), lakes = m.lakes ? new Path2D(m.lakes) : null, rivers = m.rivers ? new Path2D(m.rivers) : null, grid = new Path2D(bm.grid);
+    const views = cams.map(c => ({ x0: c.x - CX / c.s, y0: c.y - CY / c.s, x1: c.x + (W - CX) / c.s, y1: c.y + (H - CY) / c.s, s: c.s })).sort((a, b) => a.s - b.s);
+    const bands = []; for (const v of views) { const b = bands[bands.length - 1]; if (b && v.s <= b[0].s * BAND) b.push(v); else bands.push([v]); }
+    const tiers = bands.map(vs => {
+      const pad = .08; let x0 = Math.min(...vs.map(v => v.x0)), y0 = Math.min(...vs.map(v => v.y0)), x1 = Math.max(...vs.map(v => v.x1)), y1 = Math.max(...vs.map(v => v.y1));
+      const dx = (x1 - x0) * pad, dy = (y1 - y0) * pad; x0 -= dx; x1 += dx; y0 -= dy; y1 += dy;
+      const sMid = Math.sqrt(vs[0].s * vs[vs.length - 1].s);
+      const k = Math.min(sMid, MAX / (x1 - x0), MAX / (y1 - y0)), w = Math.ceil((x1 - x0) * k), h = Math.ceil((y1 - y0) * k);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d');
+      const toMap = gg => gg.setTransform(k, 0, 0, k, -x0 * k, -y0 * k);
+      g.fillStyle = P.sea; g.fillRect(0, 0, w, h);
+      toMap(g); g.strokeStyle = P.grid; g.lineWidth = 1.5 / k; g.stroke(grid);
+      // what the SVG masks fade at the edges of the data box: glow, land, relief, coast, lakes, rivers
+      const o = document.createElement('canvas'); o.width = w; o.height = h; const og = o.getContext('2d'); toMap(og);
+      const RW = r.w * r.ux, RH = r.h * r.uy;
+      og.globalAlpha = .5; og.drawImage(imgs.glow, 0, 0, RW, RH); og.globalAlpha = 1;
+      og.fillStyle = P.land; og.fill(land);
+      og.save(); og.clip(land); og.drawImage(imgs.relief, 0, 0, RW, RH); og.restore();
+      og.lineJoin = 'round'; og.lineCap = 'round';
+      og.strokeStyle = P.coast; og.lineWidth = 1.6 / k; og.stroke(land);
+      if (lakes) { og.fillStyle = P.sea; og.fill(lakes); og.lineWidth = 1.2 / k; og.stroke(lakes); }
+      if (rivers) { og.strokeStyle = P.river; og.lineWidth = 2.6 / k; og.stroke(rivers); }
+      og.globalCompositeOperation = 'destination-in';
+      for (const [ax, ay, bx, by] of [[0, 0, mw, 0], [0, 0, 0, mh]]) {
+        const gr = og.createLinearGradient(ax, ay, bx, by); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.06, '#000'); gr.addColorStop(.94, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        og.fillStyle = gr; og.fillRect(x0, y0, x1 - x0, y1 - y0);
+      }
+      g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(o, 0, 0);
+      cv.style.cssText = 'position:absolute;left:0;top:0;transform-origin:0 0;visibility:hidden';
+      return { cv, x0, y0, x1, y1, k };
+    });
+    let last = null; for (const t of tiers) { (last || root).after(t.cv); last = t.cv; }
+    root.style.visibility = 'hidden';
+    let shown = null;
+    bm.hook(c => {
+      const v = { x0: c.x - CX / c.s, y0: c.y - CY / c.s, x1: c.x + (W - CX) / c.s, y1: c.y + (H - CY) / c.s };
+      const fits = tiers.filter(t => v.x0 >= t.x0 && v.y0 >= t.y0 && v.x1 <= t.x1 && v.y1 <= t.y1);
+      const pick = (fits.length ? fits : tiers).reduce((a, b) => Math.abs(Math.log(c.s / b.k)) < Math.abs(Math.log(c.s / a.k)) ? b : a);
+      if (shown !== pick) { if (shown) shown.cv.style.visibility = 'hidden'; pick.cv.style.visibility = 'visible'; shown = pick; }
+      pick.cv.style.transform = `translate(${r1(CX + (pick.x0 - c.x) * c.s)}px, ${r1(CY + (pick.y0 - c.y) * c.s)}px) scale(${(c.s / pick.k).toFixed(5)})`;
+    });
+    return tiers.map(t => `${t.cv.width}x${t.cv.height}@${t.k.toFixed(2)}`);
   }
 
   /** When each pin appears: when its name is spoken, else spread over the line; carried-over pins are already there. */
@@ -881,11 +934,17 @@
     const end = endCard(spec);
 
     const ready = bm && L.dark ? terrain(m).then(async r => {
-      for (const [node, url] of [[bm.relief, r.url], [bm.glow, r.glow]]) {
+      const imgs = {};
+      for (const [key, node, url] of [['relief', bm.relief, r.url], ['glow', bm.glow, r.glow]]) {
         const im = new Image(); im.src = url; await im.decode();   // decoded before the first frame is taken
         node.setAttribute('href', url); node.setAttribute('width', r1(r.w * r.ux)); node.setAttribute('height', r1(r.h * r.uy)); node.style.display = 'inline';
+        imgs[key] = im;
       }
       bm.glow.style.opacity = .5;
+      if (!window.__vectorMap) try {   // the map as canvases (rasterMap); __vectorMap keeps the SVG (to compare)
+        const cams = []; for (let t = 0; t <= duration; t += .1) cams.push(cameraAt(t));
+        window.__mapTiers = rasterMap(bm, imgs, r, cams);
+      } catch (e) { console.log('map: vector fallback - ' + e.message); bm.root.style.visibility = ''; }
     }) : null;
 
     return { width: W, height: H, duration, ready, starts: segs.map(s => s.start), render(t) {
