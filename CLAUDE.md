@@ -1,6 +1,6 @@
 # Marketing engine (BijbelStudie, BijbelQuiz, ...)
 
-Marketing automation for all of Alex's apps and projects. Repo `AlexLamper/marketing-engine` (public, so GitHub Actions costs nothing; renamed from bijbelstudie-marketing on 25 Oct 2026), studio https://al-marketing-studio.vercel.app (Vercel project `marketing-studio`; the old bijbelstudie-studio.vercel.app stays as alias and OAuth address). Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. One engine and one studio serve every project in `projects/`. See `README.md` for the flow and `SETUP.md` for accounts.
+Marketing automation for all of Alex's apps and projects. Repo `AlexLamper/marketing-engine` (public, so GitHub Actions costs nothing; renamed from bijbelstudie-marketing on 25 Oct 2026), studio https://al-marketing-studio.vercel.app (Vercel project `marketing-studio`; the old bijbelstudie-studio.vercel.app redirects its pages there and stays the OAuth address, `lib/session.ts`). Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. One engine and one studio serve every project in `projects/`. See `README.md` for the flow and `SETUP.md` for accounts.
 
 Projects:
 - `bijbelstudie` (on) - bijbelstudie.io + iOS/Android app. Website code: AlexLamper/BijbelStudie (Next.js 15, MongoDB, Stripe, Resend, Vercel). App code: AlexLamper/bijbelstudie-app (Flutter, RevenueCat).

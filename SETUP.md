@@ -6,7 +6,7 @@
 |---|---|
 | Repo `AlexLamper/marketing-engine` (public: GitHub Actions is free; renamed from bijbelstudie-marketing on 25 Oct 2026) | Engine, studio, planner, workflows pushed |
 | Database | MongoDB Atlas, project BijbelStudie-Marketing, cluster `marketing`; one database per project (`bijbelstudie_marketing`, later `bijbelquiz_marketing`) |
-| Studio | Vercel project `marketing-studio` -> https://al-marketing-studio.vercel.app (the old https://bijbelstudie-studio.vercel.app keeps working and stays the OAuth address: Vercel env `STUDIO_URL`, registered as redirect URL at Meta, TikTok and Google; password in Vercel env `STUDIO_PASSWORD`) |
+| Studio | Vercel project `marketing-studio` -> https://al-marketing-studio.vercel.app (the old https://bijbelstudie-studio.vercel.app sends its pages there; it stays the OAuth address - Vercel env `STUDIO_URL`, registered as redirect URL at Meta, TikTok and Google - and "Koppel" hands over to it with a signed 5-minute pass, `lib/session.ts`; password in Vercel env `STUDIO_PASSWORD`) |
 | Media storage | Vercel Blob store `bijbelstudie-media` (fra1), attached to the studio; the engine uploads through the studio with `ENGINE_KEY` |
 | Secrets | GitHub Actions secrets `MONGODB_URI` and `ENGINE_KEY` (engine), Vercel env vars (studio). Nothing secret is in git; `engine.config` holds only the studio URL and default project. To run the engine on your own machine, put secrets in `.env.engine` (gitignored) |
 | Notifications | GitHub issues with label `studio` (GitHub emails you). Optional later: Resend |

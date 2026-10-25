@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { randomBytes } from 'node:crypto';
+import { checkHandoff, handoffToken, sessionValue } from '@/lib/session';
 import { getProject } from '@/lib/projects';
 import { META_VERSION, PROVIDERS, getApp, isProvider, redirectUri } from '@/lib/connections';
 
@@ -9,6 +11,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ provider
   const { provider } = await params;
   const project = new URL(req.url).searchParams.get('project') || '';
   if (!isProvider(provider) || !getProject(project)) return NextResponse.json({ error: 'unknown provider or project' }, { status: 404 });
+  // The link runs on the address registered with the platform (STUDIO_URL, the old studio address): from the
+  // studio, hand over with a signed pass; on that address, the studio cookie or a valid pass is required.
+  const pw = process.env.STUDIO_PASSWORD || '';
+  const signedIn = !!pw && (await cookies()).get('studio')?.value === (await sessionValue(pw));
+  const home = new URL(redirectUri(provider, req)), host = req.headers.get('host') || new URL(req.url).host;
+  if (host !== home.host) {
+    if (!signedIn) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    const pass = await handoffToken(pw, { project, provider });
+    return NextResponse.redirect(`${home.origin}/api/oauth/${provider}/start?${new URLSearchParams({ project, pass })}`);
+  }
+  const h = await checkHandoff(pw, new URL(req.url).searchParams.get('pass'));
+  if (!signedIn && !(h && h.project === project && h.provider === provider)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const app = await getApp(provider);
   if (!app) return NextResponse.redirect(new URL(`/${project}/settings?error=${encodeURIComponent('Vul eerst de app-gegevens in.')}#${provider}`, req.url));
 
