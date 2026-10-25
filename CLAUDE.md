@@ -1,6 +1,6 @@
 # Marketing engine (BijbelStudie, BijbelQuiz, ...)
 
-Marketing automation for Alex's products. Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. One engine and one studio serve every project in `projects/`. See `README.md` for the flow and `SETUP.md` for accounts.
+Marketing automation for all of Alex's apps and projects. Repo `AlexLamper/marketing-engine` (public, so GitHub Actions costs nothing; renamed from bijbelstudie-marketing on 25 Oct 2026), studio https://al-marketing-studio.vercel.app (Vercel project `marketing-studio`; the old bijbelstudie-studio.vercel.app stays as alias and OAuth address). Claude plans and writes; the engine renders, holds everything for Alex's approval in the studio, publishes what he approved, and measures. One engine and one studio serve every project in `projects/`. See `README.md` for the flow and `SETUP.md` for accounts.
 
 Projects:
 - `bijbelstudie` (on) - bijbelstudie.io + iOS/Android app. Website code: AlexLamper/BijbelStudie (Next.js 15, MongoDB, Stripe, Resend, Vercel). App code: AlexLamper/bijbelstudie-app (Flutter, RevenueCat).
@@ -48,7 +48,9 @@ Projects:
 
 ## Workflow schedules
 
-GitHub runs a scheduled workflow as the user who last changed its file. Commits from these sessions are attributed to the GitHub user `claude`, which has no access to this private repo, so schedules silently stop. Commit any change under `.github/workflows/` with `--author="AlexLamper <143872753+AlexLamper@users.noreply.github.com>"`.
+GitHub runs a scheduled workflow as the user who last changed its file. Commits from these sessions are attributed to the GitHub user `claude`, which is no collaborator on this repo, so schedules silently stop. Commit any change under `.github/workflows/` with `--author="AlexLamper <143872753+AlexLamper@users.noreply.github.com>"`.
+
+Since the repo went public (25 Oct 2026) GitHub held every workflow once as "may be malicious" until it was approved on a run's page ("Approve and run"); one approval per workflow file is enough. A new workflow file may need that once too: open its first run and approve it.
 
 ## Check before you commit
 

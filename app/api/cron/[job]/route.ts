@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // Vercel Cron (vercel.json) calls this route and we start the GitHub workflow ourselves. Vercel sends
 // Authorization: Bearer CRON_SECRET. The GitHub token (Actions: read and write on this repository) is
 // pasted in the studio (Instellingen > Sleutels > GITHUB_DISPATCH_TOKEN).
-const REPO = process.env.GITHUB_REPO || 'AlexLamper/bijbelstudie-marketing';
+const REPO = process.env.GITHUB_REPO || 'AlexLamper/marketing-engine';
 const WORKFLOWS: Record<string, string> = { publish: 'publish.yml', stats: 'stats.yml', plan: 'plan-week.yml' };
 
 export async function GET(req: Request, { params }: { params: Promise<{ job: string }> }) {
