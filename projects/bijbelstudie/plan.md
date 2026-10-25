@@ -20,12 +20,12 @@ The planner plans one day per run (the day in `content/context/target-week.json`
 | What | Per day | Slot (label) | Platforms |
 |---|---|---|---|
 | `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook (never tiktok/youtube) |
-| Story reels (`reel-story` or `reel-3d`) | 2 (`recipe.reelsPerDay`) | 19:30 and 19:35 | instagram, facebook, tiktok, youtube (always all four) |
+| Story reels (`reel-story` or `reel-3d`) | 4 (`recipe.reelsPerDay`; Alex, 25 Oct: make double of what goes out, he rejects some) | label only | instagram, facebook, tiktok, youtube (always all four) |
 
 No feed posts, no other formats. Alex approves onto a pile; two reels a day go out, at 12:00 and 19:30, on
 every platform (Alex, 25 Oct) and the verse at 07:00 (`engine/slots.mjs`), so the `slot` is only a label. Which of the two
 formats fills the reel slots comes from `allocation.json` (`mainReels.format`). Ids: `<idPrefix>-verse`,
-`<idPrefix>-story` / `<idPrefix>-film` (`-b` for a second of the same), e.g. `2026-w46-tue-film`.
+`<idPrefix>-story` / `<idPrefix>-film` (`-b`, `-c`, `-d` for more of the same), e.g. `2026-w46-tue-film-b`.
 
 ## Formats (only these; Alex, 24 Oct: "you should not use the other ones anymore")
 

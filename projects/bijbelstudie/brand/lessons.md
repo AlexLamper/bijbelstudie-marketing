@@ -71,6 +71,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 - Elke goedgekeurde reel gaat naar alle vier: TikTok, YouTube, Instagram en Facebook. (Alex, 24 okt: "those will be posted on ALL platforms")
 - Goedkeuren zonder datum: wat Alex goedkeurt, komt op de stapel en gaat op de vaste tijden online. (Alex, 24 okt: "no dates")
 - Twee reels per dag van de stapel: om 12:00 en om 19:30, naast het vers om 07:00. (Alex, 25 okt: koos "2 reels a day (12:00 + 19:30)" nadat er een dag niets online kwam)
+- Maak twee keer zoveel als er online gaat: 4 reels per dag (`recipe.reelsPerDay`), want Alex keurt ideeën en beelden ook af. (Alex, 25 okt: "you must be generating DOUBLE the amount!! Because I will also discard idea's visuals etc...")
 
 ## Nog op te lossen in de engine
 
