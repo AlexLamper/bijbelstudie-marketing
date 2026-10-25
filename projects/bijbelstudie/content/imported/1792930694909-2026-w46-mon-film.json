@@ -1,0 +1,99 @@
+{
+  "id": "2026-w46-mon-film",
+  "week": "2026-W46",
+  "slot": "2026-11-09T19:35:00+01:00",
+  "platforms": ["instagram", "facebook", "tiktok", "youtube"],
+  "caption": "Het schaap zoekt niet. De herder zoekt, tot hij het vindt - en thuis roept hij zijn vrienden: Weest blijde met mij.\n\nLees Lukas 15 met uitleg naast de tekst in BijbelStudie - gratis te downloaden. Tip: via je profiel geef je een vriend een week Pro cadeau.",
+  "hashtags": ["#verlorenschaap", "#lukas15", "#gelijkenis", "#bijbelverhaal", "#bijbelstudie"],
+  "experiment": {
+    "hook": "inzicht",
+    "topic": "thema",
+    "note": "Stille film: het verhaal in beeld met korte tekstlabels, alleen de slotzin gesproken (stembudget: 179 tekens voor deze dag)."
+  },
+  "basedOn": "Lukas 15:3-7 (SV): honderd schapen, een verloren; hij verlaat de negen en negentig en gaat naar het verlorene, totdat hij het vindt; verblijd draagt hij het; thuis: Weest blijde met mij; blijdschap in den hemel over een zondaar die zich bekeert. Referral: een week Pro cadeau.",
+  "subject": "Het verloren schaap",
+  "music": "calm",
+  "voiceStyle": "rustig",
+  "captions": "block",
+  "endCard": { "headline": "Lees Lukas met uitleg.", "button": "Download gratis" },
+  "kind": "reel-3d",
+  "voice": "male",
+  "hook": "Het schaap zoekt niet. De herder zoekt, tot hij het vindt.",
+  "style3d": "stickman",
+  "cast": [
+    { "id": "herder", "look": "herder", "name": "De herder" },
+    { "id": "vriend", "look": "man-bijbels", "name": "Een vriend" },
+    { "id": "buurvrouw", "look": "vrouw-bijbels-2", "name": "Een buurvrouw" }
+  ],
+  "shots": [
+    {
+      "set": "heuvels", "time": "dag", "camera": "establish",
+      "actors": [
+        { "id": "herder", "at": "kudde" }
+      ],
+      "hold": 4
+    },
+    {
+      "set": "heuvels", "time": "avond", "camera": "wide",
+      "text": "Eén van de honderd is weg",
+      "actors": [
+        { "id": "herder", "at": "kudde", "do": "think", "mood": "verward" }
+      ],
+      "hold": 3.5
+    },
+    {
+      "set": "heuvels", "time": "avond", "camera": "track", "on": "herder",
+      "text": "Hij laat de 99 achter",
+      "actors": [
+        { "id": "herder", "at": "kudde", "to": "pad-ver" }
+      ],
+      "hold": 4
+    },
+    {
+      "set": "heuvels", "time": "avond", "camera": "wide",
+      "text": "Hij blijft zoeken",
+      "actors": [
+        { "id": "herder", "at": "heuvel", "do": "point", "mood": "nadenkend" }
+      ],
+      "hold": 3.5
+    },
+    {
+      "set": "heuvels", "time": "avond", "camera": "wide",
+      "text": "Gevonden",
+      "actors": [
+        { "id": "herder", "at": "pad-boven", "to": "pad-dichtbij", "do": "carry", "holds": "lam", "mood": "blij" }
+      ],
+      "hold": 4
+    },
+    {
+      "set": "stad", "time": "avond", "camera": "wide",
+      "text": "Weest blijde met mij",
+      "actors": [
+        { "id": "herder", "at": "plein", "do": "talk", "holds": "lam", "mood": "blij" },
+        { "id": "vriend", "at": "markt", "do": "cheer", "mood": "blij", "face": "herder" },
+        { "id": "buurvrouw", "at": "trap", "do": "raise", "mood": "blij", "face": "herder" }
+      ],
+      "hold": 4
+    },
+    {
+      "set": "stad", "time": "avond", "camera": "sky",
+      "text": "Blijdschap in de hemel",
+      "actors": [
+        { "id": "herder", "at": "plein", "do": "carry", "holds": "lam", "mood": "blij" },
+        { "id": "vriend", "at": "markt", "do": "cheer", "mood": "blij", "face": "herder" },
+        { "id": "buurvrouw", "at": "trap", "do": "raise", "mood": "blij", "face": "herder" }
+      ],
+      "hold": 3.5
+    },
+    {
+      "set": "stad", "time": "avond", "camera": "aerial",
+      "actors": [
+        { "id": "herder", "at": "plein", "do": "carry", "holds": "lam", "mood": "blij" },
+        { "id": "vriend", "at": "markt", "mood": "blij", "face": "herder" },
+        { "id": "buurvrouw", "at": "trap", "mood": "blij", "face": "herder" }
+      ],
+      "say": "Lees het met uitleg, in de BijbelStudie app.",
+      "app": "web:bijbel/lukas/15"
+    }
+  ]
+}

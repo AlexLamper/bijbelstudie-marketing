@@ -1,0 +1,13 @@
+{
+  "id": "2026-w46-mon-verse",
+  "kind": "verse-still",
+  "week": "2026-W46",
+  "slot": "2026-11-09T07:00:00+01:00",
+  "platforms": ["instagram", "facebook"],
+  "caption": "Voor de weg die je nog niet overziet, een belofte om mee te nemen: Mijn oog zal op u zijn.\n\nLees Psalm 32 met uitleg naast de tekst in BijbelStudie. Gratis.",
+  "hashtags": ["#versvandedag", "#bijbel", "#statenvertaling", "#psalmen"],
+  "ref": "Psalmen 32:8",
+  "photo": 222,
+  "basedOn": "Dagelijks vers; exacte SV-tekst uit data/statenvertaling (Psalmen 32:8)",
+  "experiment": {}
+}
