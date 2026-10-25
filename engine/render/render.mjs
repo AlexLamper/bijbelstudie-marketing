@@ -57,6 +57,9 @@ const SEP = '\n\n';
 // Multilingual v2 takes break tags; v3 does not (it gets the plain paragraph break).
 const LAST_SEP = style => style === 'levendig' ? SEP : '\n\n<break time="0.9s" />\n\n';
 const MAX_CHARS = { eleven_v3: 2800 };
+// A calmer narrator for the map stories (Alex, 25 Oct, Elia: "Rustiger tempo"): the steady voice a little slower.
+// Only these formats get a speed, so the films keep their takes (the voice cache key holds the options).
+const VOICE_SPEED = { 'reel-story': .92 };
 const seedOf = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 4294967295; };
 // A clip fades in and out over a few milliseconds, so a cut never clicks or sounds chopped off.
 // A clip fades in and out over a few milliseconds, so a cut never clicks or sounds chopped off. The trim is
@@ -183,7 +186,8 @@ async function voiceOne(spec, units, work, say, offset) {
     const full = join(work, `take${offset}-${n}.mp3`);
     const last = take.at(-1) === texts.length - 1 && part.length > 1;   // this take holds the closing line
     const script = last ? part.slice(0, -1).join(SEP) + LAST_SEP(spec.voiceStyle) + part.at(-1) : part.join(SEP);
-    const said = await say(script, spec.voice, { style: spec.voiceStyle, seed,
+    const speed = spec.voiceStyle !== 'levendig' ? VOICE_SPEED[spec.kind] : undefined;
+    const said = await say(script, spec.voice, { style: spec.voiceStyle, seed, ...(speed ? { speed } : {}),
       previous: texts.slice(0, take[0]).join(' ').slice(-400) || undefined, next: texts.slice(take.at(-1) + 1).join(' ').slice(0, 400) || undefined });
     writeFileSync(full, said.audio);
     const total = probe(full);

@@ -209,6 +209,22 @@ function lockup(parent, L, h = 52) {
   else img(ctx.logos.full, '', box).style.height = h + 'px';
   return box;
 }
+/** Watermark for the story reels (Alex, 25 Oct: "put some watermark in the video that's is made by BijbelStudie"):
+ *  the small dark-ground lockup (outlined mark + white wordmark) on a soft dark pill, so it reads on a dark map
+ *  and on a light sky alike, calm and half transparent. Top right: below the platforms' top bar, above their
+ *  buttons on the right, beside the title row. The whole reel long; it goes as the end card comes (the logo is
+ *  big there). WM.box is where it sits: templates keep their titles, hooks and labels clear of it. */
+const WM = { top: 275, right: 56, h: 52, opacity: .72 };
+WM.box = { x: 1080 - WM.right - 200, y: WM.top - 6, w: 200 + 6, h: WM.h + 12 };   // a little wider than the lockup (~186 px)
+WM.below = WM.top + WM.h + 24;                                                     // the first free line under it
+function watermark(z) {
+  const box = el('div', 'abs'); css(box, { top: WM.top + 'px', right: WM.right + 'px', height: WM.h + 'px', boxSizing: 'border-box', padding: '0 18px 0 8px',
+    display: 'flex', alignItems: 'center', gap: '11px', borderRadius: WM.h / 2 + 'px', background: 'rgba(8,14,18,.58)', opacity: 0 });
+  if (z != null) box.style.zIndex = z;
+  img(ctx.logos.iconOnDark, '', box).style.height = '36px';
+  img(ctx.logos.wordmarkOnDark, '', box).style.height = '22px';
+  return (t, endStart) => { box.style.opacity = (WM.opacity * out(prog(t, 0, .4)) * (1 - prog(t, endStart - .1, endStart + .2))).toFixed(3); };
+}
 
 /* ---------- templates (templates/*.js register on T) ---------- */
 const T = {};

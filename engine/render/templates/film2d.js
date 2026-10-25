@@ -980,11 +980,11 @@
       return c;
     }
 
-    /* overlays */
-    const hook = el('div', 'abs'); css(hook, { left: '70px', width: '940px', top: '210px', textAlign: draw ? 'left' : 'center', color: '#fff', fontFamily: S.title, fontWeight: draw ? 400 : 900, zIndex: 3,
+    /* overlays: the hook and the verse cards start under the watermark (top right, stage.html) */
+    const hook = el('div', 'abs'); css(hook, { left: '70px', width: '940px', top: WM.below + 'px', textAlign: draw ? 'left' : 'center', color: '#fff', fontFamily: S.title, fontWeight: draw ? 400 : 900, zIndex: 3,
       fontSize: (draw ? fit(spec.hook, [[22, 108], [36, 94], [60, 78]], 940) : fit(spec.hook, [[22, 96], [36, 84], [60, 68]], 940)) + 'px', lineHeight: draw ? 1.02 : 1.04, letterSpacing: draw ? '0' : '-2px', textWrap: 'balance',
       textShadow: draw ? '0 4px 0 rgba(0,0,0,.35), 0 0 22px rgba(10,10,14,.75), 0 0 6px rgba(10,10,14,.6)' : '0 8px 28px rgba(0,0,0,.55)', WebkitTextStroke: draw ? '0' : '10px rgba(8,10,16,.9)', paintOrder: 'stroke fill' });
-    if (POSTER) css(hook, { color: S.ink, textShadow: 'none', textAlign: 'left', width: '900px', left: '90px', top: '250px', padding: '30px 40px', boxSizing: 'border-box', background: S.paper, border: `6px solid ${S.ink}`, borderRadius: '8px', boxShadow: '0 14px 30px rgba(0,0,0,.18)' });
+    if (POSTER) css(hook, { color: S.ink, textShadow: 'none', textAlign: 'left', width: '900px', left: '90px', top: WM.below + 'px', padding: '30px 40px', boxSizing: 'border-box', background: S.paper, border: `6px solid ${S.ink}`, borderRadius: '8px', boxShadow: '0 14px 30px rgba(0,0,0,.18)' });
     // the hook stays long enough to read it calmly twice (Alex, 24 Oct: a second longer than before)
     const HOOK_OUT = Math.min(5, Math.max(3.8, 1.3 + .24 * spec.hook.split(/\s+/).length));
     if (draw) hook.textContent = spec.hook;
@@ -994,8 +994,8 @@
     const cap = subtitles(segs, spec.captions || 'karaoke', { top: 1500 });
     shots.forEach(s => {
       if (s.verseData) {
-        const card = el('div', 'abs'); css(card, POSTER ? { left: '80px', width: '920px', top: '330px', boxSizing: 'border-box', padding: '40px 48px', borderRadius: '6px', background: S.name === 'krijt' ? '#323f39' : '#fffdf6', border: `5px solid ${S.ink}`, boxShadow: '0 18px 40px rgba(0,0,0,.22)', zIndex: 3, opacity: 0 } : draw ? { left: '70px', width: '940px', top: '330px', boxSizing: 'border-box', padding: '36px 44px', borderRadius: '10px', background: 'rgba(20,20,22,.88)', border: '3px solid rgba(235,230,217,.55)', zIndex: 3, opacity: 0 }
-          : { left: '70px', width: '940px', top: '330px', boxSizing: 'border-box', padding: '38px 46px', borderRadius: '30px', background: 'rgba(10,14,28,.72)', backdropFilter: 'blur(6px)', boxShadow: '0 24px 60px rgba(0,0,0,.4)', zIndex: 3, opacity: 0 });
+        const card = el('div', 'abs'); css(card, POSTER ? { left: '80px', width: '920px', top: WM.below + 'px', boxSizing: 'border-box', padding: '40px 48px', borderRadius: '6px', background: S.name === 'krijt' ? '#323f39' : '#fffdf6', border: `5px solid ${S.ink}`, boxShadow: '0 18px 40px rgba(0,0,0,.22)', zIndex: 3, opacity: 0 } : draw ? { left: '70px', width: '940px', top: WM.below + 'px', boxSizing: 'border-box', padding: '36px 44px', borderRadius: '10px', background: 'rgba(20,20,22,.88)', border: '3px solid rgba(235,230,217,.55)', zIndex: 3, opacity: 0 }
+          : { left: '70px', width: '940px', top: WM.below + 'px', boxSizing: 'border-box', padding: '38px 46px', borderRadius: '30px', background: 'rgba(10,14,28,.72)', backdropFilter: 'blur(6px)', boxShadow: '0 24px 60px rgba(0,0,0,.4)', zIndex: 3, opacity: 0 });
         if (POSTER) { const tape = el('div', 'abs', card); css(tape, { left: '380px', top: '-26px', width: '160px', height: '46px', background: S.name === 'krijt' ? 'rgba(240,236,224,.35)' : 'rgba(232,214,160,.75)', transform: 'rotate(-3deg)' }); }
         el('div', '', card, vref(s.verseData.ref)).style.cssText = POSTER ? `font-family:${S.font};font-size:36px;letter-spacing:3px;color:${S.name === 'krijt' ? TEAL.light : TEAL.deep};margin-bottom:12px` : draw ? `font-family:${S.font};font-size:34px;letter-spacing:3px;color:${TEAL.drawn};margin-bottom:14px` : `font-weight:800;font-size:26px;letter-spacing:3px;color:${TEAL.light};margin-bottom:16px`;
         el('div', draw ? '' : 'serif', card, esc(s.verseData.text)).style.cssText = POSTER ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 44 : 50}px;line-height:1.2;color:${S.ink}` : draw ? `font-family:${S.font};font-size:${s.verseData.text.length > 150 ? 42 : 48}px;line-height:1.22;color:#ebe6d9` : `font-size:${s.verseData.text.length > 150 ? 36 : 42}px;line-height:1.38;color:#fff`;
@@ -1006,6 +1006,7 @@
         : { left: 0, top: 0, fontFamily: '"Inter Black", Inter', fontWeight: 900, fontSize: '40px', color: '#fff', WebkitTextStroke: '8px rgba(8,10,16,.85)', paintOrder: 'stroke fill', zIndex: 3, opacity: 0, whiteSpace: 'nowrap' }); n.textContent = p.name; return n; });
     });
     const fade = el('div', 'abs full'); css(fade, { background: '#000', opacity: 0, zIndex: 5 });
+    const wm = watermark(4);   // over the overlays, under the end card
     const end = endCard(spec); document.querySelector('.end').style.zIndex = 6;
 
     /* map pins: when each place is named, else spread over the line */
@@ -1162,6 +1163,7 @@
       });
       fade.style.opacity = 0;   // shots dissolve now (above), no dip to black
       cap(t);
+      wm(t, endStart);
       end(t, endStart);
     }
     return { width: W, height: H, duration, fps: FPS, starts: segs.map(s => s.start), render };

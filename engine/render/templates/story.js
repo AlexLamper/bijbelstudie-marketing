@@ -536,7 +536,7 @@
         const route = sc.legs.flatMap(l => { const a = toScreen(cam, l.a), b = toScreen(cam, l.b), c = toScreen(cam, l.c);
           return Array.from({ length: 15 }, (_, q) => { const u = q / 14; return { x: (1 - u) ** 2 * a.x + 2 * (1 - u) * u * c.x + u * u * b.x, y: (1 - u) ** 2 * a.y + 2 * (1 - u) * u * c.y + u * u * b.y }; }); });
         const boxes = pos.map(p => ({ x: p.x - 22, y: p.y - 22, w: 44, h: 44 }));
-        boxes.push({ x: 56, y: 268, w: 470, h: 110 });   // title chip
+        boxes.push({ x: 56, y: 268, w: 470, h: 110 }, WM.box);   // title chip, watermark
         sc.pins.forEach((pin, j) => {
           pin.w = pin.label.offsetWidth; pin.h = pin.label.offsetHeight;
           const { w, h } = pin; const p = pos[j]; const g = pin.r + 13, d = pin.r + 5;
@@ -931,6 +931,7 @@
     });
     const loc = null;   // no locator any more (Alex, 24 Oct: keep it simple)
     const subs = subtitles(segs, spec.captions || 'block');
+    const wm = watermark();   // top right, beside the title row (stage.html)
     const end = endCard(spec);
 
     const ready = bm && L.dark ? terrain(m).then(async r => {
@@ -973,14 +974,15 @@
         if (loc) loc.box.style.opacity = Math.min(1, op * 1.3) * out(prog(t, .3, .9));
       }
       if (titleEl) {
-        if (!titleEl.dataset.fit) {   // once the fonts are in: small enough to stay clear of the locator (x 700)
+        if (!titleEl.dataset.fit) {   // once the fonts are in: small enough to stay clear of the watermark beside it
           titleEl.dataset.fit = 1; const tx = titleEl.lastChild; let fs = 28;
-          while (titleEl.offsetWidth > (loc ? 620 : 900) && fs > 18) { fs--; tx.style.fontSize = fs + 'px'; tx.style.letterSpacing = (fs > 23 ? 5 : 3.5) + 'px'; }
+          while (titleEl.offsetWidth > (loc ? 620 : WM.box.x - 24 - 64) && fs > 18) { fs--; tx.style.fontSize = fs + 'px'; tx.style.letterSpacing = (fs > 23 ? 5 : 3.5) + 'px'; }
         }
         const q = out(prog(t, .15, .6)); set(titleEl, q, (1 - q) * 12);
       }
       refs.forEach((e, i) => { if (e) e.style.opacity = vis(i, t).o; });
       subs(t);
+      wm(t, endStart);
       end(t, endStart);
     } };
 
@@ -995,7 +997,7 @@
         + `${g(0)} ${r1(bot0)}px, ${g(50)} ${r1(lerp(bot0, bot1, .55))}px, ${g(86)} ${r1(bot1)}px, ${g(96)} 1920px)`;
       clouds.forEach((c, j) => { const x = ((j * 770 + t * 24) % 2300) - 1150, y = 240 + j * 520 + 50 * Math.sin(t * .23 + j * 2); c.style.transform = `translate(${r1(x)}px, ${r1(y)}px)`; });
       if (loc) { const y0 = 300, y1 = 1350; loc.rect.setAttribute('x', r1(cam.x - CX / cam.s)); loc.rect.setAttribute('y', r1(cam.y + (y0 - CY) / cam.s)); loc.rect.setAttribute('width', r1(W / cam.s)); loc.rect.setAttribute('height', r1((y1 - y0) / cam.s)); }
-      const boxes = []; const pinned = new Set(); let live = 0;
+      const boxes = [{ ...WM.box, o: 1 }]; const pinned = new Set(); let live = 0;   // names give way to the watermark
       for (const sc of Object.values(mapScenes)) {
         const st = segs[sc.i].start;
         const inK = out(prog(t, st - .25, st + .1)) * (1 - inout(prog(t, sc.runEnd - FADE, sc.runEnd + .05)));   // only while its own run of map scenes shows, fading with it
@@ -1092,5 +1094,11 @@
       }
     }
   };
-  T['reel-story'].units = spec => [{ text: spec.hook }, ...spec.scenes.map(s => ({ text: s.say }))];
+  // A calm pace (Alex, 25 Oct, Elia: "Rustiger tempo"): after every line a rest in which the map, the route or the
+  // icon plays out before the next line starts - on top of layout()'s 0.25 s. After a map scene about 0.9 s of
+  // quiet in all, after a journey longer (the route, the traveller and the km counter run out), after a verse a
+  // moment to read it. A unit's pause comes before it, so a scene carries the rest of the one before.
+  const REST = { hook: .35, map: .65, travel: 1.1, verse: .6, other: .4 };
+  const restAfter = sc => !sc ? REST.hook : sc.show === 'map' ? (sc.travel ? REST.travel : REST.map) : sc.show === 'verse' ? REST.verse : REST.other;
+  T['reel-story'].units = spec => [{ text: spec.hook }, ...spec.scenes.map((s, i) => ({ text: s.say, pause: restAfter(i ? spec.scenes[i - 1] : null) }))];
 })();

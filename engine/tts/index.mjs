@@ -30,10 +30,10 @@ export function resolveVoice(key = 'female') {
   return { provider: v.provider || 'elevenlabs', id: v.id, name: v.name || key };
 }
 
-async function google(text, voiceName) {
+async function google(text, voiceName, { speed } = {}) {
   const r = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${env.GOOGLE_TTS_API_KEY}`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ input: { text }, voice: { languageCode: 'nl-NL', name: voiceName }, audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, sampleRateHertz: 44100 } }),
+    body: JSON.stringify({ input: { text }, voice: { languageCode: 'nl-NL', name: voiceName }, audioConfig: { audioEncoding: 'MP3', speakingRate: speed || 1.0, sampleRateHertz: 44100 } }),
   });
   if (!r.ok) throw new Error(`Google TTS ${r.status}: ${await r.text()}`);
   return { audio: Buffer.from((await r.json()).audioContent, 'base64'), words: null };
@@ -58,10 +58,11 @@ const STYLES = {
 };
 
 // language_code only for models that take it (not multilingual_v2); previous/next text keep the
-// intonation flowing between separately generated lines (not supported by eleven_v3).
-async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, timestamps = true, seed } = {}) {
+// intonation flowing between separately generated lines (not supported by eleven_v3). speed (0.7-1.2, 1 =
+// normal) slows a calm narrator down a little (Alex, 25 Oct: "Rustiger tempo" in the map stories).
+async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, timestamps = true, seed, speed } = {}) {
   const S = STYLES[style] || STYLES.rustig; const model = S.model();
-  const body = { text, model_id: model, voice_settings: S.settings };
+  const body = { text, model_id: model, voice_settings: speed && speed !== 1 ? { ...S.settings, speed } : S.settings };
   if (Number.isInteger(seed)) body.seed = seed;
   if (!model.startsWith('eleven_multilingual_v2')) body.language_code = 'nl';
   if (!model.startsWith('eleven_v3')) { if (previous) body.previous_text = previous; if (next) body.next_text = next; }
@@ -71,7 +72,11 @@ async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, tim
   });
   if (!r.ok) {
     const msg = (await r.text()).slice(0, 300);
-    if (timestamps && r.status !== 401 && r.status !== 429) return elevenlabs(text, voiceId, { style, previous, next, seed, timestamps: false });   // model without alignment
+    if (body.voice_settings.speed && (r.status === 400 || r.status === 422)) {   // a model that does not take a speed: the normal pace, never no video
+      console.log(`ElevenLabs ${r.status} with speed ${speed} (${msg.slice(0, 120)}) - voiced at normal speed`);
+      return elevenlabs(text, voiceId, { style, previous, next, seed, timestamps });
+    }
+    if (timestamps && r.status !== 401 && r.status !== 429) return elevenlabs(text, voiceId, { style, previous, next, seed, speed, timestamps: false });   // model without alignment
     throw new Error(`ElevenLabs ${r.status}: ${msg}`);
   }
   if (!timestamps) return { audio: Buffer.from(await r.arrayBuffer()), words: null };
@@ -82,7 +87,7 @@ async function elevenlabs(text, voiceId, { style = 'rustig', previous, next, tim
 /** Speak text with a voice key. Returns { audio: Buffer (mp3), words: [{ w, a, b }] | null, alignment? }. */
 export async function synthesize(text, voice = 'female', opts = {}) {
   const v = resolveVoice(voice);
-  if (v.provider === 'google') return google(text, v.id);
+  if (v.provider === 'google') return google(text, v.id, opts);
   return elevenlabs(text, v.id, opts);
 }
 
