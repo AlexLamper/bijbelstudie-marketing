@@ -59,10 +59,25 @@ const LAST_SEP = style => style === 'levendig' ? SEP : '\n\n<break time="0.9s" /
 const MAX_CHARS = { eleven_v3: 2800 };
 const seedOf = id => { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 4294967295; };
 // A clip fades in and out over a few milliseconds, so a cut never clicks or sounds chopped off.
+// A clip fades in and out over a few milliseconds, so a cut never clicks or sounds chopped off. The trim is
+// done in the filter (atrim + asetpts), so the fades count from the start of the clip, not of the take
+// (25 Oct: with -ss as an output option the fade-out fell at the start of the take and every line after
+// the first came out silent). voiceGuard() checks every clip for sound before a video is made.
 const cut = (src, from, to, out) => {
-  const fade = to != null ? [`afade=t=in:d=0.012,afade=t=out:st=${Math.max(0, to - from - 0.06).toFixed(3)}:d=0.06`] : ['afade=t=in:d=0.012'];
-  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-ss', Math.max(0, from).toFixed(3), ...(to != null ? ['-to', to.toFixed(3)] : []), '-af', fade.join(','), '-ar', '44100', '-ac', '1', out]); return out;
+  const a = Math.max(0, from), trim = `atrim=start=${a.toFixed(3)}${to != null ? `:end=${to.toFixed(3)}` : ''},asetpts=PTS-STARTPTS`;
+  const fade = to != null ? `afade=t=in:d=0.012,afade=t=out:st=${Math.max(0, to - a - 0.06).toFixed(3)}:d=0.06` : 'afade=t=in:d=0.012';
+  execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-af', `${trim},${fade}`, '-ar', '44100', '-ac', '1', out]); return out;
 };
+/** Every voice clip must carry sound from start to end: its loudness over the whole clip and over its last
+ *  third (a line that falls silent halfway is caught too). Throws, so a broken voice never reaches Alex. */
+export function voiceGuard(clips) {
+  const vol = (f, ss) => { const r = spawnSync('ffmpeg', ['-hide_banner', ...(ss ? ['-ss', ss.toFixed(2)] : []), '-i', f, '-af', 'volumedetect', '-f', 'null', '-']); const m = String(r.stderr || '').match(/mean_volume: (-?[\d.]+) dB/); return m ? +m[1] : -91; };
+  clips.forEach((c, i) => {
+    if (!c?.f) return;
+    const all = vol(c.f), tail = c.dur > 1.5 ? vol(c.f, c.dur * 2 / 3) : all;
+    if (all < -45 || tail < -50) throw new Error(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB) - not made`);
+  });
+}
 
 /** Names with a tricky stress, as the voice should hear them: P/brand/pronunciation.json { words: { "Elia": "Elía" } }. */
 export const pronunciations = (p = project()) => { try { return JSON.parse(readFileSync(join(p.paths.brand, 'pronunciation.json'), 'utf8')).words || {}; } catch { return {}; } };
@@ -183,6 +198,7 @@ async function voiceOne(spec, units, work, say, offset) {
     }
   }
   if (clips.length !== units.length || clips.some(c => !(c.dur > 0.1))) throw new Error('Voice: a line came out empty - render again');
+  voiceGuard(clips);
   return clips;
 }
 
