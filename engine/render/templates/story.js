@@ -931,7 +931,7 @@
     });
     const loc = null;   // no locator any more (Alex, 24 Oct: keep it simple)
     const subs = subtitles(segs, spec.captions || 'block');
-    const wm = watermark();   // top right, beside the title row (stage.html)
+    const wm = watermark();   // top right corner (stage.html)
     const end = endCard(spec);
 
     const ready = bm && L.dark ? terrain(m).then(async r => {
@@ -974,9 +974,10 @@
         if (loc) loc.box.style.opacity = Math.min(1, op * 1.3) * out(prog(t, .3, .9));
       }
       if (titleEl) {
-        if (!titleEl.dataset.fit) {   // once the fonts are in: small enough to stay clear of the watermark beside it
+        if (!titleEl.dataset.fit) {   // once the fonts are in: small enough to fit the row (and stay clear of the watermark when it sits beside it)
           titleEl.dataset.fit = 1; const tx = titleEl.lastChild; let fs = 28;
-          while (titleEl.offsetWidth > (loc ? 620 : WM.box.x - 24 - 64) && fs > 18) { fs--; tx.style.fontSize = fs + 'px'; tx.style.letterSpacing = (fs > 23 ? 5 : 3.5) + 'px'; }
+          const room = (WM.box.y + WM.box.h > 280 ? WM.box.x - 24 : W - 64) - 64;
+          while (titleEl.offsetWidth > (loc ? 620 : room) && fs > 18) { fs--; tx.style.fontSize = fs + 'px'; tx.style.letterSpacing = (fs > 23 ? 5 : 3.5) + 'px'; }
         }
         const q = out(prog(t, .15, .6)); set(titleEl, q, (1 - q) * 12);
       }

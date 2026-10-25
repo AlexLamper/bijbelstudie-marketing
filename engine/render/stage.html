@@ -210,19 +210,21 @@ function lockup(parent, L, h = 52) {
   return box;
 }
 /** Watermark for the story reels (Alex, 25 Oct: "put some watermark in the video that's is made by BijbelStudie"):
- *  the small dark-ground lockup (outlined mark + white wordmark) on a soft dark pill, so it reads on a dark map
- *  and on a light sky alike, calm and half transparent. Top right: below the platforms' top bar, above their
- *  buttons on the right, beside the title row. The whole reel long; it goes as the end card comes (the logo is
- *  big there). WM.box is where it sits: templates keep their titles, hooks and labels clear of it. */
-const WM = { top: 275, right: 56, h: 52, opacity: .72 };
-WM.box = { x: 1080 - WM.right - 200, y: WM.top - 6, w: 200 + 6, h: WM.h + 12 };   // a little wider than the lockup (~186 px)
-WM.below = WM.top + WM.h + 24;                                                     // the first free line under it
+ *  the small dark-ground lockup (outlined mark + white wordmark), calm and half transparent. In the top right
+ *  corner, close to both edges, with nothing under it but a soft shadow so it reads on a light sky too (Alex,
+ *  25 Oct: "in a complete corner ... not with the background underneath the text"). The whole reel long; it goes
+ *  as the end card comes (the logo is big there). WM.box is where it sits: templates keep their titles, hooks and
+ *  labels clear of it. TEXT_TOP: where text at the top starts, under the platforms' top bar (~14%). */
+const WM = { top: 52, right: 48, h: 38, w: 166, opacity: .8 };   // w: mark 38 + gap 10 + wordmark (23 px high, ~118 wide)
+WM.box = { x: 1080 - WM.right - WM.w - 10, y: WM.top - 10, w: WM.w + 20, h: WM.h + 20 };
+WM.below = WM.top + WM.h + 24;                                     // the first free line under it
+const TEXT_TOP = 300;
 function watermark(z) {
-  const box = el('div', 'abs'); css(box, { top: WM.top + 'px', right: WM.right + 'px', height: WM.h + 'px', boxSizing: 'border-box', padding: '0 18px 0 8px',
-    display: 'flex', alignItems: 'center', gap: '11px', borderRadius: WM.h / 2 + 'px', background: 'rgba(8,14,18,.58)', opacity: 0 });
+  const box = el('div', 'abs'); css(box, { top: WM.top + 'px', right: WM.right + 'px', height: WM.h + 'px', display: 'flex', alignItems: 'center', gap: '10px',
+    filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.5))', opacity: 0 });
   if (z != null) box.style.zIndex = z;
-  img(ctx.logos.iconOnDark, '', box).style.height = '36px';
-  img(ctx.logos.wordmarkOnDark, '', box).style.height = '22px';
+  img(ctx.logos.iconOnDark, '', box).style.height = WM.h + 'px';
+  img(ctx.logos.wordmarkOnDark, '', box).style.height = '23px';
   return (t, endStart) => { box.style.opacity = (WM.opacity * out(prog(t, 0, .4)) * (1 - prog(t, endStart - .1, endStart + .2))).toFixed(3); };
 }
 
