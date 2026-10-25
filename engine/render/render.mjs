@@ -71,6 +71,8 @@ const cut = (src, from, to, out) => {
   const fade = to != null ? `afade=t=in:d=0.012,afade=t=out:st=${Math.max(0, to - a - 0.06).toFixed(3)}:d=0.06` : 'afade=t=in:d=0.012';
   execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-af', `${trim},${fade}`, '-ar', '44100', '-ac', '1', out]); return out;
 };
+/** A take that cannot be used (a silent or empty line, no way to split it): voicing it again can fix it. */
+export class TakeError extends Error {}
 /** Every voice clip must carry sound from start to end: its loudness over the whole clip and over its last
  *  third (a line that falls silent halfway is caught too). Throws, so a broken voice never reaches Alex. */
 export function voiceGuard(clips, texts = []) {
@@ -78,9 +80,13 @@ export function voiceGuard(clips, texts = []) {
   clips.forEach((c, i) => {
     if (!c?.f) return;
     const all = vol(c.f), tail = c.dur > 1.5 ? vol(c.f, c.dur * 2 / 3) : all;
-    if (all < -45 || tail < -50) throw new Error(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB${texts[i] ? `, "${String(texts[i]).slice(0, 60)}"` : ''}) - not made`);
+    if (all < -45 || tail < -50) throw new TakeError(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB${texts[i] ? `, "${String(texts[i]).slice(0, 60)}"` : ''}${c.span ? `, ${c.span}` : ''}) - not made`);
   });
 }
+// 25 Oct (Naaman): ElevenLabs sometimes gives a take with one line whispered or swallowed. Takes are cached,
+// so rendering again reused the same bad take every time. A take that fails the checks is now voiced again
+// with another seed (a new cache key), at most this many times; the bad take is never used.
+const VOICE_RETRIES = 2;
 
 /** Names with a tricky stress, as the voice should hear them: P/brand/pronunciation.json { words: { "Elia": "Elía" } }. */
 export const pronunciations = (p = project()) => { try { return JSON.parse(readFileSync(join(p.paths.brand, 'pronunciation.json'), 'utf8')).words || {}; } catch { return {}; } };
@@ -175,12 +181,28 @@ export async function voiceClips(spec, units, work, say = synthesize) {   // say
   return { timing: all.map(c => ({ dur: c.dur, words: c.words })), clips: all };
 }
 
-/** One voice: its units in as few takes as possible (one, unless very long), cut into clips. */
+/** One voice: its units in as few takes as possible (one, unless very long), cut into clips. A take that
+ *  fails the checks is voiced again with another seed (VOICE_RETRIES). */
 async function voiceOne(spec, units, work, say, offset) {
   const written = units.map(u => u.text.trim()), lex = pronunciations();
   const texts = written.map(t => speakable(t, lex));
+  for (let attempt = 0; ; attempt++) {
+    const seed = (seedOf(spec.id) + attempt * 7919) % 4294967295;   // attempt 0 keeps the seed (and cache) of before
+    try {
+      const clips = await voiceTakes(spec, texts, written, work, say, offset, seed);
+      voiceGuard(clips, texts);
+      if (attempt) console.log(`voice ${spec.id}: take ${attempt + 1} is good`);
+      return clips;
+    } catch (e) {
+      if (!(e instanceof TakeError) || attempt >= VOICE_RETRIES) throw e;
+      console.log(`voice ${spec.id}: ${e.message.replace(/ - (not made|render again)$/, '')} - voicing it again`);
+    }
+  }
+}
+
+async function voiceTakes(spec, texts, written, work, say, offset, seed) {
   const max = spec.voiceStyle === 'levendig' ? MAX_CHARS.eleven_v3 : 9000;
-  const seed = seedOf(spec.id); const clips = [];
+  const clips = [];
   for (const [n, take] of takesOf(texts, max).entries()) {
     const part = take.map(i => texts[i]);
     const full = join(work, `take${offset}-${n}.mp3`);
@@ -202,17 +224,17 @@ async function voiceOne(spec, units, work, say, offset) {
         const from = Math.max(lo, u.a - 0.08), to = lineEnd(u, quiet, hi);
         const f = cut(full, from, to, join(work, `v${offset + clips.length}.wav`));
         const shown = written[take[j]].split(/\s+/).filter(Boolean), same = shown.length === u.words.length;
-        clips.push({ f, dur: probe(f), words: u.words.map((w, i) => ({ w: same ? shown[i] : w.w, a: w.a - from, b: w.b - from })) });
+        clips.push({ f, dur: probe(f), words: u.words.map((w, i) => ({ w: same ? shown[i] : w.w, a: w.a - from, b: w.b - from })),
+          span: `${from.toFixed(2)}-${to.toFixed(2)} s of ${total.toFixed(1)} s${said.cached ? ', kept take' : ''}` });
       });
     } else {
       const inner = part.length === 1 ? [] : cutsFromSilence(full, part.length);
-      if (!inner) throw new Error(`Voice: could not split the take into its ${part.length} lines - render again`);
+      if (!inner) throw new TakeError(`Voice: could not split the take into its ${part.length} lines - render again`);
       const cuts = [0, ...inner, total];
-      for (let j = 0; j < part.length; j++) { const f = cut(full, cuts[j], j === part.length - 1 ? null : cuts[j + 1], join(work, `v${offset + clips.length}.wav`)); clips.push({ f, dur: probe(f), words: null }); }
+      for (let j = 0; j < part.length; j++) { const f = cut(full, cuts[j], j === part.length - 1 ? null : cuts[j + 1], join(work, `v${offset + clips.length}.wav`)); clips.push({ f, dur: probe(f), words: null, span: `cut at pauses, ${cuts[j].toFixed(2)} s of ${total.toFixed(1)} s` }); }
     }
   }
-  if (clips.length !== units.length || clips.some(c => !(c.dur > 0.1))) throw new Error('Voice: a line came out empty - render again');
-  voiceGuard(clips, texts);
+  if (clips.length !== texts.length || clips.some(c => !(c.dur > 0.1))) throw new TakeError('Voice: a line came out empty - render again');
   return clips;
 }
 
