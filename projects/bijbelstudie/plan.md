@@ -20,7 +20,7 @@ The planner plans one day per run (the day in `content/context/target-week.json`
 | What | Per day | Slot (label) | Platforms |
 |---|---|---|---|
 | `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook (never tiktok/youtube) |
-| Story reels (`reel-story` or `reel-3d`) | 4 (`recipe.reelsPerDay`; Alex, 25 Oct: make double of what goes out, he rejects some) | label only | instagram, facebook, tiktok, youtube (always all four) |
+| Story reels (`reel-story` or `reel-3d`) | at most 2 (`recipe.reelsPerDay`), as many as the voice budget pays in full (`allocation.json` `voiceBudget.reelsPaidFor`; Alex, 25 Oct: no extra voice credits) | label only | instagram, facebook, tiktok, youtube (always all four) |
 
 No feed posts, no other formats. Alex approves onto a pile; two reels a day go out, at 12:00 and 19:30, on
 every platform (Alex, 25 Oct) and the verse at 07:00 (`engine/slots.mjs`), so the `slot` is only a label. Which of the two

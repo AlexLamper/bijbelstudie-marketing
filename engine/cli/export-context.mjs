@@ -51,13 +51,28 @@ const seed = Number(T.date.replace(/\D/g, ''));   // per day: a re-run for the s
 const B = await updateBoard(d, { seed });
 // project.json recipe (Alex, 24 Oct): reelsPerDay reels that all go to every platform, feedPosts 0 = no feed posts
 const R = project().recipe || {};
-const allocation = { date: T.date, day: T.day, week: T.week, ...weekAllocation(B.board, { days: 1, ...(R.reelsPerDay != null ? { mainPerDay: R.reelsPerDay, extraPerDay: 0 } : {}),
-  feedPosts: R.feedPosts === 0 ? 0 : FEED_DAYS.includes(T.day) ? 1 : 0, seed: seed + 7919 }) };
+// Alex, 25 Oct: no voice credits beyond the plan he pays for ("if it's not in the budget then don't").
+// A full reel speaks about 650-820 characters; spreading a thin day share over the recipe made a 16-second
+// story and a 44-character film. So a day plans only the reels its share of the voice budget pays in full
+// (REEL_CHARS each): the share of what is left until the reset, saved up over the days since the last
+// planned reel (at most 7). No reel paid for: that day has only the verse.
+const REEL_CHARS = 700, SAVE_DAYS = 7;
 const budget = await elevenlabsBudget();
-if (budget) {   // share of what is left this month that this day may use (days left until the reset)
+let reelsToday = R.reelsPerDay, voiceBudget = null;
+if (budget) {
   const daysLeft = budget.resetsAt ? Math.max(1, Math.ceil((new Date(budget.resetsAt) - Date.now()) / 864e5)) : 30;
-  allocation.voiceBudget = { charsForDay: Math.max(0, Math.floor(budget.left / daysLeft) - 100), leftThisMonth: budget.left, daysUntilReset: daysLeft, resetsAt: budget.resetsAt, note: 'Total spoken characters of all voiced items of this day must stay under charsForDay (the validator checks). Over budget: shorter narration, fewer scenes or shots.' };
+  const share = Math.max(0, Math.floor(budget.left / daysLeft));
+  const last = await d.collection('items').find({ kind: /^reel-/, createdAt: { $exists: true } }).sort({ createdAt: -1 }).limit(1).next();
+  const saved = last ? Math.min(SAVE_DAYS, Math.max(1, Math.round((Date.now() - new Date(last.createdAt)) / 864e5))) : SAVE_DAYS;
+  const pot = Math.max(0, Math.min(budget.left - 100, share * saved));
+  if (R.reelsPerDay != null) reelsToday = Math.min(R.reelsPerDay, Math.floor(pot / REEL_CHARS));
+  voiceBudget = { charsForDay: reelsToday ? pot : 0, reelsPaidFor: reelsToday, leftThisMonth: budget.left, daysUntilReset: daysLeft, resetsAt: budget.resetsAt, savedDays: saved,
+    note: `Total spoken characters of all voiced items of this day must stay under charsForDay (the validator checks). The day's reels are what the budget pays in full (about ${REEL_CHARS} characters each): write full-length scripts, do not shorten them to fit more.` };
+  console.log(`[${P.id}] voice budget: ${budget.left} characters left until ${String(budget.resetsAt).slice(0, 10)} (${daysLeft} days), ${share} a day x ${saved} saved = ${pot} -> ${reelsToday} reel(s) today`);
 }
+const allocation = { date: T.date, day: T.day, week: T.week, ...weekAllocation(B.board, { days: 1, ...(reelsToday != null ? { mainPerDay: reelsToday, extraPerDay: 0 } : {}),
+  feedPosts: R.feedPosts === 0 ? 0 : FEED_DAYS.includes(T.day) ? 1 : 0, seed: seed + 7919 }) };
+if (voiceBudget) allocation.voiceBudget = voiceBudget;
 writeFileSync(join(OUTD, 'allocation.json'), JSON.stringify(allocation, null, 2));
 if (!skip) await d.collection('experiments').updateOne({ _id: `allocation-${T.date}` }, { $set: { ...allocation, at: new Date() } }, { upsert: true });
 writeFileSync(join(OUTD, 'experiments.json'), JSON.stringify({ note: 'Per trait value: n = scored item-platform results, mean = average fair score (0.5 = median), avgViews, pBest = chance it is the best. Higher pBest got more slots in allocation.json.', trials: B.trials, items: B.items, board: B.board }, null, 2));
