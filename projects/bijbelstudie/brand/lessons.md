@@ -70,6 +70,7 @@ Vorm: `- Regel. (Alex, <datum>: "<zijn woorden>"; <item>)`
 - Het vers van de dag gaat alleen naar Instagram en Facebook, als post. (Alex, 24 okt: "this should ONLY be posted on Instagram and maybe on Facebook")
 - Elke goedgekeurde reel gaat naar alle vier: TikTok, YouTube, Instagram en Facebook. (Alex, 24 okt: "those will be posted on ALL platforms")
 - Goedkeuren zonder datum: wat Alex goedkeurt, komt op de stapel en gaat op de vaste tijden online. (Alex, 24 okt: "no dates")
+- Twee reels per dag van de stapel: om 12:00 en om 19:30, naast het vers om 07:00. (Alex, 25 okt: koos "2 reels a day (12:00 + 19:30)" nadat er een dag niets online kwam)
 
 ## Nog op te lossen in de engine
 

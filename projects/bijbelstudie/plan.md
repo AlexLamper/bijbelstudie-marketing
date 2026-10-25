@@ -22,8 +22,8 @@ The planner plans one day per run (the day in `content/context/target-week.json`
 | `verse-still` daily verse | 1 (every day) | 07:00 | instagram, facebook (never tiktok/youtube) |
 | Story reels (`reel-story` or `reel-3d`) | 2 (`recipe.reelsPerDay`) | 19:30 and 19:35 | instagram, facebook, tiktok, youtube (always all four) |
 
-No feed posts, no other formats. Alex approves onto a pile; one reel a day goes out at 19:30 on every
-platform and the verse at 07:00 (`engine/slots.mjs`), so the `slot` is only a label. Which of the two
+No feed posts, no other formats. Alex approves onto a pile; two reels a day go out, at 12:00 and 19:30, on
+every platform (Alex, 25 Oct) and the verse at 07:00 (`engine/slots.mjs`), so the `slot` is only a label. Which of the two
 formats fills the reel slots comes from `allocation.json` (`mainReels.format`). Ids: `<idPrefix>-verse`,
 `<idPrefix>-story` / `<idPrefix>-film` (`-b` for a second of the same), e.g. `2026-w46-tue-film`.
 
@@ -115,7 +115,7 @@ reel-demo, carousel, post-spotlight, post-statement, reel-story in light/photo, 
 - **Formats, looks, voices, music, subtitles, hooks, topics:** divided by `allocation.json` (Thompson
   sampling on fair scores, see `engine/experiments.mjs`). You follow it; you do not pick winners yourself.
 - **Post times:** none to plan. The `slot` you write is only a label: Alex approves onto a pile and every
-  posting time takes the next approved item of its type (verse 07:00, one reel 19:30 on every platform;
+  posting time takes the next approved item of its type (verse 07:00, reels 12:00 and 19:30 on every platform;
   `engine/slots.mjs`), so a time test in the spec has no effect - do not plan one.
 - **Referral:** once a week, one item promotes "geef een vriend een week Pro cadeau" in its caption: plan it when no item of the target's ISO week has it yet (see `performance.json`).
 

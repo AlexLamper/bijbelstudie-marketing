@@ -33,9 +33,10 @@ const linked = await applyConnections();          // accounts linked in the stud
 const tz = project().timezone || 'Europe/Amsterdam'; const now = new Date();
 const open = openTimes({ now, tz });
 if (open.length) {
-  const used = new Set((await items.find({ postAt: { $in: open.map(t => t.at) } }, { projection: { postAt: 1 } }).toArray()).map(o => +new Date(o.postAt)));
+  // a time is taken per type: a feed post and a reel can both have 12:00
+  const used = new Set((await items.find({ postAt: { $in: open.map(t => t.at) } }, { projection: { postAt: 1, kind: 1 } }).toArray()).map(o => `${slotGroup(o.kind)}@${+new Date(o.postAt)}`));
   const pile = (await items.find({ status: STATUS.APPROVED, postAt: null }).toArray()).sort((a, b) => approvedAt(a) - approvedAt(b));
-  for (const t of open.filter(t => !used.has(+t.at))) {
+  for (const t of open.filter(t => !used.has(`${t.group}@${+t.at}`))) {
     const i = pile.findIndex(it => slotGroup(it.kind) === t.group); if (i < 0) continue;
     const [it] = pile.splice(i, 1);
     const r = await items.updateOne({ _id: it._id, status: STATUS.APPROVED, postAt: null }, {
