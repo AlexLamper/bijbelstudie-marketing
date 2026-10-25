@@ -74,13 +74,22 @@ const cut = (src, from, to, out) => {
 /** A take that cannot be used (a silent or empty line, no way to split it): voicing it again can fix it. */
 export class TakeError extends Error {}
 /** Every voice clip must carry sound from start to end: its loudness over the whole clip and over its last
- *  third (a line that falls silent halfway is caught too). Throws, so a broken voice never reaches Alex. */
+ *  third (a line that falls silent halfway is caught too). Throws, so a broken voice never reaches Alex.
+ *  Measured against the take itself (the median line): some voices come out of ElevenLabs about 20 dB softer
+ *  than others (25 Oct, Daniel: every line near -42 dB, so a short line with its pause after it fell under a
+ *  fixed -50 dB and Naaman was refused three times while it was fine). The mix brings the voice to -16 LUFS
+ *  anyway. A line well under the others, or under the absolute floor, is still refused. */
+export const GUARD = { line: 12, tail: 16, floor: -60, tailFloor: -65 };
 export function voiceGuard(clips, texts = []) {
   const vol = (f, ss) => { const r = spawnSync('ffmpeg', ['-hide_banner', ...(ss ? ['-ss', ss.toFixed(2)] : []), '-i', f, '-af', 'volumedetect', '-f', 'null', '-']); const m = String(r.stderr || '').match(/mean_volume: (-?[\d.]+) dB/); return m ? +m[1] : -91; };
-  clips.forEach((c, i) => {
-    if (!c?.f) return;
-    const all = vol(c.f), tail = c.dur > 1.5 ? vol(c.f, c.dur * 2 / 3) : all;
-    if (all < -45 || tail < -50) throw new TakeError(`Voice: line ${i + 1} is (partly) silent (mean ${all} dB, last third ${tail} dB${texts[i] ? `, "${String(texts[i]).slice(0, 60)}"` : ''}${c.span ? `, ${c.span}` : ''}) - not made`);
+  const m = clips.map(c => { if (!c?.f) return null; const all = vol(c.f); return { all, tail: c.dur > 1.5 ? vol(c.f, c.dur * 2 / 3) : all }; });
+  const alls = m.filter(Boolean).map(x => x.all).sort((a, b) => a - b), ref = alls.length ? alls[Math.floor(alls.length / 2)] : -20;
+  m.forEach((x, i) => {
+    if (!x) return;
+    if (x.all < Math.max(GUARD.floor, ref - GUARD.line) || x.tail < Math.max(GUARD.tailFloor, ref - GUARD.tail)) {
+      const c = clips[i];
+      throw new TakeError(`Voice: line ${i + 1} is (partly) silent (mean ${x.all} dB, last third ${x.tail} dB, the take ${ref} dB${texts[i] ? `, "${String(texts[i]).slice(0, 60)}"` : ''}${c.span ? `, ${c.span}` : ''}) - not made`);
+    }
   });
 }
 // 25 Oct (Naaman): ElevenLabs sometimes gives a take with one line whispered or swallowed. Takes are cached,
