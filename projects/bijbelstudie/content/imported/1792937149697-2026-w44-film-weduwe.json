@@ -1,0 +1,221 @@
+{
+  "id": "2026-w44-film-weduwe",
+  "week": "2026-W44",
+  "slot": "2026-10-26T19:35:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Een handvol meel en een beetje olie. Meer had ze niet - en ze gaf het weg.\n\nLees 1 Koningen 17 met uitleg bij elk vers in de BijbelStudie app - gratis te downloaden.",
+  "hashtags": [
+    "#elia",
+    "#1koningen",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "verrassing",
+    "topic": "persoon"
+  },
+  "basedOn": "1 Koningen 17:8-16 (SV): God zendt Elia naar Sarfath bij Sidon; een weduwe raapt hout op bij de poort; water en een bete broods; een hand vol meel en een weinig olie; bak mij eerst een koekje; het meel van de kruik werd niet verteerd.",
+  "subject": "Elia en de weduwe van Sarfath",
+  "music": "calm",
+  "voiceStyle": "rustig",
+  "captions": "karaoke",
+  "endCard": {
+    "headline": "Lees 1 Koningen met uitleg.",
+    "button": "Download gratis"
+  },
+  "kind": "reel-3d",
+  "voice": "female",
+  "hook": "Ze had nog één handvol meel. Toen vroeg een vreemde om brood.",
+  "style3d": "stickman",
+  "cast": [
+    {
+      "id": "elia",
+      "look": "oude-man-bijbels",
+      "name": "Elia"
+    },
+    {
+      "id": "weduwe",
+      "look": "vrouw-bijbels-2",
+      "name": "De weduwe"
+    }
+  ],
+  "shots": [
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "elia",
+          "at": "poort",
+          "to": "straat"
+        },
+        {
+          "id": "weduwe",
+          "at": "plein",
+          "base": "kneel"
+        }
+      ],
+      "say": "Het regent al lang niet meer. God stuurt de profeet Elia naar Sarfath, een stadje bij Sidon.",
+      "text": "Sarfath, bij Sidon"
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "elia",
+          "at": "straat",
+          "do": "talk",
+          "face": "weduwe"
+        },
+        {
+          "id": "weduwe",
+          "at": "plein",
+          "base": "kneel",
+          "face": "elia"
+        }
+      ],
+      "say": "Bij de stadspoort raapt een weduwe hout op. Elia vraagt haar om een beetje water."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "track",
+      "on": "weduwe",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "plein",
+          "to": "markt",
+          "do": "carry",
+          "holds": "kruik"
+        },
+        {
+          "id": "elia",
+          "at": "straat",
+          "do": "talk",
+          "face": "weduwe"
+        }
+      ],
+      "say": "Ze gaat het halen. Dan vraagt hij ook om een stukje brood."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "medium",
+      "on": "weduwe",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "markt",
+          "face": "elia",
+          "mood": "verdrietig",
+          "holds": "olie"
+        },
+        {
+          "id": "elia",
+          "at": "plein"
+        }
+      ],
+      "say": "Maar ze heeft alleen nog een handvol meel en een beetje olie. Daarvan wil ze een laatste maaltijd maken, voor haar zoon en zichzelf."
+    },
+    {
+      "set": "stad",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "elia",
+          "at": "plein",
+          "do": "talk",
+          "face": "weduwe"
+        },
+        {
+          "id": "weduwe",
+          "at": "markt",
+          "face": "elia",
+          "holds": "olie"
+        }
+      ],
+      "say": "Elia zegt dat ze niet bang hoeft te zijn. Ze moet eerst een koekje voor hem bakken. God belooft dat ze meel en olie houdt tot het weer regent."
+    },
+    {
+      "set": "stad",
+      "time": "avond",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "plein",
+          "do": "give",
+          "face": "elia",
+          "holds": "brood"
+        },
+        {
+          "id": "elia",
+          "at": "straat",
+          "face": "weduwe"
+        }
+      ],
+      "say": "Ze doet wat hij zegt. Vele dagen lang hebben ze genoeg te eten."
+    },
+    {
+      "set": "stad",
+      "time": "nacht",
+      "camera": "sky",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "plein"
+        },
+        {
+          "id": "elia",
+          "at": "straat"
+        }
+      ],
+      "hold": 2
+    },
+    {
+      "set": "stad",
+      "time": "nacht",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "plein",
+          "do": "pray"
+        },
+        {
+          "id": "elia",
+          "at": "straat"
+        }
+      ],
+      "say": "Het meel raakt niet op, en de olie ook niet. Het gaat precies zoals God via Elia had beloofd.",
+      "verse": "1 Koningen 17:16"
+    },
+    {
+      "set": "stad",
+      "time": "nacht",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "weduwe",
+          "at": "plein"
+        },
+        {
+          "id": "elia",
+          "at": "straat"
+        }
+      ],
+      "say": "Lees het in één Koningen zeventien, met uitleg, in de BijbelStudie app.",
+      "app": "web:bijbel/1-koningen/17"
+    }
+  ]
+}
