@@ -1,5 +1,7 @@
-// TikTok via the official Content Posting API (free). Until TikTok audits the app, posts are
-// visible only to you (SELF_ONLY) - the publisher then marks them "needs manual post".
+// TikTok via the official Content Posting API (free). Until TikTok audits the app, Direct Post only works
+// for private accounts (25 Oct: "unaudited_client_can_only_post_to_private_accounts" on the public
+// @bijbelstudie account). Then the video is sent to the account's TikTok inbox as a draft instead (Upload,
+// scope video.upload): Alex opens TikTok and posts it from there - marked "needs manual post".
 // Bridge: set UPLOADPOST_API_KEY to post through Upload-Post's audited app instead.
 // Env: TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET; the rotating tokens live in Mongo (tokens.tiktok),
 // seeded once with TIKTOK_REFRESH_TOKEN.
@@ -36,13 +38,18 @@ export async function publishTikTok(item) {
   const creator = await api('/post/publish/creator_info/query/', token);
   const privacy = creator.privacy_level_options.includes('PUBLIC_TO_EVERYONE') ? 'PUBLIC_TO_EVERYONE' : 'SELF_ONLY';
   const size = statSync(item.media.file).size;
-  const init = await api('/post/publish/video/init/', token, {
-    post_info: { title: [s.caption, s.hashtags.join(' ')].join(' ').slice(0, 2200), privacy_level: privacy,
-      disable_duet: false, disable_comment: false, disable_stitch: false, is_aigc: !!item.aiLabel },
-    source_info: { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 },
-  });
-  const up = await fetch(init.upload_url, { method: 'PUT', headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(size), 'Content-Range': `bytes 0-${size - 1}/${size}` }, body: readFileSync(item.media.file) });
-  if (!up.ok) throw new Error(`TikTok upload ${up.status}: ${await up.text()}`);
+  let init;
+  try {
+    init = await api('/post/publish/video/init/', token, {
+      post_info: { title: [s.caption, s.hashtags.join(' ')].join(' ').slice(0, 2200), privacy_level: privacy,
+        disable_duet: false, disable_comment: false, disable_stitch: false, is_aigc: !!item.aiLabel },
+      source_info: { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 },
+    });
+  } catch (e) {
+    if (/unaudited_client_can_only_post_to_private_accounts/.test(e.message)) return toInbox(item, token, size);
+    throw e;
+  }
+  await uploadFile(init.upload_url, item.media.file, size);
   for (let i = 0; i < 40; i++) {
     const st = await api('/post/publish/status/fetch/', token, { publish_id: init.publish_id });
     if (st.status === 'PUBLISH_COMPLETE') {
@@ -54,6 +61,24 @@ export async function publishTikTok(item) {
     await sleep(5000);
   }
   return { id: init.publish_id, privacy, pending: true };
+}
+
+async function uploadFile(url, file, size) {
+  const up = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(size), 'Content-Range': `bytes 0-${size - 1}/${size}` }, body: readFileSync(file) });
+  if (!up.ok) throw new Error(`TikTok upload ${up.status}: ${await up.text()}`);
+}
+
+/** The video as a draft in the account's TikTok inbox (Upload): the creator finishes the post in the app. */
+async function toInbox(item, token, size) {
+  const init = await api('/post/publish/inbox/video/init/', token, { source_info: { source: 'FILE_UPLOAD', video_size: size, chunk_size: size, total_chunk_count: 1 } });
+  await uploadFile(init.upload_url, item.media.file, size);
+  for (let i = 0; i < 40; i++) {
+    const st = await api('/post/publish/status/fetch/', token, { publish_id: init.publish_id });
+    if (st.status === 'SEND_TO_USER_INBOX' || st.status === 'PUBLISH_COMPLETE') return { id: init.publish_id, inbox: true, needsManual: true, privacy: 'INBOX' };
+    if (st.status === 'FAILED') throw new Error(`TikTok inbox upload failed: ${st.fail_reason}`);
+    await sleep(5000);
+  }
+  return { id: init.publish_id, inbox: true, needsManual: true, privacy: 'INBOX', pending: true };
 }
 
 /** Upload-Post bridge (paid, ~$16-24/mo): its own audited TikTok/YouTube apps post publicly. */

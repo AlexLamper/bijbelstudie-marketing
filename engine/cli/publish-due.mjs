@@ -74,7 +74,7 @@ for (const it of due) {
     const before = it.results[pl];
     try {
       it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };   // replaces any container checkpoint
-      if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push(it._id); }
+      if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push({ id: it._id, inbox: !!it.results[pl].inbox, subject: it.spec.subject || it._id }); }
     } catch (e) {
       const tries = (before?.tries || 0) + 1;
       it.results[pl] = { ...(it.results[pl]?.container ? { container: it.results[pl].container } : {}), error: e.message, tries, at: new Date() };
@@ -98,8 +98,13 @@ for (const it of due) {
 rmSync(tmp, { recursive: true, force: true });
 
 if (problems.length) await notify('Iets ging mis bij publiceren', problems, studioLink('/settings'));
-// TikTok keeps posts private until it approves the app: one note a day, not one per video
-if (tiktokPrivate.length) {
+// TikTok: until it audits the app, a video goes to the TikTok inbox as a draft - tell Alex every time,
+// so he posts it from the app (Alex, 25 Oct: posts must actually go out)
+const inbox = tiktokPrivate.filter(x => x.inbox);
+if (inbox.length) await notify(`TikTok: ${inbox.length === 1 ? 'video staat' : `${inbox.length} video's staan`} klaar in je TikTok-inbox`, [
+  `${inbox.map(x => `"${x.subject}"`).join(', ')} ${inbox.length === 1 ? 'staat' : 'staan'} als concept in je TikTok-app (melding in je inbox). Open TikTok, tik op de melding en plaats ${inbox.length === 1 ? 'hem' : 'ze'}; de tekst kun je uit de studio kopiëren.`,
+  'De andere platforms gaan vanzelf. TikTok plaatst pas zelf als TikTok de app heeft goedgekeurd (audit).'], studioLink(''), { replaces: 'TikTok:' });
+if (tiktokPrivate.some(x => !x.inbox)) {
   const key = `tiktok-private:${new Date().toISOString().slice(0, 10)}`;
   const first = await d.collection('settings').updateOne({ _id: key }, { $setOnInsert: { at: new Date() } }, { upsert: true });
   if (first.upsertedCount) await notify('TikTok-video\'s staan nog privé', [
