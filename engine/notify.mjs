@@ -10,10 +10,12 @@ const studioBase = () => (env.STUDIO_URL || env.DASHBOARD_URL || '').replace(/\/
 /** Link into the studio for this project, e.g. studioLink(`/week/2026-W45`). */
 export const studioLink = (path = '') => studioBase() && `${studioBase()}/${project().id}${path}`;
 
+// captions and Alex's words go into the mail as text, never as HTML
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 async function viaResend(subject, lines, url) {
   const p = project();
   const html = `<div style="font-family:Inter,Arial,sans-serif;color:#111827;max-width:520px">
-    <h2 style="margin:0 0 12px">${subject}</h2>${lines.map(l => `<p style="margin:6px 0;color:#374151">${l}</p>`).join('')}
+    <h2 style="margin:0 0 12px">${esc(subject)}</h2>${lines.map(l => `<p style="margin:6px 0;color:#374151;white-space:pre-wrap">${esc(l)}</p>`).join('')}
     ${url ? `<p style="margin-top:20px"><a href="${url}" style="background:${p.theme.cta};color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700">Open de studio</a></p>` : ''}</div>`;
   const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ from: env.NOTIFY_FROM || p.notify?.from || `${p.name} Studio <studio@${p.web || 'example.com'}>`, to: env.NOTIFY_TO, subject, html, text: [...lines, url].filter(Boolean).join('\n') }) });

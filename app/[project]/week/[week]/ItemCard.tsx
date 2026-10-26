@@ -136,11 +136,20 @@ export default function ItemCard({ project, item, tz = DEFAULT_TZ }: { project: 
           <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
             {Object.entries(item.results).map(([pl, r]: any) => {
               const tone = r.id ? 'bg-emerald-50 text-success ring-1 ring-emerald-200' : r.skipped ? 'bg-bg text-ink-muted ring-1 ring-line' : 'bg-red-50 text-danger ring-1 ring-red-200';
-              const label = `${PLATFORM[pl] || pl}${r.needsManual ? ' (privé)' : ''}`;
+              const label = `${PLATFORM[pl] || pl}${r.inbox ? ' (in je TikTok-app)' : r.needsManual ? ' (privé)' : ''}`;
               return r.url
                 ? <a key={pl} href={r.url} target="_blank" rel="noreferrer" title={r.error || r.skipped || 'Bekijk de post'} className={`cursor-pointer rounded-full px-2 py-0.5 font-semibold transition hover:brightness-95 ${tone}`}>{label} &#8599;</a>
                 : <span key={pl} title={r.error || r.skipped || ''} className={`rounded-full px-2 py-0.5 font-semibold ${tone}`}>{label}</span>;
             })}
+          </div>
+        )}
+        {item.results?.tiktok?.inbox && (
+          <div className="mt-2 rounded-md bg-bg px-2.5 py-2 text-xs text-ink-body ring-1 ring-line">
+            <p>TikTok: staat klaar in je TikTok-app (Inbox &gt; Systeemmeldingen). TikTok neemt de tekst niet mee - kopieer hem hier en plak hem bij het plaatsen.</p>
+            <Button size="sm" className="mt-1.5" onClick={async () => {
+              const text = [s.caption, (s.hashtags || []).join(' ')].filter(Boolean).join('\n\n');
+              try { await navigator.clipboard.writeText(text); toast('TikTok-tekst gekopieerd'); } catch { toast('Kopiëren lukte niet - houd de tekst hierboven ingedrukt'); }
+            }}>Kopieer TikTok-tekst</Button>
           </div>
         )}
         {item.status === 'published' && item.metrics?.instagram && <p className="mt-2 text-xs text-ink-muted">Instagram: {item.metrics.instagram.views ?? 0} views - {item.metrics.instagram.likes ?? 0} likes - {item.metrics.instagram.saved ?? 0} saves</p>}

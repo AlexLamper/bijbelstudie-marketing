@@ -74,7 +74,7 @@ for (const it of due) {
     const before = it.results[pl];
     try {
       it.results[pl] = { ...(await PUBLISHERS[pl].run(it)), at: new Date() };   // replaces any container checkpoint
-      if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push({ id: it._id, inbox: !!it.results[pl].inbox, subject: it.spec.subject || it._id }); }
+      if (it.results[pl].needsManual) { if (pl === 'youtube') problems.push(`${it._id}: YouTube heeft de video als ${it.results[pl].privacy} geplaatst. Zet hem op openbaar in YouTube Studio: ${it.results[pl].url}`); else tiktokPrivate.push({ id: it._id, inbox: !!it.results[pl].inbox, subject: it.spec.subject || it._id, text: [it.spec.caption, (it.spec.hashtags || []).join(' ')].filter(Boolean).join(' ') }); }
     } catch (e) {
       const tries = (before?.tries || 0) + 1;
       it.results[pl] = { ...(it.results[pl]?.container ? { container: it.results[pl].container } : {}), error: e.message, tries, at: new Date() };
@@ -103,7 +103,9 @@ if (problems.length) await notify('Iets ging mis bij publiceren', problems, stud
 const inbox = tiktokPrivate.filter(x => x.inbox);
 if (inbox.length) await notify(`TikTok: ${inbox.length === 1 ? 'video staat' : `${inbox.length} video's staan`} klaar in je TikTok-inbox`, [
   `${inbox.map(x => `"${x.subject}"`).join(', ')} ${inbox.length === 1 ? 'staat' : 'staan'} klaar in je TikTok-app. Niet bij Concepten: open TikTok > Inbox > Systeemmeldingen, tik op de melding dat je video klaar is (Meer bekijken) en plaats ${inbox.length === 1 ? 'hem' : 'ze'}; de tekst kun je uit de studio kopiëren.`,
-  'De andere platforms gaan vanzelf. TikTok plaatst pas zelf als TikTok de app heeft goedgekeurd (audit).'], studioLink(''), { replaces: 'TikTok:' });
+  'TikTok neemt de tekst niet mee bij een video in de inbox. Plak deze tekst bij het plaatsen (of tik op "Kopieer TikTok-tekst" bij de video in de studio):',
+  ...inbox.map(x => x.text),
+  'De andere platforms gaan vanzelf. TikTok plaatst pas zelf, met tekst, als TikTok de app heeft goedgekeurd (audit).'], studioLink(''), { replaces: 'TikTok:' });
 if (tiktokPrivate.some(x => !x.inbox)) {
   const key = `tiktok-private:${new Date().toISOString().slice(0, 10)}`;
   const first = await d.collection('settings').updateOne({ _id: key }, { $setOnInsert: { at: new Date() } }, { upsert: true });
