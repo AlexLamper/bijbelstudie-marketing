@@ -111,3 +111,14 @@ export async function tiktokAccount() {
   const j = await r.json(); if (j.error?.code && j.error.code !== 'ok') throw new Error(`TikTok user/info: ${j.error.code} ${j.error.message}`);
   const u = j.data?.user || {}; return { followers: u.follower_count, likes: u.likes_count, videos: u.video_count };
 }
+
+/** Diagnosis (meta-check --tiktok): which TikTok account the link posts to, and where uploads are now. */
+export async function tiktokCheck(publishIds = []) {
+  const token = await accessToken(); const out = {};
+  try { const c = await api('/post/publish/creator_info/query/', token); out.creator = { username: c.creator_username, nickname: c.creator_nickname, privacy: c.privacy_level_options, maxSeconds: c.max_video_post_duration_sec }; }
+  catch (e) { out.creator = { error: e.message }; }
+  for (const id of publishIds) {
+    try { out[id] = await api('/post/publish/status/fetch/', token, { publish_id: id }); } catch (e) { out[id] = { error: e.message }; }
+  }
+  return out;
+}
