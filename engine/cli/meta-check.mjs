@@ -11,19 +11,7 @@ const fromKey = !!env.META_PAGE_TOKEN;   // a GitHub secret or a studio key wins
 const linked = await applyConnections();
 const tok = env.META_PAGE_TOKEN;
 console.log(`[${P}] token from: ${fromKey ? 'META_PAGE_TOKEN (GitHub secret or studio key - overrides the linked account)' : linked.meta ? `the linked account "${linked.meta}"` : 'nowhere'}; FB_PAGE_ID ${env.FB_PAGE_ID || '-'}, IG_USER_ID ${env.IG_USER_ID || '-'}`);
-if (!tok) { // --tiktok: the TikTok account the link posts to, and the state of the last uploads (inbox drafts)
-if (process.argv.includes('--tiktok')) {
-  const { tiktokConfigured, tiktokCheck } = await import('../publish/tiktok.mjs');
-  if (!tiktokConfigured()) console.log(`[${P}] tiktok: not linked`);
-  else {
-    const recent = await (await db()).collection('items').find({ 'results.tiktok.id': { $exists: true } }).sort({ publishedAt: -1 }).limit(5).toArray();
-    const ids = recent.map(it => it.results.tiktok.id);
-    const r = await tiktokCheck(ids);
-    console.log(`[${P}] tiktok account: ${JSON.stringify(r.creator)}`);
-    for (const it of recent) console.log(`[${P}] tiktok ${it._id}: sent ${it.results.tiktok.at ? new Date(it.results.tiktok.at).toISOString() : '-'} ${JSON.stringify(it.results.tiktok).slice(0, 200)} -> now ${JSON.stringify(r[it.results.tiktok.id]).slice(0, 400)}`);
-  }
-}
-await close(); process.exit(0); }
+if (!tok) { await tiktokPart(); await close(); process.exit(0); }
 const V = env.META_GRAPH_VERSION || 'v23.0';
 const get = async (path, params = {}) => {
   const u = new URL(`https://graph.facebook.com/${V}/${path}`);
@@ -50,4 +38,20 @@ if (process.argv.includes('--write-test') && env.IG_USER_ID) {
     show('write test (container, not published)', r);
   }
 }
+await tiktokPart();
 await close();
+
+async function tiktokPart() {
+  // --tiktok: the TikTok account the link posts to, and the state of the last uploads (inbox drafts)
+  if (process.argv.includes('--tiktok')) {
+    const { tiktokConfigured, tiktokCheck } = await import('../publish/tiktok.mjs');
+    if (!tiktokConfigured()) console.log(`[${P}] tiktok: not linked`);
+    else {
+      const recent = await (await db()).collection('items').find({ 'results.tiktok.id': { $exists: true } }).sort({ publishedAt: -1 }).limit(5).toArray();
+      const ids = recent.map(it => it.results.tiktok.id);
+      const r = await tiktokCheck(ids);
+      console.log(`[${P}] tiktok account: ${JSON.stringify(r.creator)}`);
+      for (const it of recent) console.log(`[${P}] tiktok ${it._id}: sent ${it.results.tiktok.at ? new Date(it.results.tiktok.at).toISOString() : '-'} ${JSON.stringify(it.results.tiktok).slice(0, 200)} -> now ${JSON.stringify(r[it.results.tiktok.id]).slice(0, 400)}`);
+    }
+  }
+}
