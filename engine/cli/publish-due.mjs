@@ -102,7 +102,7 @@ if (problems.length) await notify('Iets ging mis bij publiceren', problems, stud
 // so he posts it from the app (Alex, 25 Oct: posts must actually go out)
 const inbox = tiktokPrivate.filter(x => x.inbox);
 if (inbox.length) await notify(`TikTok: ${inbox.length === 1 ? 'video staat' : `${inbox.length} video's staan`} klaar in je TikTok-inbox`, [
-  `${inbox.map(x => `"${x.subject}"`).join(', ')} ${inbox.length === 1 ? 'staat' : 'staan'} als concept in je TikTok-app (melding in je inbox). Open TikTok, tik op de melding en plaats ${inbox.length === 1 ? 'hem' : 'ze'}; de tekst kun je uit de studio kopiëren.`,
+  `${inbox.map(x => `"${x.subject}"`).join(', ')} ${inbox.length === 1 ? 'staat' : 'staan'} klaar in je TikTok-app. Niet bij Concepten: open TikTok > Inbox > Systeemmeldingen, tik op de melding dat je video klaar is (Meer bekijken) en plaats ${inbox.length === 1 ? 'hem' : 'ze'}; de tekst kun je uit de studio kopiëren.`,
   'De andere platforms gaan vanzelf. TikTok plaatst pas zelf als TikTok de app heeft goedgekeurd (audit).'], studioLink(''), { replaces: 'TikTok:' });
 if (tiktokPrivate.some(x => !x.inbox)) {
   const key = `tiktok-private:${new Date().toISOString().slice(0, 10)}`;
