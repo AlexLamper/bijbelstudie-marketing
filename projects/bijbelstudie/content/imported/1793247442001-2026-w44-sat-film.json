@@ -1,0 +1,329 @@
+{
+  "id": "2026-w44-sat-film",
+  "week": "2026-W44",
+  "slot": "2026-10-31T19:30:00+01:00",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok",
+    "youtube"
+  ],
+  "caption": "Van de ochtend tot de avond stond het volk voor Mozes. Tot Jethro zei: alleen kun je dit niet.\n\nWat draag jij nu alleen, terwijl het samen kan?\n\nLees Exodus 18 met uitleg ernaast in de BijbelStudie app - gratis te downloaden.",
+  "hashtags": [
+    "#mozes",
+    "#exodus",
+    "#bijbelverhaal",
+    "#bijbelstudie"
+  ],
+  "experiment": {
+    "hook": "herkenning",
+    "topic": "praktisch",
+    "note": "Bijbelverhaal met een praktische les: niet alles alleen dragen."
+  },
+  "basedOn": "Exodus 18 (SV): Jethro bij Mozes in de woestijn (1, 5); Mozes richt het volk van den morgen tot den avond (13-14); 'gij alleen kunt het niet doen' (17-18); kloeke mannen, God vrezende (21); 'laat hen met u dragen' (22); de harde zaak tot Mozes, de kleine richten zij (24-26).",
+  "subject": "Mozes en Jethro",
+  "music": "calm",
+  "voiceStyle": "rustig",
+  "captions": "block",
+  "endCard": {
+    "headline": "Lees Exodus met uitleg.",
+    "button": "Download gratis"
+  },
+  "kind": "reel-3d",
+  "voice": "daniel",
+  "hook": "Mozes hielp een heel volk. Helemaal alleen.",
+  "style3d": "stickman",
+  "cast": [
+    {
+      "id": "mozes",
+      "look": "oude-man-bijbels",
+      "name": "Mozes"
+    },
+    {
+      "id": "jethro",
+      "look": "man-bijbels",
+      "name": "Jethro"
+    },
+    {
+      "id": "vrouw",
+      "look": "vrouw-bijbels"
+    },
+    {
+      "id": "man",
+      "look": "man-bijbels-2"
+    }
+  ],
+  "shots": [
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "jethro",
+          "at": "verte",
+          "to": "midden",
+          "face": "mozes"
+        },
+        {
+          "id": "mozes",
+          "at": "tent",
+          "do": "wave",
+          "face": "jethro"
+        }
+      ],
+      "say": "Israël is uit Egypte bevrijd en trekt door de woestijn. Daar krijgt Mozes bezoek van zijn schoonvader Jethro.",
+      "text": "In de woestijn, bij de berg van God"
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "face": "vrouw"
+        },
+        {
+          "id": "vrouw",
+          "at": "links",
+          "do": "talk",
+          "face": "mozes"
+        },
+        {
+          "id": "man",
+          "at": "midden",
+          "face": "mozes"
+        },
+        {
+          "id": "jethro",
+          "at": "rechts",
+          "do": "think",
+          "mood": "nadenkend",
+          "face": "mozes"
+        }
+      ],
+      "say": "De volgende dag gaat Mozes zitten om het volk recht te spreken."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "mood": "verdrietig",
+          "face": "vrouw"
+        },
+        {
+          "id": "vrouw",
+          "at": "links",
+          "do": "talk",
+          "face": "mozes"
+        },
+        {
+          "id": "man",
+          "at": "midden",
+          "face": "mozes"
+        },
+        {
+          "id": "jethro",
+          "at": "rechts",
+          "do": "think",
+          "mood": "nadenkend",
+          "face": "mozes"
+        }
+      ],
+      "say": "Wie een probleem heeft, komt bij hem. Ze staan voor hem van de ochtend tot de avond."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "face": "jethro"
+        },
+        {
+          "id": "jethro",
+          "at": "kampvuur",
+          "do": "talk",
+          "face": "mozes"
+        }
+      ],
+      "say": "Jethro vraagt Mozes waarom hij alles alleen doet."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "mood": "nadenkend",
+          "face": "jethro"
+        },
+        {
+          "id": "jethro",
+          "at": "kampvuur",
+          "do": "talk",
+          "face": "mozes"
+        }
+      ],
+      "say": "Jethro zegt dat dit niet goed is. Zo raken Mozes en het volk uitgeput. Het is te zwaar voor hem alleen.",
+      "verse": "Exodus 18:17-18"
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "track",
+      "on": "jethro",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "do": "think",
+          "face": "jethro"
+        },
+        {
+          "id": "jethro",
+          "at": "kampvuur",
+          "do": "point",
+          "face": "mozes"
+        }
+      ],
+      "say": "Hij raadt Mozes aan eerlijke mannen te kiezen die God eren. Zij kunnen de last met hem dragen."
+    },
+    {
+      "set": "woestijn",
+      "time": "nacht",
+      "camera": "sky",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "face": "jethro"
+        },
+        {
+          "id": "jethro",
+          "at": "kampvuur",
+          "face": "mozes"
+        }
+      ],
+      "hold": 2
+    },
+    {
+      "set": "woestijn",
+      "time": "dag",
+      "camera": "wide",
+      "actors": [
+        {
+          "id": "jethro",
+          "at": "tent",
+          "face": "mozes"
+        },
+        {
+          "id": "mozes",
+          "at": "links",
+          "do": "point",
+          "face": "man"
+        },
+        {
+          "id": "man",
+          "at": "midden",
+          "face": "mozes"
+        }
+      ],
+      "say": "Mozes luistert naar Jethro. Hij kiest bekwame mannen uit heel Israël."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "establish",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "mood": "blij"
+        },
+        {
+          "id": "vrouw",
+          "at": "midden",
+          "do": "talk",
+          "face": "man"
+        },
+        {
+          "id": "man",
+          "at": "rechts",
+          "base": "sit",
+          "face": "vrouw"
+        }
+      ],
+      "say": "Zij regelen nu de kleine zaken. Met moeilijke zaken komen ze bij Mozes."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "track",
+      "on": "mozes",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "mood": "blij"
+        },
+        {
+          "id": "vrouw",
+          "at": "midden",
+          "face": "man"
+        },
+        {
+          "id": "man",
+          "at": "rechts",
+          "base": "sit",
+          "face": "vrouw"
+        }
+      ],
+      "say": "Zelfs Mozes hoefde het niet alleen te dragen."
+    },
+    {
+      "set": "woestijn",
+      "time": "avond",
+      "camera": "aerial",
+      "actors": [
+        {
+          "id": "mozes",
+          "at": "tent",
+          "base": "sit",
+          "mood": "blij"
+        },
+        {
+          "id": "vrouw",
+          "at": "midden",
+          "face": "man"
+        },
+        {
+          "id": "man",
+          "at": "rechts",
+          "base": "sit",
+          "face": "vrouw"
+        }
+      ],
+      "say": "Lees het in Exodus achttien, met uitleg, in de BijbelStudie app.",
+      "app": "web:bijbel/exodus/18"
+    }
+  ]
+}
